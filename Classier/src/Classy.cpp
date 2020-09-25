@@ -83,8 +83,31 @@ int main(int argc, char *argv[])
 			}
 			else if (line.find("go ") != -1)
 			{
-				outFile << "received a go command" << std::endl;
-				response = "bestmove " + engine.searchForTime(2000).basicAlg();
+				int i;
+				int timefactor;
+				if (board.turn) i = line.find("wtime");
+				else i = line.find("btime");
+				if (i != -1) // Tournament time
+				{
+					i += 6;
+					timefactor = 30;
+				}
+				else 
+				{
+					i = line.find("movetime");
+					i += 9;
+					timefactor = 1;
+				}
+
+				std::string accum = "";
+				for (; i < line.length(); i++)
+				{
+					if (line[i] == ' ') break;
+					accum += line[i];
+					if (i == line.length() - 1) break;
+				}
+				int remainingTime = std::stoi(accum);
+				response = "bestmove " + engine.searchForTime(remainingTime / timefactor).basicAlg();
 			}
 			else if (line.find("quit") != -1)
 			{
