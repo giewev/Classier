@@ -33,6 +33,30 @@ const bitBoard fFile = aFile << 5;
 const bitBoard gFile = aFile << 6;
 const bitBoard hFile = aFile << 7;
 
+const bitBoard ranks[8] =
+{
+	rank1,
+	rank2,
+	rank3,
+	rank4,
+	rank5,
+	rank6,
+	rank7,
+	rank8
+};
+
+const bitBoard files[8] =
+{
+	aFile,
+	bFile,
+	cFile,
+	dFile,
+	eFile,
+	fFile,
+	gFile,
+	hFile
+};
+
 const bitBoard centerBoard = 0x0000001818000000;
 const bitBoard outsideRim  = 0xFF818181818181FF;
 
@@ -91,6 +115,9 @@ int lastBit(bitBoard input);
 
 int getX(int raw);
 int getY(int raw);
+
+bitBoard file(int i);
+bitBoard rank(int i);
 }
 
 #endif // BITWISE_H

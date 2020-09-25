@@ -10,8 +10,11 @@ const double queenValue = 9;
 const double knightBishopWeight = 0.1;
 const double doubledPawnValue = -0.15;
 
-const double centerPawnValue = 0.3;
+const double centerPawnValue = 0.2;
 const double semiCenterPawnValue = 0.15;
 const double rimKnightValue = -0.10;
 const double developmentValue = 0.15;
 const double kingCornerValue = 0.05;
+
+const double pawnAdvancementValue = 0.01;
+const double passedPawnValue = 0.4;

@@ -22,6 +22,41 @@ double PositionalEvaluator::evaluate(Board boardState)
     score += doubledPawnValue * bitwise::countBits(whitePawns & (whitePawns << 8));
     score -= doubledPawnValue * bitwise::countBits(blackPawns & (blackPawns >> 8));
 
+	// Reward pushing pawns, both for promotion and space reasons
+	for (bitBoard i = 0; i < 8; i++)
+	{
+		score += pawnAdvancementValue * i * bitwise::countBits(whitePawns & bitwise::rank(i));
+		score -= pawnAdvancementValue * (7 - i) * bitwise::countBits(blackPawns & bitwise::rank(i));
+	}
+
+	// Count the number of passed pawns for each player
+	int whitePawnFiles[8];
+	int blackPawnFiles[8];
+	for (int i = 0; i < 8; i++)
+	{
+		whitePawnFiles[i] = bitwise::countBits(whitePawns & bitwise::file(i));
+		blackPawnFiles[i] = bitwise::countBits(blackPawns & bitwise::file(i));
+	}
+
+	for (int i = 0; i < 8; i++)
+	{
+		if (whitePawnFiles[i] > 0)
+		{
+			if ((i < 0 || blackPawnFiles[i - 1] == 0) && blackPawnFiles[i] == 0 && (i == 7 || blackPawnFiles[i + 1] == 0))
+			{
+				score += passedPawnValue;
+			}
+		}
+
+		if (blackPawnFiles[i] > 0)
+		{
+			if ((i < 0 || whitePawnFiles[i - 1] == 0) && whitePawnFiles[i] == 0 && (i == 7 || whitePawnFiles[i + 1] == 0))
+			{
+				score -= passedPawnValue;
+			}
+		}
+	}
+
     // Count how many pawns from each player are in the center
     bitBoard centerPawns = boardState.pieces[PieceType::Pawn] & centerBoard;
     score += centerPawnValue * bitwise::countBits(centerPawns & boardState.pieces[0]);

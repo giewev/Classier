@@ -114,6 +114,26 @@ int bitwise::lastBit(bitBoard input)
     return firstBit(save);
 }
 
+bitBoard bitwise::file(int i)
+{
+	if (i < 8 && i >= 0)
+	{
+		return files[i];
+	}
+
+	return 0;
+}
+
+bitBoard bitwise::rank(int i)
+{
+	if (i < 8 && i >= 0)
+	{
+		return ranks[i];
+	}
+
+	return 0;
+}
+
 int bitwise::getX(int raw)
 {
     return (raw >> 3) + 1;
