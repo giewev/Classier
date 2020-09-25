@@ -48,35 +48,38 @@ void Engine::setBoard(Board loadBoard)
 
 Move Engine::searchToDepth(int depth)
 {
-    //time_t timer = time(NULL);
-    AlphaBetaSearcher searcher = AlphaBetaSearcher(*this);
-    Move bestMove = searcher.alphaBeta(gameBoard, depth);
-	
+	chrono::steady_clock::time_point end = chrono::steady_clock::now() + chrono::hours(99);
+	return searchToDepth(depth, end);
+}
+
+Move Engine::searchToDepth(int depth, chrono::steady_clock::time_point cancelTime)
+{
+	AlphaBetaSearcher searcher = AlphaBetaSearcher(*this, cancelTime);
+	Move bestMove = searcher.alphaBeta(gameBoard, depth);
+
 	int centipawnScore = (int)(bestMove.getScore() * 100);
 	if (!gameBoard.turn) centipawnScore *= -1;
 	printf("info depth %d score cp %d pv ", depth, centipawnScore);
 	std::cout << bestMove.basicAlg() << std::endl;
-    //Logger::mainLog()->info("Alpha-beta search on position [{0}] to a depth of {1} chose: {2} with score: {3} after {4} seconds",
-    //                        gameBoard.outputFEN(), depth, bestMove.basicAlg(), bestMove.score, difftime(time(NULL), timer));
-    
+
 	return bestMove;
 }
 
 Move Engine::searchForTime(int milliseconds)
 {
 	chrono::steady_clock::time_point begin = chrono::steady_clock::now();
+	chrono::steady_clock::time_point end = begin + chrono::milliseconds(milliseconds);
 	resetTransTable();
+	Move lastBest;
     Move bestMove;
     int depth = 1;
-    while (chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now() - begin).count() < milliseconds)
+    while (chrono::steady_clock::now() < end)
     {
-        bestMove = searchToDepth(depth++);
-        //Logger::mainLog()->flush();
+		if (depth != 1) lastBest = bestMove;
+        bestMove = searchToDepth(depth++, end);
     }
 
-    //Logger::mainLog()->info("Iterative search on position [{0}] to a depth of {1} chose: {2} with score: {3} after {4} seconds",
-    //                        gameBoard.outputFEN(), depth - 1, bestMove.basicAlg(), bestMove.score, difftime(time(NULL), timer));
-
+	bestMove.setScore(lastBest.score);
     return bestMove;
 }
 

@@ -1,13 +1,14 @@
 #ifndef ALPHABETASEARCHER_H
 #define ALPHABETASEARCHER_H
 #include "Engine.h"
+#include <chrono>
 
 class Move;
 
 class AlphaBetaSearcher
 {
     public:
-        AlphaBetaSearcher(Engine& linkedEngine);
+        AlphaBetaSearcher(Engine& linkedEngine, std::chrono::steady_clock::time_point);
 
         Move alphaBeta(const Board& boardState, int depth);
         Move alphaBeta(const Board& boardState, int depth, double alpha, double beta);
@@ -21,6 +22,8 @@ class AlphaBetaSearcher
         static void updateAlphaBeta(double newScore, bool turn, double& alpha, double& beta);
         double quiesce(const Board& boardState, double alpha, double beta);
 		bool nullMode;
+		std::chrono::steady_clock::time_point dieTime;
+		int topDepth;
 };
 
 #endif // ALPHABETASEARCHER_H

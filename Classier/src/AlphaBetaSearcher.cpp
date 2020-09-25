@@ -1,12 +1,17 @@
 #include "AlphaBetaSearcher.h"
+#include "Danger.h"
+#include <chrono>
 
-AlphaBetaSearcher::AlphaBetaSearcher(Engine& linkedEngine) : engine(linkedEngine)
+AlphaBetaSearcher::AlphaBetaSearcher(Engine& linkedEngine, std::chrono::steady_clock::time_point end) : engine(linkedEngine)
 {
-	nullMode == false;
+	nullMode = false;
+	dieTime = end;
+	topDepth = 0;
 }
 
 Move AlphaBetaSearcher::alphaBeta(const Board& boardState, int depth)
 {
+	topDepth = depth;
     return this->alphaBeta(boardState, depth, -1000, 1000);
 }
 
@@ -23,18 +28,26 @@ Move AlphaBetaSearcher::alphaBeta(const Board& boardState, int depth, double alp
         return transposition.cutoffMove;
     }
 
-	if (!nullMode && depth > 2)
+	Danger safetyinfo = Danger(boardState);
+
+	// Null move heuristic
+	// If we are searching a significant depth, we check to see if not making move at all would already cause a cutoff
+	if (!nullMode && depth > 3)
 	{
-		nullMode = true;
-		Move nullMove = Move();
-		Board nullBoard = boardState.newCopy();
-		nullBoard.makeMove(nullMove);
-		Move nullResponse = alphaBeta(nullBoard, 2, alpha, beta);
-		nullMode = false;
-		nullMove.score = nullResponse.score;
-		if (causesAlphaBetaBreak(nullMove.score, alpha, beta, boardState.turn))
+		if (!safetyinfo.getCheck())
 		{
-			return nullMove;
+			nullMode = true;
+			Move nullMove = Move();
+			Board nullBoard = boardState.newCopy();
+			nullBoard.makeMove(nullMove);
+			Move nullResponse = alphaBeta(nullBoard, depth - 2, alpha, beta);
+			nullMode = false;
+			nullMove.score = nullResponse.score;
+			if (causesAlphaBetaBreak(nullMove.score, alpha, beta, boardState.turn))
+			{
+				std::cout << "null break " << boardState.outputFEN() << depth << std::endl;
+				return nullMove;
+			}
 		}
 	}
 
@@ -98,6 +111,11 @@ Move AlphaBetaSearcher::alphaBeta(const Board& boardState, int depth, double alp
             engine.updateTranspositionCutoffIfDeeper(boardState, depth, moveList[i]);
             return(moveList[i]);
         }
+
+		if (depth == topDepth && std::chrono::steady_clock::now() > dieTime)
+		{
+			return moveList[bestIndex];
+		}
     }
 
     engine.updateTranspositionBestIfDeeper(boardState, depth, moveList[bestIndex]);

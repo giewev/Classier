@@ -380,13 +380,15 @@ void runAllTests()
     basicMateInOnePuzzle_test_1();
     basicMateInOnePuzzle_test_2();
     promotionMateInOnePuzzle_test_1();
-    mateInThreePuzzle_test_1();
     avoidMatePuzzle_test_1();
     zobristConsistancy_test();
     centerPawnMask_test();
     semiCenterPawnMask_test();
 	firstAndLastRankMask_test();
 	nullMoveChangesOnlyTurn_test();
+	//mateInThreePuzzle_test_1();
+
+
     //saveAndLoadEmptyTransTable_test();
     //loadingEmptyTransTableClearsEntries_test();
     //loadingTranspositionTableLoadsEntries_test();

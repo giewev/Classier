@@ -5,6 +5,7 @@
 #include <time.h>
 #include <iostream>
 #include <unordered_map>
+#include <chrono>
 #include "FullEvaluator.h"
 #include "TranspositionCache.h"
 #include "Board.h"
@@ -26,6 +27,7 @@ public:
     void setBoard(Board);
 
     Move searchToDepth(int depth);
+	Move searchToDepth(int depth, std::chrono::steady_clock::time_point);
     Move searchForTime(int milliseconds);
 
     void updateTranspositionBestIfDeeper(const Board& searchBoard, int depth, Move newMove);
