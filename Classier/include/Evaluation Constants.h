@@ -16,5 +16,5 @@ const double rimKnightValue = -0.10;
 const double developmentValue = 0.15;
 const double kingCornerValue = 0.05;
 
-const double pawnAdvancementValue = 0.01;
+const double pawnAdvancementValue = 0.02;
 const double passedPawnValue = 0.4;

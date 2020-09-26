@@ -290,3 +290,8 @@ bool Move::isCapture(const Board& safeBoard)
 {
     return safeBoard.squareIsPopulated(endX, endY);
 }
+
+PieceType Move::pieceCaptured(const Board& gameBoard)
+{
+	return gameBoard.getSquareType(endX, endY);
+}

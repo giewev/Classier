@@ -1,5 +1,6 @@
 #include "AlphaBetaSearcher.h"
 #include "Danger.h"
+#include "Evaluation Constants.h"
 #include <chrono>
 
 AlphaBetaSearcher::AlphaBetaSearcher(Engine& linkedEngine, std::chrono::steady_clock::time_point end) : engine(linkedEngine)
@@ -45,7 +46,6 @@ Move AlphaBetaSearcher::alphaBeta(const Board& boardState, int depth, double alp
 			nullMove.score = nullResponse.score;
 			if (causesAlphaBetaBreak(nullMove.score, alpha, beta, boardState.turn))
 			{
-				std::cout << "null break " << boardState.outputFEN() << depth << std::endl;
 				return nullMove;
 			}
 		}
@@ -112,7 +112,7 @@ Move AlphaBetaSearcher::alphaBeta(const Board& boardState, int depth, double alp
             return(moveList[i]);
         }
 
-		if (depth == topDepth && std::chrono::steady_clock::now() > dieTime)
+		if ((depth >= topDepth - 1 && depth > 4) && std::chrono::steady_clock::now() > dieTime)
 		{
 			return moveList[bestIndex];
 		}
@@ -126,6 +126,18 @@ bool AlphaBetaSearcher::causesAlphaBetaBreak(double score, double alpha, double 
 {
     return (turn && score > beta) ||
             (!turn && score < alpha);
+}
+
+double AlphaBetaSearcher::deltaToAlphaBeta(const double currentScore, const bool turn, const double alpha, const double beta)
+{
+	if (turn)
+	{
+		return beta - currentScore;
+	}
+	else 
+	{
+		return currentScore - alpha;
+	}
 }
 
 void AlphaBetaSearcher::updateAlphaBeta(double score, bool turn, double& alpha, double& beta)
@@ -155,6 +167,7 @@ double AlphaBetaSearcher::quiesce(const Board& boardState, double alpha, double 
     }
 
     updateAlphaBeta(staticScore, boardState.turn, alpha, beta);
+	double minDelta = deltaToAlphaBeta(staticScore, boardState.turn, alpha, beta) - 2;
 
     int moveCount = 0;
     Move moveList[220];
@@ -163,6 +176,16 @@ double AlphaBetaSearcher::quiesce(const Board& boardState, double alpha, double 
     int bestIndex = -1;
     for (int i = 0; i < moveCount; i++)
     {
+		PieceType pieceToCapture = moveList[i].pieceCaptured(boardState);
+		if ((pieceToCapture == PieceType::Pawn && pawnValue < minDelta) ||
+			(pieceToCapture == PieceType::Bishop && bishopValue < minDelta) ||
+			(pieceToCapture == PieceType::Knight && knightValue < minDelta) ||
+			(pieceToCapture == PieceType::Rook && rookValue < minDelta) ||
+			(pieceToCapture == PieceType::Queen && queenValue < minDelta))
+		{
+			continue;
+		}
+
         Board moveBoard = boardState.newCopy();
         moveBoard.makeMove(moveList[i]);
         double score = quiesce(moveBoard, alpha, beta);

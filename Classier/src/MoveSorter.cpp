@@ -45,8 +45,16 @@ void MoveSorter::assignOrderingScores()
 			PieceType attackerType = boardState.getSquareType(moveList[i].startX, moveList[i].startY);
 			double attackerValue = piecePriorities[(int)attackerType];
 
-			this->moveList[i].score = victimValue * piecePriorities[(int)PieceType::King];
-			this->moveList[i].score -= attackerValue;
+			if (victimType != PieceType::Empty)
+			{
+				/*this->moveList[i].score = victimValue * piecePriorities[(int)PieceType::King];
+				this->moveList[i].score -= attackerValue;*/
+				this->moveList[i].score = victimValue - attackerValue;
+			}
+			else 
+			{
+				this->moveList[i].score = 0;
+			}
 		}
     }
 }

@@ -36,6 +36,7 @@ public:
     bool isSafe(Danger);
     std::string basicAlg();
     bool isCapture(const Board&);
+	PieceType pieceCaptured(const Board&);
 
     template <class Archive>
     void serialize(Archive& ar)
