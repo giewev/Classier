@@ -40,7 +40,6 @@ public:
     void importTransTable(std::string path);
 	void resetTransTable();
 
-    static void sortMoveList(Move*, int, const Board&, const TranspositionCache&);
     static std::string toAlg(int);
 private:
     Board gameBoard;

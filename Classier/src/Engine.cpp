@@ -79,7 +79,7 @@ Move Engine::searchForTime(int milliseconds)
         bestMove = searchToDepth(depth++, end);
     }
 
-	bestMove.setScore(lastBest.score);
+	//bestMove.setScore(lastBest.score);
     return bestMove;
 }
 
@@ -126,12 +126,6 @@ std::string Engine::toAlg(int val)
 
     std::string alpha[8] = {"a", "b", "c", "d", "e", "f", "g", "h"};
     return(alpha[val]);
-}
-
-void Engine::sortMoveList(Move* rawList, int moveCount, const Board& sortBoard, const TranspositionCache& transposition)
-{
-    MoveSorter sorter = MoveSorter(rawList, moveCount, sortBoard, transposition);
-    sorter.sortMoves();
 }
 
 void Engine::updateTranspositionBestIfDeeper(const Board& newBoard, int depth, Move newMove)

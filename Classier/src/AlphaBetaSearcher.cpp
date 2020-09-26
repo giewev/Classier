@@ -2,6 +2,7 @@
 #include "Danger.h"
 #include "Evaluation Constants.h"
 #include <chrono>
+#include <MoveSorter.h>
 
 AlphaBetaSearcher::AlphaBetaSearcher(Engine& linkedEngine, std::chrono::steady_clock::time_point end) : engine(linkedEngine)
 {
@@ -13,6 +14,8 @@ AlphaBetaSearcher::AlphaBetaSearcher(Engine& linkedEngine, std::chrono::steady_c
 Move AlphaBetaSearcher::alphaBeta(const Board& boardState, int depth)
 {
 	topDepth = depth;
+	killerMoves.clear();
+	killerMoves.resize(depth + 1);
     return this->alphaBeta(boardState, depth, -1000, 1000);
 }
 
@@ -54,7 +57,8 @@ Move AlphaBetaSearcher::alphaBeta(const Board& boardState, int depth, double alp
     int moveCount = 0;
     Move moveList[220];
     boardState.generateMoveArray(moveList, moveCount);
-    engine.sortMoveList(moveList, moveCount, boardState, transposition);
+	MoveSorter sorter = MoveSorter(moveList, moveCount, boardState, transposition, killerMoves[depth]);
+	sorter.sortMoves();
 
     Board newBoard;
     unsigned int bestIndex = 0;
@@ -109,10 +113,12 @@ Move AlphaBetaSearcher::alphaBeta(const Board& boardState, int depth, double alp
         if (causesAlphaBetaBreak(moveList[i].score, alpha, beta, boardState.turn))
         {
             engine.updateTranspositionCutoffIfDeeper(boardState, depth, moveList[i]);
+			killerMoves[depth].insert(moveList[i]);
+			//std::cout << "depth: " << depth << " killersize: " << killerMoves.size() << std::endl;
             return(moveList[i]);
         }
 
-		if ((depth >= topDepth - 1 && depth > 4) && std::chrono::steady_clock::now() > dieTime)
+		if ((depth >= topDepth && depth > 4) && std::chrono::steady_clock::now() > dieTime)
 		{
 			return moveList[bestIndex];
 		}
@@ -171,8 +177,10 @@ double AlphaBetaSearcher::quiesce(const Board& boardState, double alpha, double 
 
     int moveCount = 0;
     Move moveList[220];
-    boardState.generateCaptureMoves(moveList, moveCount);
-    engine.sortMoveList(moveList, moveCount, boardState, TranspositionCache());
+    boardState.generateCaptureMoves(moveList, moveCount); 
+	MoveSorter sorter = MoveSorter(moveList, moveCount, boardState, TranspositionCache(), std::set<Move>());
+	sorter.sortMoves();
+
     int bestIndex = -1;
     for (int i = 0; i < moveCount; i++)
     {

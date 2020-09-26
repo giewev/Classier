@@ -1,15 +1,17 @@
 #include <algorithm>
 #include "MaterialEvaluator.h"
 #include "MoveSorter.h"
+#include <set>
 
 const double MoveSorter::piecePriorities[] = { 1, 2, 6, 7, 4, 3, 5 };
 
-MoveSorter::MoveSorter(Move* moveList, int moveCount, Board boardState, TranspositionCache transposition)
+MoveSorter::MoveSorter(Move* moveList, int moveCount, Board boardState, TranspositionCache transposition, std::set<Move> killers)
 {
     this->moveList = moveList;
     this->moveCount = moveCount;
     this->boardState = boardState;
     this->transposition = transposition;
+	this->killers = killers;
     this->assignOrderingScores();
 }
 
@@ -41,9 +43,11 @@ void MoveSorter::assignOrderingScores()
         }
 		else {
 			PieceType victimType = boardState.getSquareType(moveList[i].endX, moveList[i].endY);
-			double victimValue = piecePriorities[(int)victimType];
+			//double victimValue = piecePriorities[(int)victimType];
+			double victimValue = MaterialEvaluator::pieceValue(victimType);
 			PieceType attackerType = boardState.getSquareType(moveList[i].startX, moveList[i].startY);
-			double attackerValue = piecePriorities[(int)attackerType];
+			//double attackerValue = piecePriorities[(int)attackerType];
+			double attackerValue = MaterialEvaluator::pieceValue(attackerType);
 
 			if (victimType != PieceType::Empty)
 			{
@@ -51,9 +55,13 @@ void MoveSorter::assignOrderingScores()
 				this->moveList[i].score -= attackerValue;*/
 				this->moveList[i].score = victimValue - attackerValue;
 			}
+			else if (killers.find(moveList[i]) != killers.end())
+			{
+				this->moveList[i].score = 1;
+			}
 			else 
 			{
-				this->moveList[i].score = 0;
+				this->moveList[i].score = -1;
 			}
 		}
     }

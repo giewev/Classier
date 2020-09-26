@@ -2,6 +2,7 @@
 #define ALPHABETASEARCHER_H
 #include "Engine.h"
 #include <chrono>
+#include <set>
 
 class Move;
 
@@ -25,6 +26,7 @@ class AlphaBetaSearcher
 		bool nullMode;
 		std::chrono::steady_clock::time_point dieTime;
 		int topDepth;
+		std::vector<std::set<Move>> killerMoves;
 };
 
 #endif // ALPHABETASEARCHER_H
