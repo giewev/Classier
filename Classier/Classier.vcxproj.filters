@@ -137,5 +137,8 @@
     <ClInclude Include="include\ArgumentParser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\AlgorithmToggles.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

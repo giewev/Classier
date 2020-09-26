@@ -11,7 +11,7 @@ class MoveSorter
 public:
     static const double piecePriorities[];
 
-    MoveSorter(Move* moveList, int moveCount, Board boardState, TranspositionCache transposition, std::set<Move> killers);
+    MoveSorter(Move* moveList, int moveCount, Board boardState, TranspositionCache transposition, const std::set<Move>& killers);
     void sortMoves();
 protected:
 private:
@@ -19,7 +19,7 @@ private:
     int moveCount;
     Board boardState;
     TranspositionCache transposition;
-	std::set<Move> killers;
+	const std::set<Move>& killers;
 
     bool moveBetter(const Move& left, const Move& right);
     void assignOrderingScores();

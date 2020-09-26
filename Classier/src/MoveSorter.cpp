@@ -5,13 +5,13 @@
 
 const double MoveSorter::piecePriorities[] = { 1, 2, 6, 7, 4, 3, 5 };
 
-MoveSorter::MoveSorter(Move* moveList, int moveCount, Board boardState, TranspositionCache transposition, std::set<Move> killers)
+MoveSorter::MoveSorter(Move* moveList, int moveCount, Board boardState, TranspositionCache transposition, const std::set<Move>& killers) : killers(killers)
 {
     this->moveList = moveList;
     this->moveCount = moveCount;
     this->boardState = boardState;
     this->transposition = transposition;
-	this->killers = killers;
+	//this->killers = killers;
     this->assignOrderingScores();
 }
 

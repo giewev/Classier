@@ -3,6 +3,7 @@
 #include "Evaluation Constants.h"
 #include <chrono>
 #include <MoveSorter.h>
+#include "AlgorithmToggles.h"
 
 AlphaBetaSearcher::AlphaBetaSearcher(Engine& linkedEngine, std::chrono::steady_clock::time_point end) : engine(linkedEngine)
 {
@@ -87,7 +88,7 @@ Move AlphaBetaSearcher::alphaBeta(const Board& boardState, int depth, double alp
 
         if(depth == 1)
         {
-            if (moveList[i].isCapture(boardState))
+            if (quiescence_enabled && moveList[i].isCapture(boardState))
             {
                 moveList[i].score = quiesce(newBoard, alpha, beta);
             }
