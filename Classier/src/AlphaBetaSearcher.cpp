@@ -12,7 +12,7 @@ AlphaBetaSearcher::AlphaBetaSearcher(Engine& linkedEngine, std::chrono::steady_c
 	topDepth = 0;
 }
 
-Move AlphaBetaSearcher::alphaBeta(const Board& boardState, int depth)
+Move AlphaBetaSearcher::alphaBeta(Board& boardState, int depth)
 {
 	topDepth = depth;
 	killerMoves.clear();
@@ -20,7 +20,7 @@ Move AlphaBetaSearcher::alphaBeta(const Board& boardState, int depth)
     return this->alphaBeta(boardState, depth, -1000, 1000);
 }
 
-Move AlphaBetaSearcher::alphaBeta(const Board& boardState, int depth, double alpha, double beta)
+Move AlphaBetaSearcher::alphaBeta(Board& boardState, int depth, double alpha, double beta)
 {
     TranspositionCache transposition = engine.getTransposition(boardState);
     if (transposition.bestDepth >= depth)
@@ -37,15 +37,15 @@ Move AlphaBetaSearcher::alphaBeta(const Board& boardState, int depth, double alp
 
 	// Null move heuristic
 	// If we are searching a significant depth, we check to see if not making move at all would already cause a cutoff
-	if (!nullMode && depth > 3)
+	if (null_move_enabled && !nullMode && depth > 3)
 	{
 		if (!safetyinfo.getCheck())
 		{
 			nullMode = true;
-			Move nullMove = Move();
-			Board nullBoard = boardState.newCopy();
-			nullBoard.makeMove(nullMove);
-			Move nullResponse = alphaBeta(nullBoard, depth - 2, alpha, beta);
+			Move nullMove = Move(boardState);
+			boardState.makeMove(nullMove);
+			Move nullResponse = alphaBeta(boardState, depth - 2, alpha, beta);
+			boardState.unmakeMove(nullMove);
 			nullMode = false;
 			nullMove.score = nullResponse.score;
 			if (causesAlphaBetaBreak(nullMove.score, alpha, beta, boardState.turn))
@@ -61,7 +61,6 @@ Move AlphaBetaSearcher::alphaBeta(const Board& boardState, int depth, double alp
 	MoveSorter sorter = MoveSorter(moveList, moveCount, boardState, transposition, killerMoves[depth]);
 	sorter.sortMoves();
 
-    Board newBoard;
     unsigned int bestIndex = 0;
     Move returnedMove;
 
@@ -83,23 +82,22 @@ Move AlphaBetaSearcher::alphaBeta(const Board& boardState, int depth, double alp
 
     for(int i=0; i<moveCount; i++)
     {
-        newBoard = boardState.newCopy();
-        newBoard.makeMove(moveList[i]);
+        boardState.makeMove(moveList[i]);
 
         if(depth == 1)
         {
-            if (quiescence_enabled && moveList[i].isCapture(boardState))
+            if (quiescence_enabled && moveList[i].pieceCaptured != PieceType::Empty)
             {
-                moveList[i].score = quiesce(newBoard, alpha, beta);
+                moveList[i].score = quiesce(boardState, alpha, beta);
             }
             else
             {
-                engine.evaluateMove(newBoard, moveList, i);
+                engine.evaluateMove(boardState, moveList, i);
             }
         }
         else
         {
-            returnedMove = alphaBeta(newBoard, depth - 1, alpha, beta);
+            returnedMove = alphaBeta(boardState, depth - 1, alpha, beta);
 
             moveList[i].setScore(returnedMove.score);
             if(returnedMove.getGameOverDepth() != -1)
@@ -108,6 +106,7 @@ Move AlphaBetaSearcher::alphaBeta(const Board& boardState, int depth, double alp
             }
         }
 
+		boardState.unmakeMove(moveList[i]);
         bestIndex = bestMove(moveList, bestIndex, i, boardState.turn);
         updateAlphaBeta(moveList[bestIndex].score, boardState.turn, alpha, beta);
 
@@ -115,7 +114,7 @@ Move AlphaBetaSearcher::alphaBeta(const Board& boardState, int depth, double alp
         {
             engine.updateTranspositionCutoffIfDeeper(boardState, depth, moveList[i]);
 			killerMoves[depth].insert(moveList[i]);
-			//std::cout << "depth: " << depth << " killersize: " << killerMoves.size() << std::endl;
+
             return(moveList[i]);
         }
 
@@ -165,7 +164,7 @@ void AlphaBetaSearcher::updateAlphaBeta(double score, bool turn, double& alpha, 
     }
 }
 
-double AlphaBetaSearcher::quiesce(const Board& boardState, double alpha, double beta)
+double AlphaBetaSearcher::quiesce(Board& boardState, double alpha, double beta)
 {
     double staticScore = engine.lazyEvaluatePosition(boardState);
     if (causesAlphaBetaBreak(staticScore, alpha, beta, boardState.turn))
@@ -185,7 +184,7 @@ double AlphaBetaSearcher::quiesce(const Board& boardState, double alpha, double 
     int bestIndex = -1;
     for (int i = 0; i < moveCount; i++)
     {
-		PieceType pieceToCapture = moveList[i].pieceCaptured(boardState);
+		PieceType pieceToCapture = moveList[i].pieceCaptured;
 		if ((pieceToCapture == PieceType::Pawn && pawnValue < minDelta) ||
 			(pieceToCapture == PieceType::Bishop && bishopValue < minDelta) ||
 			(pieceToCapture == PieceType::Knight && knightValue < minDelta) ||
@@ -195,9 +194,10 @@ double AlphaBetaSearcher::quiesce(const Board& boardState, double alpha, double 
 			continue;
 		}
 
-        Board moveBoard = boardState.newCopy();
-        moveBoard.makeMove(moveList[i]);
-        double score = quiesce(moveBoard, alpha, beta);
+		boardState.makeMove(moveList[i]);
+        double score = quiesce(boardState, alpha, beta);
+		boardState.unmakeMove(moveList[i]);
+
         if (causesAlphaBetaBreak(score, alpha, beta, boardState.turn))
         {
             return score;

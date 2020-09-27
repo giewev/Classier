@@ -7,6 +7,7 @@
 #include "Danger.h"
 #include "Move.h"
 #include "ArgumentParser.h"
+#include "Piece.h"
 
 void runAllTests();
 
@@ -73,7 +74,7 @@ int main(int argc, char *argv[])
 						}
 						else if (count > 3)
 						{
-							board.makeMove(Move(accum));
+							board.makeMove(Move(accum, board));
 						}
 						accum = "";
 					}
@@ -107,6 +108,10 @@ int main(int argc, char *argv[])
 					if (i == line.length() - 1) break;
 				}
 				int remainingTime = std::stoi(accum);
+
+				int moveCount = 0;
+				Move moveList[220];
+				board.generateMoveArray(moveList, moveCount);
 				response = "bestmove " + engine.searchForTime(remainingTime / timefactor).basicAlg();
 			}
 			else if (line.find("quit") != -1)

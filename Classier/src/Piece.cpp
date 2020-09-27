@@ -166,7 +166,7 @@ void Piece::kingMoveArray(Move* moveList, int& moveCounter, int xPos, int yPos, 
                 }
             }
             //Everything is good, so make a move and add it to the moveList
-            moveList[moveCounter++] = Move(xPos, yPos, xPos+j, yPos+k);
+            moveList[moveCounter++] = Move(xPos, yPos, xPos+j, yPos+k, PieceType::Empty, gameBoard);
         }
     }
 
@@ -186,7 +186,7 @@ void Piece::kingMoveArray(Move* moveList, int& moveCounter, int xPos, int yPos, 
                     continue;
                 }
 
-                moveList[moveCounter++] = Move(xPos, yPos, xPos + 2, yPos);
+                moveList[moveCounter++] = Move(xPos, yPos, xPos + 2, yPos, PieceType::Empty, gameBoard);
             }
             else
             {
@@ -203,7 +203,7 @@ void Piece::kingMoveArray(Move* moveList, int& moveCounter, int xPos, int yPos, 
                 {
                     continue;
                 }
-                moveList[moveCounter++] = Move(xPos, yPos, xPos - 2, yPos);
+                moveList[moveCounter++] = Move(xPos, yPos, xPos - 2, yPos, PieceType::Empty, gameBoard);
             }
         }
     }
@@ -242,12 +242,12 @@ void Piece::bishopMoveArray(Move* moveList, int& moveCounter, int xPos, int yPos
                     }
                     else
                     {
-                        moveList[moveCounter++] = Move(xPos, yPos, xPos+(k*i), yPos+(k*j));
+                        moveList[moveCounter++] = Move(xPos, yPos, xPos+(k*i), yPos+(k*j), PieceType::Empty, gameBoard);
                         break;
                     }
                 }
 
-                moveList[moveCounter++] = Move(xPos, yPos, xPos+(k*i), yPos+(k*j));
+                moveList[moveCounter++] = Move(xPos, yPos, xPos+(k*i), yPos+(k*j), PieceType::Empty, gameBoard);
 
             }
         }
@@ -281,7 +281,7 @@ void Piece::knightMoveArray(Move* moveList, int& moveCounter, int xPos, int yPos
                 }
             }
 
-            moveList[moveCounter++] = Move(xPos, yPos, xPos+j, yPos+k);
+            moveList[moveCounter++] = Move(xPos, yPos, xPos+j, yPos+k, PieceType::Empty, gameBoard);
         }
     }
 }
@@ -317,12 +317,12 @@ void Piece::rookMoveArray(Move* moveList, int& moveCounter, int xPos, int yPos, 
                     }
                     else
                     {
-                        moveList[moveCounter++] = Move(xPos, yPos, xPos+(k*i), yPos+(k*j));
+                        moveList[moveCounter++] = Move(xPos, yPos, xPos+(k*i), yPos+(k*j), PieceType::Empty, gameBoard);
                         break;
                     }
                 }
 
-                moveList[moveCounter++] = Move(xPos, yPos, xPos+(k*i), yPos+(k*j));
+                moveList[moveCounter++] = Move(xPos, yPos, xPos+(k*i), yPos+(k*j), PieceType::Empty, gameBoard);
             }
         }
     }
@@ -341,21 +341,21 @@ void Piece::pawnMoveArray(Move* moveList, int& moveCounter, int xPos, int yPos, 
     {
         if(yPos+direction == 7 || yPos+direction == 0)
         {
-            moveList[moveCounter++] = Move(xPos, yPos, xPos, yPos+direction, PieceType::Queen);
-            moveList[moveCounter++] = Move(xPos, yPos, xPos, yPos+direction, PieceType::Knight);
-            moveList[moveCounter++] = Move(xPos, yPos, xPos, yPos+direction, PieceType::Rook);
-            moveList[moveCounter++] = Move(xPos, yPos, xPos, yPos+direction, PieceType::Bishop);
+            moveList[moveCounter++] = Move(xPos, yPos, xPos, yPos+direction, PieceType::Queen, gameBoard);
+            moveList[moveCounter++] = Move(xPos, yPos, xPos, yPos+direction, PieceType::Knight, gameBoard);
+            moveList[moveCounter++] = Move(xPos, yPos, xPos, yPos+direction, PieceType::Rook, gameBoard);
+            moveList[moveCounter++] = Move(xPos, yPos, xPos, yPos+direction, PieceType::Bishop, gameBoard);
         }
         else
         {
-            moveList[moveCounter++] = Move(xPos, yPos, xPos, yPos+direction);
+            moveList[moveCounter++] = Move(xPos, yPos, xPos, yPos+direction, PieceType::Empty, gameBoard);
         }
 
         if((yPos == 1 && ownColor) || (yPos == 6 && !ownColor)) //Double Moves
         {
             if(gameBoard.getSquareType(xPos, yPos + 2 * direction) == PieceType::Empty)
             {
-                moveList[moveCounter++] = Move(xPos, yPos, xPos, yPos+2*direction);
+                moveList[moveCounter++] = Move(xPos, yPos, xPos, yPos+2*direction, PieceType::Empty, gameBoard);
             }
         }
     }
@@ -376,7 +376,7 @@ void Piece::pawnMoveArray(Move* moveList, int& moveCounter, int xPos, int yPos, 
                 {
                     if(gameBoard.getEP().getColor() != ownColor)
                     {
-                        moveList[moveCounter++] = Move(xPos, yPos, xPos+i, yPos+direction);
+                        moveList[moveCounter++] = Move(xPos, yPos, xPos+i, yPos+direction, PieceType::Empty, gameBoard);
                     }
                 }
             }
@@ -390,14 +390,14 @@ void Piece::pawnMoveArray(Move* moveList, int& moveCounter, int xPos, int yPos, 
 
         if(yPos+direction == 7 || yPos+direction == 0)
         {
-            moveList[moveCounter++] = Move(xPos, yPos, xPos+i, yPos+direction, PieceType::Queen);
-            moveList[moveCounter++] = Move(xPos, yPos, xPos+i, yPos+direction, PieceType::Knight);
-            moveList[moveCounter++] = Move(xPos, yPos, xPos+i, yPos+direction, PieceType::Rook);
-            moveList[moveCounter++] = Move(xPos, yPos, xPos+i, yPos+direction, PieceType::Bishop);
+            moveList[moveCounter++] = Move(xPos, yPos, xPos+i, yPos+direction, PieceType::Queen, gameBoard);
+            moveList[moveCounter++] = Move(xPos, yPos, xPos+i, yPos+direction, PieceType::Knight, gameBoard);
+            moveList[moveCounter++] = Move(xPos, yPos, xPos+i, yPos+direction, PieceType::Rook, gameBoard);
+            moveList[moveCounter++] = Move(xPos, yPos, xPos+i, yPos+direction, PieceType::Bishop, gameBoard);
         }
         else
         {
-            moveList[moveCounter++] = Move(xPos, yPos, xPos+i, yPos+direction);
+            moveList[moveCounter++] = Move(xPos, yPos, xPos+i, yPos+direction, PieceType::Empty, gameBoard);
         }
     }
 }

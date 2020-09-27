@@ -1,6 +1,0 @@
-position startpos move 
-
-
-go 
-bestmove e2e4
-

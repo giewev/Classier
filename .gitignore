@@ -1,6 +1,9 @@
 #GameHistory is only used to store interesting games locally at the moment
 GameHistory/
 
+Classier/arena_commands.txt
+Classier/engine_responses.txt
+
 # gitignore for C++
 # Compiled Object files
 *.slo

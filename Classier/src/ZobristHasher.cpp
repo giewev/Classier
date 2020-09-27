@@ -154,6 +154,7 @@ void ZobristHasher::update(Board prevBoard, Move nextMove)
 {
     this->toggleTurn();
     this->updateEnPassant(prevBoard, nextMove);
+	if (nextMove.null) return;
     this->updateCastling(prevBoard, nextMove);
     this->updatePieces(prevBoard, nextMove);
 }

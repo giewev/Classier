@@ -5,6 +5,7 @@
 #include <vector>
 #include <inttypes.h>
 #include "ZobristHasher.h"
+#include "Move.h"
 
 struct Move;
 class Piece;
@@ -35,6 +36,8 @@ public:
     Piece findKing(bool) const;
     int getKingX(bool) const;
     int getKingY(bool) const;
+	int getEPData() const;
+	int getCastlingData() const;
 
     PieceType getSquareType(int, int) const;
     bool getSquareColor(int, int) const;
@@ -50,11 +53,12 @@ public:
     size_t getHashCode() const;
     void loadFEN(std::string);
     std::string outputFEN() const;
-    double perft(int) const;
+    double perft(int);
     void generateMoveArray(Move*, int&) const;
     void generateCaptureMoves(Move* moveList, int& moveCounter) const;
     int gameOverCheck() const;
     void makeMove(Move);
+	void unmakeMove(Move);
 
     bool operator==(const Board&) const;
 
@@ -71,7 +75,7 @@ public:
     template <class Archive>
     void serialize(Archive& ar)
     {
-        ar(turn, allPieces, pieces, castlingRights, kingCoordinates, EPdata, moveCounter, halfMoveCounter, lastMoveCapture, hasher);
+        ar(turn, allPieces, pieces, castlingRights, kingCoordinates, EPdata, moveCounter, halfMoveCounter, hasher);
     }
 private:
     char castlingRights;
@@ -79,7 +83,6 @@ private:
     int EPdata;
     int moveCounter;
     int halfMoveCounter;
-    bool lastMoveCapture;
     ZobristHasher hasher;
 };
 

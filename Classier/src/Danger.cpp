@@ -10,7 +10,7 @@
 #include <string.h>
 #include <algorithm>
 
-Danger::Danger()
+Danger::Danger(const Board& gameBoard) : dataBoard(gameBoard)
 {
     for(int i=0; i<8; i++)
     {
@@ -26,27 +26,6 @@ Danger::Danger()
     doubleCheck = false;
     pinCount = 0;
     safeSquareCount = 0;
-    defenderX = -1;
-    defenderY = -1;
-}
-
-Danger::Danger(const Board& gameBoard)
-{
-    for(int i=0; i<8; i++)
-    {
-        pinCoordinates[i] = -1;
-        pinDirections[i] = -1;
-    }
-    for(int i=0; i<7; i++)
-    {
-        safeSquares[i] = -1;
-    }
-
-    check = false;
-    doubleCheck = false;
-    pinCount = 0;
-    safeSquareCount = 0;
-    dataBoard = gameBoard.newCopy();
     Piece King = gameBoard.findKing(gameBoard.turn);
     defenderX = King.getX();
     defenderY = King.getY();
@@ -54,7 +33,7 @@ Danger::Danger(const Board& gameBoard)
     loadData(gameBoard, gameBoard.findKing(gameBoard.turn));
 }
 
-Danger::Danger(const Board& gameBoard, Piece defender)
+Danger::Danger(const Board& gameBoard, Piece defender) : dataBoard(gameBoard)
 {
     for(int i=0; i<8; i++)
     {
@@ -72,7 +51,6 @@ Danger::Danger(const Board& gameBoard, Piece defender)
     safeSquareCount = 0;
     defenderX = defender.getX();
     defenderY = defender.getY();
-    dataBoard = gameBoard.newCopy();
 
     loadData(gameBoard, defender);
 }

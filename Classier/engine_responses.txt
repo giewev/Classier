@@ -1,2 +1,0 @@
-received a go command
-bestmove e2e4

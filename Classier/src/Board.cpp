@@ -2,6 +2,7 @@
 #include <iostream>
 #include <inttypes.h>
 #include <math.h>
+#include <assert.h>
 
 #include "Piece.h"
 #include "Board.h"
@@ -18,7 +19,6 @@ using namespace std;
 Board::Board()
 {
     turn = true;
-    lastMoveCapture = false;
     castlingRights = 15;
     EPdata = -1;
     allPieces = 0ull;
@@ -224,7 +224,7 @@ void Board::loadFEN(std::string fenFile)
             {
                 rank = 4;
             }
-            setEP(fenFile[bookmark]-96, rank, !turn);
+            setEP(fenFile[bookmark]-97, rank, !turn);
             break;
         }
         bookmark += 2;
@@ -418,7 +418,6 @@ Board Board::newCopy() const
     newBoard.setCastlingRights(false, true,  getCastlingRights(false, true));
     newBoard.setCastlingRights(false, false, getCastlingRights(false, false));
     newBoard.turn = turn;
-    newBoard.lastMoveCapture = lastMoveCapture;
     newBoard.kingCoordinates = kingCoordinates;
     newBoard.moveCounter = moveCounter;
     newBoard.halfMoveCounter = halfMoveCounter;
@@ -585,7 +584,7 @@ void Board::generateCaptureMoves(Move* moveList, int& moveCounter) const
 
     for (int i = moveCounter - 1; i >= 0; i--)
     {
-        if (!moveList[i].isCapture(*this))
+        if (moveList[i].pieceCaptured == PieceType::Empty)
         {
             moveCounter--;
             moveList[i] = moveList[moveCounter];
@@ -650,11 +649,79 @@ int Board::gameOverCheck() const
     return 0;
 }
 
+void Board::unmakeMove(Move data)
+{
+	if (data.null) {
+		turn = !turn;
+		EPdata = data.oldEPData;
+
+		// Zobrist unmakeUpdate
+		this->hasher.update(*this, data);
+		return;
+	}
+
+	// Move the piece back
+	PieceType movedType = getSquareType(data.endX, data.endY);
+	bool movedColor = !turn;
+	setSquare(movedType, movedColor, data.startX, data.startY);
+	// Replace any captured piece (Except EP capture)
+	setSquare(data.pieceCaptured, !movedColor, data.endX, data.endY);
+
+	// Replace EP data 
+	// Need to do this before checking if it was an EP capture
+	EPdata = data.oldEPData;
+
+	// Special undo EP cature
+	Piece ep = getEP();
+	if (ep.type != PieceType::Empty)
+	{
+		/*int epY = 3;
+		if (ep.yPos == 5) epY = 4;*/
+		setSquare(PieceType::Pawn, !movedColor, ep.xPos, ep.yPos);
+	}
+
+	// Special undo promotion logic
+	if (data.promotion != PieceType::Empty)
+	{
+		setSquare(PieceType::Pawn, movedColor, data.startX, data.startY);
+	}
+
+	// Special undo castle logic
+	if (movedType == PieceType::King && fabs(data.startX - data.endX) == 2)
+	{
+		int castleY = data.startY;
+		int rookEndX = (data.startX + data.endX) / 2;
+		setSquare(PieceType::Empty, false, rookEndX, castleY);
+		if (data.endX == 2)
+		{
+			setSquare(PieceType::Rook, movedColor, 0, castleY);
+		}
+		else 
+		{
+			setSquare(PieceType::Rook, movedColor, 7, castleY);
+		}
+	}
+
+	// Replace king location
+	if (movedType == PieceType::King)
+	{
+		setKingLocation(movedColor, data.startX, data.startY);
+	}
+
+	castlingRights = data.oldCastlingRights;
+	turn = !turn;
+
+	// Zobrist unmakeUpdate
+	this->hasher.update(*this, data);
+}
+
 void Board::makeMove(Move data)
 {
 	// A null move only passes the turn
 	if (data.null) {
 		turn = !turn;
+		setEP(Piece(PieceType::Empty));
+		this->hasher.update(*this, data);
 		return;
 	}
 
@@ -663,7 +730,6 @@ void Board::makeMove(Move data)
     //Picking up the Piece
     Piece movingPiece = getSquare(data.startX, data.startY);
     movingPiece.setMoved(true);
-    lastMoveCapture = false;
 
     if(movingPiece.type == PieceType::Pawn)
     {
@@ -679,7 +745,6 @@ void Board::makeMove(Move data)
             if(data.endX == ePiece.getX() && data.startY == ePiece.getY())
             {
                 setSquare(Piece(PieceType::Empty), ePiece.getX(), ePiece.getY());
-                lastMoveCapture = true;
             }
             setEP(Piece(PieceType::Empty));
         }
@@ -766,12 +831,6 @@ void Board::makeMove(Move data)
     }
 
     setSquare(Piece(PieceType::Empty), data.startX, data.startY);
-    //Capturing anything in its way
-    if(!getSquare(data.endX, data.endY).isNull())
-    {
-        lastMoveCapture = true;
-    }
-    //And placing it down
     movingPiece.xPos = data.endX;
     movingPiece.yPos = data.endY;
     setSquare(movingPiece, data.endX, data.endY);
@@ -787,7 +846,7 @@ void Board::makeMove(Move data)
 // 4        197281
 // 5        4865609
 // 6        119060324
-double Board::perft(int depth) const
+double Board::perft(int depth)
 {
     if(depth == 0) return(1);//No moves at 0 depth
     int moveGenCount = 0;
@@ -799,14 +858,13 @@ double Board::perft(int depth) const
         return(moveGenCount);//How many moves can we make RIGHT NOW
     }
 
-    Board newBoard;
     double moveCounter = 0;
 
     for(int i = 0; i < moveGenCount; i++)
     {
-        newBoard = this->newCopy();
-        newBoard.makeMove(moveList[i]);
-        moveCounter += newBoard.perft(depth-1);
+        makeMove(moveList[i]);
+        moveCounter += perft(depth-1);
+		unmakeMove(moveList[i]);
     }
 
     return moveCounter;
@@ -927,6 +985,17 @@ Piece Board::getEP() const
     ePiece.yPos = y;
     ePiece.color = color;
     return ePiece;
+}
+
+
+int Board::getEPData() const
+{
+	return EPdata;
+}
+
+int Board::getCastlingData() const
+{
+	return castlingRights;
 }
 
 void Board::setCastlingRights(bool color, bool side, bool value)

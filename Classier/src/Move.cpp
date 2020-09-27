@@ -18,33 +18,23 @@ template < typename T > std::string to_string( const T& n )
 }
 }
 
-Move::Move(int x1, int y1, int x2, int y2)
+Move::Move(int x1, int y1, int x2, int y2, PieceType promote, const Board& board)
 {
-    Board::throwIfOutOfBounds(x1, y1);
-    Board::throwIfOutOfBounds(x2, y2);
-    startX = x1;
-    startY = y1;
-    endX = x2;
-    endY = y2;
-    promotion = PieceType::Empty;
-    score = 0;
+	Board::throwIfOutOfBounds(x1, y1);
+	Board::throwIfOutOfBounds(x2, y2);
+	startX = x1;
+	startY = y1;
+	endX = x2;
+	endY = y2;
+	promotion = promote;
+	score = 0;
 	null = false;
+	pieceCaptured = getPieceCaptured(board);
+	oldEPData = board.getEPData();
+	oldCastlingRights = board.getCastlingData();
 }
 
-Move::Move(int x1, int y1, int x2, int y2, PieceType promote)
-{
-    Board::throwIfOutOfBounds(x1, y1);
-    Board::throwIfOutOfBounds(x2, y2);
-    startX = x1;
-    startY = y1;
-    endX = x2;
-    endY = y2;
-    promotion = promote;
-    score = 0;
-	null = false;
-}
-
-Move::Move(std::string notation)
+Move::Move(std::string notation, const Board& board)
 {
 	startX = ((int)notation[0]) - 97;
 	startY = ((int)notation[1]) - 48 - 1; // Subtract the extra one to zero index it
@@ -62,8 +52,21 @@ Move::Move(std::string notation)
 	score = 0;
 	null = false;
 
+	pieceCaptured = getPieceCaptured(board);
+	oldEPData = board.getEPData();
+	oldCastlingRights = board.getCastlingData();
+
 	Board::throwIfOutOfBounds(startX, startY);
 	Board::throwIfOutOfBounds(endX, endY);
+}
+
+Move::Move(const Board& board)
+{
+	null = true;
+	score = 0;
+	pieceCaptured = getPieceCaptured(board);
+	oldEPData = board.getEPData();
+	oldCastlingRights = board.getCastlingData();
 }
 
 Move::Move()
@@ -121,16 +124,11 @@ bool Move::isSafe(Danger safetyData)
             {
                 if (safetyData.getBoard().squareIsType(endX, startY, PieceType::Pawn))
                 {
-                    Board newBoard = safetyData.getBoard().newCopy();
-                    newBoard.makeMove(*this);
-                    if (newBoard.getSquare(newBoard.getKingX(!newBoard.turn), newBoard.getKingY(!newBoard.turn)).isSafe(newBoard))
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        return false;
-                    }
+					Board gameBoard = safetyData.getBoard();
+					gameBoard.makeMove(*this);
+					bool safe = gameBoard.getSquare(gameBoard.getKingX(!gameBoard.turn), gameBoard.getKingY(!gameBoard.turn)).isSafe(gameBoard);
+					gameBoard.unmakeMove(*this);
+					return safe;
                 }
             }
         }
@@ -139,7 +137,7 @@ bool Move::isSafe(Danger safetyData)
     //The king is moving, need a manual check
     if(startX == safetyData.defenderX && startY == safetyData.defenderY)
     {
-        Board newBoard;
+		Board gameBoard = safetyData.getBoard();
         //Castling Moves
         if(fabs(startX - endX) == 2)
         {
@@ -153,26 +151,23 @@ bool Move::isSafe(Danger safetyData)
             int direction = -1*fabs(startX-endX)/(startX-endX);
             for (int i = startX + direction; i <= startX + 2 && i >= startX - 2; i+=direction)
             {
-                newBoard = safetyData.getBoard().newCopy();
-                newBoard.makeMove(Move(startX, startY, i, startY));
-                if(!newBoard.getSquare(i, endY).isSafe(newBoard))
+				Move checkMove = Move(startX, startY, i, startY, PieceType::Empty, safetyData.getBoard());
+				gameBoard.makeMove(checkMove);
+                if(!gameBoard.getSquare(i, endY).isSafe(gameBoard))
                 {
+					gameBoard.unmakeMove(checkMove);
                     return false;
                 }
+				gameBoard.unmakeMove(checkMove);
             }
             return true;
         }
+
         //Normal King moves
-        newBoard = safetyData.getBoard().newCopy();
-        newBoard.makeMove(*this);
-        if(newBoard.getSquare(endX, endY).isSafe(newBoard))
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+		gameBoard.makeMove(*this);
+		bool safe = gameBoard.getSquare(endX, endY).isSafe(gameBoard);
+		gameBoard.unmakeMove(*this);
+		return safe;
     }
     if(safetyData.getDoubleCheck())
     {
@@ -286,12 +281,7 @@ bool Move::bigger(Move left, Move right)
     }
 }
 
-bool Move::isCapture(const Board& safeBoard)
-{
-    return safeBoard.squareIsPopulated(endX, endY);
-}
-
-PieceType Move::pieceCaptured(const Board& gameBoard)
+PieceType Move::getPieceCaptured(const Board& gameBoard)
 {
 	return gameBoard.getSquareType(endX, endY);
 }

@@ -11,8 +11,8 @@ class AlphaBetaSearcher
     public:
         AlphaBetaSearcher(Engine& linkedEngine, std::chrono::steady_clock::time_point);
 
-        Move alphaBeta(const Board& boardState, int depth);
-        Move alphaBeta(const Board& boardState, int depth, double alpha, double beta);
+        Move alphaBeta(Board& boardState, int depth);
+        Move alphaBeta(Board& boardState, int depth, double alpha, double beta);
     protected:
     private:
         Engine& engine;
@@ -22,7 +22,7 @@ class AlphaBetaSearcher
         static bool causesAlphaBetaBreak(double score, double alpha, double beta, bool turn);
         static void updateAlphaBeta(double newScore, bool turn, double& alpha, double& beta);
 		static double deltaToAlphaBeta(const double currentScore, const bool turn, const double alpha, const double beta);
-        double quiesce(const Board& boardState, double alpha, double beta);
+        double quiesce(Board& boardState, double alpha, double beta);
 		bool nullMode;
 		std::chrono::steady_clock::time_point dieTime;
 		int topDepth;

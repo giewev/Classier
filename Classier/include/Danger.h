@@ -12,13 +12,12 @@ class Danger
     bool doubleCheck;
     int pinCount;
     int safeSquareCount;
-    Board dataBoard;
+    const Board& dataBoard;
 
     void addAttacker(int, int);
     void addPin(int, int);
     void addPin(int);
 public:
-    Danger();
     Danger(const Board&);
     Danger(const Board&, Piece);
     ~Danger();

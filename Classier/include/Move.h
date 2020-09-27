@@ -15,10 +15,16 @@ public:
     double score;
 	bool null;
 
-    Move();
-    Move(int, int, int, int);
-    Move(int, int, int, int, PieceType);
-	Move(std::string);
+	int oldEPData;
+	PieceType pieceCaptured;
+	char oldCastlingRights;
+
+	Move();
+    Move(const Board&);
+    //Move(int, int, int, int);
+    //Move(int, int, int, int, PieceType);
+	Move(int, int, int, int, PieceType, const Board&);
+	Move(std::string, const Board&);
 
     void setScore(double);
     void setGameOverDepth(int);
@@ -35,14 +41,15 @@ public:
 
     bool isSafe(Danger);
     std::string basicAlg();
-    bool isCapture(const Board&);
-	PieceType pieceCaptured(const Board&);
+    //bool isCapture(const Board&);
 
     template <class Archive>
     void serialize(Archive& ar)
     {
         ar(startX, startY, endX, endY, promotion, score);
     }
+private:
+	PieceType getPieceCaptured(const Board&);
 };
 
 #endif

@@ -19,7 +19,6 @@ void startingPerft_test()
     for(int i = 0; i < 5; i++)
     {
 		double result = testBoard.perft(i);
-		//std::cout << result << std::endl;
         assert(result == expectedPerfts[i]);
     }
 }
@@ -38,6 +37,7 @@ void kiwipetePerft_test()
     }
 }
 
+
 void endgamePerft_test()
 {
     std::string endgameFEN = "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - -";
@@ -50,6 +50,20 @@ void endgamePerft_test()
     {
         assert(testBoard.perft(i) == expectedPerfts[i]);
     }
+}
+
+void makeUnmakeEPCapture_test()
+{
+	std::string almostKiwipeteFEN = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/Pp2P3/2N2Q1p/1PPBBPPP/R3K2R b KQkq a3 0 1 ";
+	Board testBoard;
+	testBoard.loadFEN(almostKiwipeteFEN);
+
+	Move epCapture = Move(1, 3, 0, 2, PieceType::Empty, testBoard);
+	std::string beforeFEN = testBoard.outputFEN();
+	testBoard.makeMove(epCapture);
+	testBoard.unmakeMove(epCapture);
+	std::string afterFEN = testBoard.outputFEN();
+	assert(beforeFEN == afterFEN);
 }
 
 void loadStartingPosition_test()
@@ -239,11 +253,8 @@ void avoidMatePuzzle_test_1()
     }
 }
 
-void zobristConsistancy_test_helper(std::string originalFEN, Move testMove)
+void zobristConsistancy_test_helper(Board testBoard, Move testMove)
 {
-    Board testBoard = Board();
-    testBoard.loadFEN(originalFEN);
-
     ZobristHasher updateZobrist = ZobristHasher(testBoard);
     updateZobrist.update(testBoard, testMove);
 
@@ -258,15 +269,18 @@ void zobristConsistancy_test_helper(std::string originalFEN, Move testMove)
 void zobristConsistancy_test()
 {
     std::string zobristTestFEN = "2n1k3/1P6/8/5Pp1/8/8/8/R3K2R w KQ g6 0 2";
-    Move promotionMove = Move(1, 6, 2, 7, PieceType::Queen);
-    Move enPassantCaptureMove = Move(5, 4, 6, 5);
-    Move castingRuinedByKingMove = Move(4, 0, 4, 1);
-    Move castingRuinedByRookMove = Move(0, 0, 1, 0);
+	Board testBoard = Board();
+	testBoard.loadFEN(zobristTestFEN);
 
-    zobristConsistancy_test_helper(zobristTestFEN, promotionMove);
-    zobristConsistancy_test_helper(zobristTestFEN, enPassantCaptureMove);
-    zobristConsistancy_test_helper(zobristTestFEN, castingRuinedByKingMove);
-    zobristConsistancy_test_helper(zobristTestFEN, castingRuinedByRookMove);
+    Move promotionMove = Move(1, 6, 2, 7, PieceType::Queen, testBoard);
+    Move enPassantCaptureMove = Move(5, 4, 6, 5, PieceType::Empty, testBoard);
+    Move castingRuinedByKingMove = Move(4, 0, 4, 1, PieceType::Empty, testBoard);
+    Move castingRuinedByRookMove = Move(0, 0, 1, 0, PieceType::Empty, testBoard);
+
+    zobristConsistancy_test_helper(testBoard, promotionMove);
+    zobristConsistancy_test_helper(testBoard, enPassantCaptureMove);
+    zobristConsistancy_test_helper(testBoard, castingRuinedByKingMove);
+    zobristConsistancy_test_helper(testBoard, castingRuinedByRookMove);
 }
 
 void centerPawnMask_test()
@@ -336,7 +350,7 @@ void loadingEmptyTransTableClearsEntries_test()
     board.loadFEN(startingFEN);
     Engine engine = Engine(board);
     engine.exportTransTable("dump.trans");
-    engine.updateTranspositionBestIfDeeper(board, 5, Move(1,1,2,2));
+    engine.updateTranspositionBestIfDeeper(board, 5, Move(1,1,2,2, PieceType::Empty, board));
     engine.importTransTable("dump.trans");
     assert(engine.getTransposition(board).bestDepth == -1);
 }
@@ -348,13 +362,13 @@ void loadingTranspositionTableLoadsEntries_test()
     Board board = Board();
     board.loadFEN(startingFEN);
     Engine originalEngine = Engine(board);
-    originalEngine.updateTranspositionBestIfDeeper(board, 5, Move(1,1,2,2));
+    originalEngine.updateTranspositionBestIfDeeper(board, 5, Move(1,1,2,2, PieceType::Empty, board));
     originalEngine.exportTransTable("dump.trans");
 
     Engine futureEngine = Engine(board);
     futureEngine.importTransTable("dump.trans");
     assert(futureEngine.getTransposition(board).bestDepth == 5);
-    assert(futureEngine.getTransposition(board).bestMove == Move(1,1,2,2));
+    assert(futureEngine.getTransposition(board).bestMove == Move(1,1,2,2, PieceType::Empty, board));
 }
 
 void nullMoveChangesOnlyTurn_test()
@@ -371,6 +385,7 @@ void nullMoveChangesOnlyTurn_test()
 
 void runAllTests()
 {
+	makeUnmakeEPCapture_test();
     loadStartingPosition_test();
 	loadingStartingPosAfterE4_test();
     startingPerft_test();
