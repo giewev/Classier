@@ -113,7 +113,10 @@ Move AlphaBetaSearcher::alphaBeta(Board& boardState, int depth, double alpha, do
         if (causesAlphaBetaBreak(moveList[i].score, alpha, beta, boardState.turn))
         {
             engine.updateTranspositionCutoffIfDeeper(boardState, depth, moveList[i]);
-			killerMoves[depth].insert(moveList[i]);
+			if (moveList[i].pieceCaptured == PieceType::Empty)
+			{
+				killerMoves[depth].insert(moveList[i]);
+			}
 
             return(moveList[i]);
         }

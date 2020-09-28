@@ -1,5 +1,6 @@
 #include "Bitwise.h"
 #include <iostream>
+#include <bitset>
 
 void bitwise::trimBottom(bitBoard& toTrim, int layers)
 {
@@ -35,6 +36,7 @@ void bitwise::trimRight(bitBoard& toTrim, int layers)
 
 int bitwise::countBits(bitBoard data)
 {
+	return std::bitset<64>(data).count();
     int count = 0;
     while (data)
     {

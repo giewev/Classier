@@ -69,7 +69,21 @@ int main(int argc, char *argv[])
 								board.loadFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 							}
 							else {
-								board.loadFEN(accum);
+								accum = "";
+								for (; i < line.length(); i++)
+								{
+									char c = line[i];
+									accum = accum + c;
+									if (c == ' ' || i == line.length() - 1)
+									{
+										count++;
+										if (count == 9)
+										{
+											board.loadFEN(accum);
+											break;
+										}
+									}
+								}
 							}
 						}
 						else if (count > 3)
