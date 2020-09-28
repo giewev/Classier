@@ -70,6 +70,7 @@ int main(int argc, char *argv[])
 							}
 							else {
 								accum = "";
+								i += 1;
 								for (; i < line.length(); i++)
 								{
 									char c = line[i];
@@ -80,6 +81,7 @@ int main(int argc, char *argv[])
 										if (count == 9)
 										{
 											board.loadFEN(accum);
+											count = 2;
 											break;
 										}
 									}
@@ -123,9 +125,6 @@ int main(int argc, char *argv[])
 				}
 				int remainingTime = std::stoi(accum);
 
-				int moveCount = 0;
-				Move moveList[220];
-				board.generateMoveArray(moveList, moveCount);
 				response = "bestmove " + engine.searchForTime(remainingTime / timefactor).basicAlg();
 			}
 			else if (line.find("quit") != -1)

@@ -654,6 +654,7 @@ void Board::unmakeMove(Move data)
 	if (data.null) {
 		turn = !turn;
 		EPdata = data.oldEPData;
+		castlingRights = data.oldCastlingRights;
 
 		// Zobrist unmakeUpdate
 		this->hasher.update(*this, data);
@@ -675,8 +676,6 @@ void Board::unmakeMove(Move data)
 	Piece ep = getEP();
 	if (ep.type != PieceType::Empty)
 	{
-		/*int epY = 3;
-		if (ep.yPos == 5) epY = 4;*/
 		setSquare(PieceType::Pawn, !movedColor, ep.xPos, ep.yPos);
 	}
 
@@ -777,18 +776,8 @@ void Board::makeMove(Move data)
             }
         }
         setKingLocation(movingPiece.getColor(), data.endX, data.endY);
-    }
-
-    //King moved
-    if(data.startX == 4 && data.startY == 0)
-    {
-        setCastlingRights(true, true, false);
-        setCastlingRights(true, false, false);
-    }
-    if(data.startX == 4 && data.startY == 7)
-    {
-        setCastlingRights(false, true, false);
-        setCastlingRights(false, false, false);
+		setCastlingRights(turn, true, false);
+		setCastlingRights(turn, false, false);
     }
 
     //Castling Rights handling
