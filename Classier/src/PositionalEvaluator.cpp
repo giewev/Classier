@@ -42,7 +42,7 @@ double PositionalEvaluator::evaluate(Board boardState)
 	{
 		if (whitePawnFiles[i] > 0)
 		{
-			if ((i < 0 || blackPawnFiles[i - 1] == 0) && blackPawnFiles[i] == 0 && (i == 7 || blackPawnFiles[i + 1] == 0))
+			if ((i == 0 || blackPawnFiles[i - 1] == 0) && blackPawnFiles[i] == 0 && (i == 7 || blackPawnFiles[i + 1] == 0))
 			{
 				score += passedPawnValue;
 			}
@@ -50,7 +50,7 @@ double PositionalEvaluator::evaluate(Board boardState)
 
 		if (blackPawnFiles[i] > 0)
 		{
-			if ((i < 0 || whitePawnFiles[i - 1] == 0) && whitePawnFiles[i] == 0 && (i == 7 || whitePawnFiles[i + 1] == 0))
+			if ((i == 0 || whitePawnFiles[i - 1] == 0) && whitePawnFiles[i] == 0 && (i == 7 || whitePawnFiles[i + 1] == 0))
 			{
 				score -= passedPawnValue;
 			}
