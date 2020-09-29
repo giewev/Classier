@@ -3,6 +3,7 @@
 #include "Engine.h"
 #include <chrono>
 #include <set>
+#include "MoveLookup.h"
 
 class Move;
 
@@ -26,7 +27,7 @@ class AlphaBetaSearcher
 		bool nullMode;
 		std::chrono::steady_clock::time_point dieTime;
 		int topDepth;
-		std::vector<std::set<Move>> killerMoves;
+		std::vector<MoveLookup> killerMoves;
 };
 
 #endif // ALPHABETASEARCHER_H

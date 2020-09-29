@@ -1,11 +1,12 @@
 #include <algorithm>
 #include "MaterialEvaluator.h"
 #include "MoveSorter.h"
+#include "MoveLookup.h"
 #include <set>
 
 const double MoveSorter::piecePriorities[] = { 1, 2, 6, 7, 4, 3, 5 };
 
-MoveSorter::MoveSorter(Move* moveList, int moveCount, Board boardState, TranspositionCache transposition, const std::set<Move>& killers) : killers(killers)
+MoveSorter::MoveSorter(Move* moveList, int moveCount, Board boardState, TranspositionCache transposition, const MoveLookup& killers) : killers(killers)
 {
     this->moveList = moveList;
     this->moveCount = moveCount;
@@ -55,7 +56,7 @@ void MoveSorter::assignOrderingScores()
 				this->moveList[i].score -= attackerValue;
 				//this->moveList[i].score = victimValue - attackerValue;
 			}
-			else if (killers.find(moveList[i]) != killers.end())
+			else if (killers.contains(moveList[i]))
 			{
 				this->moveList[i].score = 1;
 			}

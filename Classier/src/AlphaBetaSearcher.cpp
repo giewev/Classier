@@ -115,7 +115,7 @@ Move AlphaBetaSearcher::alphaBeta(Board& boardState, int depth, double alpha, do
             engine.updateTranspositionCutoffIfDeeper(boardState, depth, moveList[i]);
 			if (moveList[i].pieceCaptured == PieceType::Empty)
 			{
-				killerMoves[depth].insert(moveList[i]);
+				killerMoves[depth].add(moveList[i]);
 			}
 
             return(moveList[i]);
@@ -181,7 +181,7 @@ double AlphaBetaSearcher::quiesce(Board& boardState, double alpha, double beta)
     int moveCount = 0;
     Move moveList[220];
     boardState.generateCaptureMoves(moveList, moveCount); 
-	MoveSorter sorter = MoveSorter(moveList, moveCount, boardState, TranspositionCache(), std::set<Move>());
+	MoveSorter sorter = MoveSorter(moveList, moveCount, boardState, TranspositionCache(), MoveLookup());
 	sorter.sortMoves();
 
     int bestIndex = -1;
