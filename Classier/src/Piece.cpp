@@ -158,7 +158,7 @@ void Piece::kingMoveArray(Move* moveList, int& moveCounter, int xPos, int yPos, 
             }
 
             //Check to see if Friendly Piece is there
-            if(gameBoard.getSquareType(xPos + j, yPos + k) != PieceType::Empty)
+            if(gameBoard.squareIsPopulated(xPos + j, yPos + k))
             {
                 if(gameBoard.getSquareColor(xPos + j, yPos + k) == ownColor)
                 {
@@ -177,11 +177,11 @@ void Piece::kingMoveArray(Move* moveList, int& moveCounter, int xPos, int yPos, 
         {
             if(i)
             {
-                if(gameBoard.getSquareType(xPos+1, yPos) != PieceType::Empty)
+                if(gameBoard.squareIsPopulated(xPos+1, yPos))
                 {
                     continue;
                 }
-                if(gameBoard.getSquareType(xPos+2, yPos) != PieceType::Empty)
+                if(gameBoard.squareIsPopulated(xPos+2, yPos))
                 {
                     continue;
                 }
@@ -190,16 +190,16 @@ void Piece::kingMoveArray(Move* moveList, int& moveCounter, int xPos, int yPos, 
             }
             else
             {
-                if(gameBoard.getSquareType(xPos-1, yPos) != PieceType::Empty)
+                if(gameBoard.squareIsPopulated(xPos-1, yPos))
                 {
                     continue;
                 }
-                if(gameBoard.getSquareType(xPos-2, yPos) != PieceType::Empty)
+                if(gameBoard.squareIsPopulated(xPos-2, yPos))
                 {
                     continue;
                 }
 
-                if(gameBoard.getSquareType(xPos-3, yPos) != PieceType::Empty)
+                if(gameBoard.squareIsPopulated(xPos-3, yPos))
                 {
                     continue;
                 }
@@ -234,7 +234,7 @@ void Piece::bishopMoveArray(Move* moveList, int& moveCounter, int xPos, int yPos
                     break;
                 }
 
-                if(gameBoard.getSquareType(xPos+(k*i), yPos+(k*j)) != PieceType::Empty)
+                if(gameBoard.squareIsPopulated(xPos+(k*i), yPos+(k*j)))
                 {
                     if(gameBoard.getSquareColor(xPos+(k*i), yPos+(k*j)) == ownColor)
                     {
@@ -273,7 +273,7 @@ void Piece::knightMoveArray(Move* moveList, int& moveCounter, int xPos, int yPos
                 continue;
             }
 
-            if(gameBoard.getSquareType(xPos + j, yPos + k) != PieceType::Empty)
+            if(gameBoard.squareIsPopulated(xPos + j, yPos + k))
             {
                 if(gameBoard.getSquareColor(xPos + j, yPos + k) == ownColor)
                 {
@@ -309,7 +309,7 @@ void Piece::rookMoveArray(Move* moveList, int& moveCounter, int xPos, int yPos, 
                     continue;
                 }
 
-                if(gameBoard.getSquareType(xPos+(i*k), yPos+(j*k)) != PieceType::Empty)
+                if(gameBoard.squareIsPopulated(xPos+(i*k), yPos+(j*k)))
                 {
                     if(gameBoard.getSquareColor(xPos+(i*k), yPos+(j*k)) == ownColor)
                     {
@@ -337,7 +337,7 @@ void Piece::pawnMoveArray(Move* moveList, int& moveCounter, int xPos, int yPos, 
         direction = 1;
     }
 
-    if(gameBoard.getSquareType(xPos, yPos + direction) == PieceType::Empty) //Normal Moves
+    if(!gameBoard.squareIsPopulated(xPos, yPos + direction)) //Normal Moves
     {
         if(yPos+direction == 7 || yPos+direction == 0)
         {
@@ -353,7 +353,7 @@ void Piece::pawnMoveArray(Move* moveList, int& moveCounter, int xPos, int yPos, 
 
         if((yPos == 1 && ownColor) || (yPos == 6 && !ownColor)) //Double Moves
         {
-            if(gameBoard.getSquareType(xPos, yPos + 2 * direction) == PieceType::Empty)
+            if(!gameBoard.squareIsPopulated(xPos, yPos + 2 * direction))
             {
                 moveList[moveCounter++] = Move(xPos, yPos, xPos, yPos+2*direction, PieceType::Empty, gameBoard);
             }
@@ -368,7 +368,7 @@ void Piece::pawnMoveArray(Move* moveList, int& moveCounter, int xPos, int yPos, 
             continue;
         }
 
-        if(gameBoard.getSquareType(xPos + i, yPos + direction) == PieceType::Empty)
+        if(!gameBoard.squareIsPopulated(xPos + i, yPos + direction))
         {
             if(yPos == gameBoard.getEP().getY())
             {
