@@ -167,7 +167,7 @@ void ZobristHasher::updateEnPassant(const Board& prevBoard, Move nextMove)
         this->toggleEnPassant(prevEP.getY());
     }
 
-    if (prevBoard.getSquareType(nextMove.startX, nextMove.startY) == PieceType::Pawn &&
+    if (!nextMove.null && prevBoard.getSquareType(nextMove.startX, nextMove.startY) == PieceType::Pawn &&
             abs(nextMove.endY - nextMove.startY) == 2)
     {
         this->toggleEnPassant(nextMove.startY);
