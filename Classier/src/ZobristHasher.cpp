@@ -23,7 +23,7 @@ ZobristHasher::ZobristHasher()
     }
 }
 
-ZobristHasher::ZobristHasher(Board board) : ZobristHasher()
+ZobristHasher::ZobristHasher(const Board& board) : ZobristHasher()
 {
     this->load(board);
 }
@@ -56,7 +56,7 @@ void ZobristHasher::seed()
     turnHashCode = generateHashCode();
 }
 
-void ZobristHasher::load(Board board)
+void ZobristHasher::load(const Board& board)
 {
     this->hashValue = 0ll;
     this->loadPieces(board);
@@ -68,7 +68,7 @@ void ZobristHasher::load(Board board)
     }
 }
 
-void ZobristHasher::loadPieces(Board board)
+void ZobristHasher::loadPieces(const Board& board)
 {
     for (int i = 0; i < 8; i ++)
     {
@@ -83,7 +83,7 @@ void ZobristHasher::loadPieces(Board board)
     }
 }
 
-void ZobristHasher::loadCastlingRights(Board board)
+void ZobristHasher::loadCastlingRights(const Board& board)
 {
     bool boolValues[2] = { true, false };
     for (int i = 0; i < 2; i++)
@@ -98,7 +98,7 @@ void ZobristHasher::loadCastlingRights(Board board)
     }
 }
 
-void ZobristHasher::loadEnPassant(Board board)
+void ZobristHasher::loadEnPassant(const Board& board)
 {
     Piece ep = board.getEP();
     if (ep.type != PieceType::Empty)
@@ -150,7 +150,7 @@ void ZobristHasher::toggleCastlingRights(bool color, bool side)
     this->hashValue ^= castlingHashCodes[castlingIndex];
 }
 
-void ZobristHasher::update(Board prevBoard, Move nextMove)
+void ZobristHasher::update(const Board& prevBoard, Move nextMove)
 {
     this->toggleTurn();
     this->updateEnPassant(prevBoard, nextMove);
@@ -159,7 +159,7 @@ void ZobristHasher::update(Board prevBoard, Move nextMove)
     this->updatePieces(prevBoard, nextMove);
 }
 
-void ZobristHasher::updateEnPassant(Board prevBoard, Move nextMove)
+void ZobristHasher::updateEnPassant(const Board& prevBoard, Move nextMove)
 {
     Piece prevEP = prevBoard.getEP();
     if (prevEP.type != PieceType::Empty)
@@ -174,7 +174,7 @@ void ZobristHasher::updateEnPassant(Board prevBoard, Move nextMove)
     }
 }
 
-void ZobristHasher::updateCastling(Board prevBoard, Move nextMove)
+void ZobristHasher::updateCastling(const Board& prevBoard, Move nextMove)
 {
     if (prevBoard.getSquareType(nextMove.startX, nextMove.startY) == PieceType::King)
     {
@@ -207,17 +207,16 @@ void ZobristHasher::updateCastling(Board prevBoard, Move nextMove)
     }
 }
 
-void ZobristHasher::updatePieces(Board prevBoard, Move nextMove)
+void ZobristHasher::updatePieces(const Board& prevBoard, Move nextMove)
 {
     PieceType movingPieceType = prevBoard.getSquareType(nextMove.startX, nextMove.startY);
     bool movingPieceColor = prevBoard.getSquareColor(nextMove.startX, nextMove.startY);
     this->togglePiece(nextMove.startX, nextMove.startY, movingPieceType, movingPieceColor);
     this->togglePiece(nextMove.endX, nextMove.endY, movingPieceType, movingPieceColor);
 
-    PieceType capturePieceType = prevBoard.getSquareType(nextMove.endX, nextMove.endY);
-    if (capturePieceType != PieceType::Empty)
+    if (nextMove.pieceCaptured != PieceType::Empty)
     {
-        this->togglePiece(nextMove.endX, nextMove.endY, capturePieceType, !movingPieceColor);
+        this->togglePiece(nextMove.endX, nextMove.endY, nextMove.pieceCaptured, !movingPieceColor);
     }
 
     if (movingPieceType == PieceType::Pawn)
