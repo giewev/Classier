@@ -13,7 +13,7 @@ const double doubledPawnValue = -0.15;
 const double centerPawnValue = 0.2;
 const double semiCenterPawnValue = 0.15;
 const double rimKnightValue = -0.10;
-const double developmentValue = 0.15;
+const double developmentValue = 0.25;
 const double kingCornerValue = 0.05;
 
 const double pawnAdvancementValue = 0.02;

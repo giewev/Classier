@@ -52,7 +52,7 @@ void MoveSorter::assignOrderingScores()
 
 			if (victimType != PieceType::Empty)
 			{
-				this->moveList[i].score = victimValue * piecePriorities[(int)PieceType::King];
+				this->moveList[i].score = victimValue * MaterialEvaluator::pieceValue(PieceType::Queen);
 				this->moveList[i].score -= attackerValue;
 				//this->moveList[i].score = victimValue - attackerValue;
 			}

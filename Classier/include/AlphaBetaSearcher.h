@@ -14,6 +14,9 @@ class AlphaBetaSearcher
 
         Move alphaBeta(Board& boardState, int depth);
         Move alphaBeta(Board& boardState, int depth, double alpha, double beta);
+
+		long nodesVisited;
+		std::vector<long> nodesAtDepths;
     protected:
     private:
         Engine& engine;

@@ -10,11 +10,15 @@ AlphaBetaSearcher::AlphaBetaSearcher(Engine& linkedEngine, std::chrono::steady_c
 	nullMode = false;
 	dieTime = end;
 	topDepth = 0;
+	nodesVisited = 0;
 }
 
 Move AlphaBetaSearcher::alphaBeta(Board& boardState, int depth)
 {
 	topDepth = depth;
+	nodesVisited = 0;
+	nodesAtDepths.clear();
+	nodesAtDepths.resize(depth + 1);
 	killerMoves.clear();
 	killerMoves.resize(depth + 1);
     return this->alphaBeta(boardState, depth, -1000, 1000);
@@ -33,6 +37,8 @@ Move AlphaBetaSearcher::alphaBeta(Board& boardState, int depth, double alpha, do
         return transposition.cutoffMove;
     }
 
+	nodesVisited += 1;
+	nodesAtDepths[depth] += 1;
 	Danger safetyinfo = Danger(boardState);
 
 	// Null move heuristic

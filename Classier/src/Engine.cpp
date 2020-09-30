@@ -57,15 +57,21 @@ Move Engine::searchToDepth(int depth, chrono::steady_clock::time_point cancelTim
 	AlphaBetaSearcher searcher = AlphaBetaSearcher(*this, cancelTime);
 	Move bestMove = searcher.alphaBeta(gameBoard, depth);
 
+	for (int i = depth - 1; i > 0; i--)
+	{
+		std::cout << (double)searcher.nodesAtDepths[i] / searcher.nodesAtDepths[i + 1] << " ";
+	}
+	std::cout << std::endl;
+
 	if (bestMove.getMateDistance())
 	{
-		printf("info depth %d score mate %d pv ", depth, bestMove.getMateDistance());
+		printf("info depth %d nodes %d score mate %d pv ", depth, searcher.nodesVisited, bestMove.getMateDistance());
 		std::cout << bestMove.basicAlg() << std::endl;
 	}
 	else {
 		int centipawnScore = (int)(bestMove.getScore() * 100);
 		if (!gameBoard.turn) centipawnScore *= -1;
-		printf("info depth %d score cp %d pv ", depth, centipawnScore);
+		printf("info depth %d nodes %d score cp %d pv ", depth, searcher.nodesVisited, centipawnScore);
 		std::cout << bestMove.basicAlg() << std::endl;
 	}
 	
