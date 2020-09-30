@@ -31,6 +31,7 @@ public:
 
     double getScore();
     int getGameOverDepth();
+	int getMateDistance();
 
     bool operator==(Move) const;
     bool operator!=(Move) const;

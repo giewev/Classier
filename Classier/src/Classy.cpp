@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
 									if (c == ' ' || i == line.length() - 1)
 									{
 										count++;
-										if (count == 9)
+										if (count == 8)
 										{
 											board.loadFEN(accum);
 											count = 2;

@@ -108,6 +108,24 @@ int Move::getGameOverDepth()
     return -1;
 }
 
+int Move::getMateDistance()
+{
+	int depth = getGameOverDepth();
+	if (depth != -1)
+	{
+		if (score > 0)
+		{
+			return (depth + 1) / 2;
+		}
+		else 
+		{
+			return -(depth + 1) / 2;
+		}
+	}
+	
+	return 0;
+}
+
 bool Move::isSafe(Danger safetyData)
 {
     if(safetyData.movePinned(*this))
