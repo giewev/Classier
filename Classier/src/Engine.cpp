@@ -63,9 +63,11 @@ Move Engine::searchToDepth(int depth, chrono::steady_clock::time_point cancelTim
 	}
 	std::cout << std::endl;
 
-	if (bestMove.getMateDistance())
+	int mateDistance = bestMove.getMateDistance();
+	if (mateDistance)
 	{
-		printf("info depth %d nodes %d score mate %d pv ", depth, searcher.nodesVisited, bestMove.getMateDistance());
+		if (!gameBoard.facts.turn) mateDistance *= -1;
+		printf("info depth %d nodes %d score mate %d pv ", depth, searcher.nodesVisited, mateDistance);
 		std::cout << bestMove.basicAlg() << std::endl;
 	}
 	else {
