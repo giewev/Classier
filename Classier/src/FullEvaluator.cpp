@@ -14,16 +14,6 @@ FullEvaluator::~FullEvaluator()
 
 double FullEvaluator::evaluate(Board boardState)
 {
-    /*double score = gameOverEvaluator.evaluate(boardState);
-    if (score == 1000)
-    {
-        return 0;
-    }
-    else if (score != 0)
-    {
-        return score;
-    }*/
-
 	double score = 0;
     score = materialEvaluator.evaluate(boardState);
     score += positionalEvaluator.evaluate(boardState);
