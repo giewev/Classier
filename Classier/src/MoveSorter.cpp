@@ -6,13 +6,12 @@
 
 const double MoveSorter::piecePriorities[] = { 1, 2, 6, 7, 4, 3, 5 };
 
-MoveSorter::MoveSorter(Move* moveList, int moveCount, Board boardState, TranspositionCache transposition, const MoveLookup& killers) : killers(killers)
+MoveSorter::MoveSorter(Move* moveList, int moveCount, Board boardState, TranspositionCache transposition, const MoveLookup& killers, const Move& lastMove) : killers(killers), lastMove(lastMove)
 {
     this->moveList = moveList;
     this->moveCount = moveCount;
     this->boardState = boardState;
     this->transposition = transposition;
-	//this->killers = killers;
     this->assignOrderingScores();
 }
 
@@ -42,6 +41,12 @@ void MoveSorter::assignOrderingScores()
         {
             this->moveList[i].score = 998;
         }
+		else if (this->moveList[i].endX == lastMove.endX && this->moveList[i].endY == lastMove.endY)
+		{
+			PieceType attackerType = boardState.getSquareType(moveList[i].startX, moveList[i].startY);
+			double attackerValue = MaterialEvaluator::pieceValue(attackerType);
+			this->moveList[i].score = 800 - attackerValue;
+		}
 		else {
 			PieceType victimType = boardState.getSquareType(moveList[i].endX, moveList[i].endY);
 			//double victimValue = piecePriorities[(int)victimType];

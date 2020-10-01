@@ -22,12 +22,7 @@ double PositionalEvaluator::evaluate(Board boardState)
     score += doubledPawnValue * bitwise::countBits(whitePawns & (whitePawns << 8));
     score -= doubledPawnValue * bitwise::countBits(blackPawns & (blackPawns >> 8));
 
-	// Reward pushing pawns, both for promotion and space reasons
-	for (bitBoard i = 0; i < 8; i++)
-	{
-		score += pawnAdvancementValue * i * bitwise::countBits(whitePawns & bitwise::rank(i));
-		score -= pawnAdvancementValue * (7 - i) * bitwise::countBits(blackPawns & bitwise::rank(i));
-	}
+	score += boardState.pawnPositionalValue;
 
 	// Count the number of passed pawns for each player
 	int whitePawnFiles[8];
@@ -42,27 +37,32 @@ double PositionalEvaluator::evaluate(Board boardState)
 	{
 		if (whitePawnFiles[i] > 0)
 		{
+			// Check for white passed pawns
 			if ((i == 0 || blackPawnFiles[i - 1] == 0) && blackPawnFiles[i] == 0 && (i == 7 || blackPawnFiles[i + 1] == 0))
 			{
 				score += passedPawnValue;
+			}
+
+			if ((i == 0 || whitePawnFiles[i - 1] == 0) && (i == 7 || whitePawnFiles[i + 1] == 0))
+			{
+				score += whitePawnFiles[i] * isolatedPawnValue;
 			}
 		}
 
 		if (blackPawnFiles[i] > 0)
 		{
+			// Black passed pawns
 			if ((i == 0 || whitePawnFiles[i - 1] == 0) && whitePawnFiles[i] == 0 && (i == 7 || whitePawnFiles[i + 1] == 0))
 			{
 				score -= passedPawnValue;
 			}
+
+			if ((i == 0 || blackPawnFiles[i - 1] == 0) && (i == 7 || blackPawnFiles[i + 1] == 0))
+			{
+				score -= blackPawnFiles[i] * isolatedPawnValue;
+			}
 		}
 	}
-
-    // Count how many pawns from each player are in the center
-    bitBoard centerPawns = boardState.pieces[PieceType::Pawn] & centerBoard;
-    score += centerPawnValue * bitwise::countBits(centerPawns & boardState.pieces[0]);
-    score -= centerPawnValue * bitwise::countBits(centerPawns & (~boardState.pieces[0]));
-    score += semiCenterPawnValue * bitwise::countBits(whiteSemiCenter & boardState.pieces[0] & boardState.pieces[PieceType::Pawn]);
-    score += semiCenterPawnValue * bitwise::countBits(blackSemiCenter & (~boardState.pieces[0]) & boardState.pieces[PieceType::Pawn]);
 
     // Knights on the rim are grim
     bitBoard sideKnights = boardState.pieces[PieceType::Knight] & (aFile | hFile);

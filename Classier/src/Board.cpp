@@ -11,6 +11,7 @@
 #include "Engine.h"
 #include "Bitwise.h"
 #include "ZobristHasher.h"
+#include "Evaluation Constants.h"
 
 using namespace std;
 
@@ -28,6 +29,7 @@ Board::Board()
     }
 
 	halfMoveCounter = 0;
+	pawnPositionalValue = 0;
 
 }
 
@@ -44,6 +46,7 @@ void Board::loadFEN(std::string fenFile)
     unsigned int bookmark = 0;
 
     //Blanking out the Board
+	pawnPositionalValue = 0;
     for(int i=0; i<7; i++)
     {
         pieces[i] = 0ull;
@@ -505,6 +508,8 @@ void Board::setSquare(Piece setPiece, int x, int y)
 void Board::setSquare(PieceType type, bool color, int x, int y)
 {
     throwIfOutOfBounds(x, y);
+
+	updatePositionalScore(type, color, x, y);
     for(int i=1; i<7; i++)
     {
         pieces[i] &= ~(1ull << (x + 8*y));
@@ -527,6 +532,36 @@ void Board::setSquare(PieceType type, bool color, int x, int y)
     {
         pieces[0] &= ~(1ull << (x + 8 * y));
     }
+}
+
+void Board::updatePositionalScore(PieceType type, bool color, int x, int y)
+{
+	PieceType deadPieceType = getSquareType(x, y);
+
+	if (deadPieceType == PieceType::Pawn)
+	{
+		bool deadPieceColor = getSquareColor(x, y);
+		if (deadPieceColor)
+		{
+			pawnPositionalValue -= whitePawnPositionValue[x][y];
+		}
+		else 
+		{
+			pawnPositionalValue += blackPawnPositionValue[x][y];
+		}
+	}
+
+	if (type == PieceType::Pawn)
+	{
+		if (color)
+		{
+			pawnPositionalValue += whitePawnPositionValue[x][y];
+		}
+		else
+		{
+			pawnPositionalValue -= blackPawnPositionValue[x][y];
+		}
+	}
 }
 
 void Board::setKingLocation(bool setColor, int x, int y)

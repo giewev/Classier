@@ -17,6 +17,7 @@ class AlphaBetaSearcher
 
 		long nodesVisited;
 		std::vector<long> nodesAtDepths;
+		std::vector<Move> lastMoveMade;
     protected:
     private:
         Engine& engine;

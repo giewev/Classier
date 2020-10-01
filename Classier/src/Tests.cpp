@@ -8,6 +8,11 @@
 #include "Danger.h"
 #include "ZobristHasher.h"
 
+void assertAlmost(double expected, double actual)
+{
+	assert(fabs(expected - actual) < 1e-6);
+}
+
 void startingPerft_test()
 {
     std::string startingFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w";
@@ -253,6 +258,41 @@ void avoidMatePuzzle_test_1()
     }
 }
 
+void pawnPositionalScore_test_1()
+{
+	std::string startingFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w";
+	Board testBoard = Board();
+	testBoard.loadFEN(startingFEN);
+	
+	Move firstMove = Move("e2e4", testBoard);
+	Move secondMove = Move("e7e6", testBoard);
+
+	assertAlmost(testBoard.pawnPositionalValue, 0);
+	testBoard.makeMove(firstMove);
+	testBoard.unmakeMove(firstMove);
+	assertAlmost(testBoard.pawnPositionalValue, 0);
+	testBoard.makeMove(firstMove);
+	testBoard.makeMove(secondMove);
+	testBoard.unmakeMove(secondMove);
+	testBoard.unmakeMove(firstMove);
+	assertAlmost(testBoard.pawnPositionalValue, 0);
+}
+
+void pawnPositionalScore_test_2()
+{
+	std::string startingFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w";
+	Board testBoard = Board();
+	testBoard.loadFEN(startingFEN);
+
+	for (int i = 0; i < 8; i++)
+	{
+		testBoard.makeMove(Move(i, 1, i, 3, PieceType::Empty, testBoard));
+		testBoard.makeMove(Move(i, 6, i, 4, PieceType::Empty, testBoard));
+	}
+
+	assertAlmost(testBoard.pawnPositionalValue, 0);
+}
+
 void zobristConsistancy_test_helper(Board testBoard, Move testMove)
 {
     ZobristHasher updateZobrist = ZobristHasher(testBoard);
@@ -385,6 +425,8 @@ void nullMoveChangesOnlyTurn_test()
 
 void runAllTests()
 {
+	pawnPositionalScore_test_1();
+	pawnPositionalScore_test_2();
 	makeUnmakeEPCapture_test();
     loadStartingPosition_test();
 	loadingStartingPosAfterE4_test();

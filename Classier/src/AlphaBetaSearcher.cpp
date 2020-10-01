@@ -21,6 +21,8 @@ Move AlphaBetaSearcher::alphaBeta(Board& boardState, int depth)
 	nodesAtDepths.resize(depth + 1);
 	killerMoves.clear();
 	killerMoves.resize(depth + 1);
+	lastMoveMade.clear();
+	lastMoveMade.resize(depth + 2);
     return this->alphaBeta(boardState, depth, -1000, 1000);
 }
 
@@ -50,6 +52,7 @@ Move AlphaBetaSearcher::alphaBeta(Board& boardState, int depth, double alpha, do
 			nullMode = true;
 			Move nullMove = Move(boardState);
 			boardState.makeMove(nullMove);
+			lastMoveMade[depth] = nullMove;
 			Move nullResponse = alphaBeta(boardState, depth - 2, alpha, beta);
 			boardState.unmakeMove(nullMove);
 			nullMode = false;
@@ -64,7 +67,7 @@ Move AlphaBetaSearcher::alphaBeta(Board& boardState, int depth, double alpha, do
     int moveCount = 0;
     Move moveList[220];
     boardState.generateMoveArray(moveList, moveCount);
-	MoveSorter sorter = MoveSorter(moveList, moveCount, boardState, transposition, killerMoves[depth]);
+	MoveSorter sorter = MoveSorter(moveList, moveCount, boardState, transposition, killerMoves[depth], lastMoveMade[depth + 1]);
 	sorter.sortMoves();
 
     unsigned int bestIndex = 0;
@@ -90,6 +93,7 @@ Move AlphaBetaSearcher::alphaBeta(Board& boardState, int depth, double alpha, do
 
     for(int i=0; i<moveCount; i++)
     {
+		lastMoveMade[depth] = moveList[i];
         boardState.makeMove(moveList[i]);
 
         if(depth == 1)
@@ -189,7 +193,7 @@ double AlphaBetaSearcher::quiesce(Board& boardState, double alpha, double beta)
     int moveCount = 0;
     Move moveList[220];
     boardState.generateCaptureMoves(moveList, moveCount); 
-	MoveSorter sorter = MoveSorter(moveList, moveCount, boardState, TranspositionCache(), MoveLookup());
+	MoveSorter sorter = MoveSorter(moveList, moveCount, boardState, TranspositionCache(), MoveLookup(), Move());
 	sorter.sortMoves();
 
     int bestIndex = -1;

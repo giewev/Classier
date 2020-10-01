@@ -20,6 +20,8 @@ public:
     bitBoard pieces[7];
     bitBoard allPieces;
 
+	double pawnPositionalValue;
+
     Board();
     Board(int);
     ~Board();
@@ -41,10 +43,8 @@ public:
 
     PieceType getSquareType(int, int) const;
     bool getSquareColor(int, int) const;
-    bool getSquareMoved(int, int) const;
 
     void setSquare(Piece, int, int);
-    void setSquare(Piece, int);
     void setSquare(PieceType type, bool color, int x, int y);
     void setEP(Piece);
     void setEP(int, int, bool);
@@ -84,6 +84,8 @@ private:
     int moveCounter;
     int halfMoveCounter;
     ZobristHasher hasher;
+
+	void updatePositionalScore(PieceType type, bool color, int x, int y);
 };
 
 namespace std
