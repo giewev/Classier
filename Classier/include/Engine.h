@@ -9,6 +9,7 @@
 #include "FullEvaluator.h"
 #include "TranspositionCache.h"
 #include "Board.h"
+#include "BoardInfo.h"
 struct Move;
 class HashData;
 class HashTable;
@@ -44,7 +45,7 @@ public:
 private:
     Board gameBoard;
     FullEvaluator evaluator;
-    std::unordered_map<Board, TranspositionCache> transpositionTable;
+    std::unordered_map<BoardInfo, TranspositionCache> transpositionTable;
     unsigned long transTableMax = 1024 * 1024 * 64;
 
     void clearTranspositionIfFull();

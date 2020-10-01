@@ -282,7 +282,7 @@ void Board::loadFEN(std::string fenFile)
         }
     }
 
-    this->hasher = ZobristHasher(*this);
+    facts.hasher = ZobristHasher(*this);
 }
 
 string Board::outputFEN() const
@@ -423,7 +423,7 @@ Board Board::newCopy() const
     newBoard.kingCoordinates = kingCoordinates;
     newBoard.moveCounter = moveCounter;
     newBoard.halfMoveCounter = halfMoveCounter;
-    newBoard.hasher = ZobristHasher(this->hasher);
+    newBoard.facts.hasher = ZobristHasher(facts.hasher);
 
     return newBoard;
 }
@@ -691,7 +691,7 @@ void Board::unmakeMove(Move data)
 		facts.castlingRights = data.oldCastlingRights;
 
 		// Zobrist unmakeUpdate
-		this->hasher.update(*this, data);
+		facts.hasher.update(*this, data);
 		return;
 	}
 
@@ -745,7 +745,7 @@ void Board::unmakeMove(Move data)
 	facts.turn = !facts.turn;
 
 	// Zobrist unmakeUpdate
-	this->hasher.update(*this, data);
+	facts.hasher.update(*this, data);
 }
 
 void Board::makeMove(Move data)
@@ -754,11 +754,11 @@ void Board::makeMove(Move data)
 	if (data.null) {
 		facts.turn = !facts.turn;
 		setEP(Piece(PieceType::Empty));
-		this->hasher.update(*this, data);
+		facts.hasher.update(*this, data);
 		return;
 	}
 
-    this->hasher.update(*this, data);
+	facts.hasher.update(*this, data);
 
     //Picking up the Piece
     Piece movingPiece = getSquare(data.startX, data.startY);
@@ -1124,30 +1124,5 @@ void Board::throwIfOutOfBounds(int x, int y)
 
 bool Board::operator==(const Board &other) const
 {
-    for (int i = 1; i < 7; i++)
-    {
-        if (this->facts.pieces[i] != other.facts.pieces[i])
-        {
-            return false;
-        }
-    }
-
-    if ((this->facts.pieces[0] & this->facts.allPieces) != (other.facts.pieces[0] & other.facts.allPieces))
-    {
-        return false;
-    }
-
-    if ((~this->facts.pieces[0] & this->facts.allPieces) != (~other.facts.pieces[0] & other.facts.allPieces))
-    {
-        return false;
-    }
-
-    return this->facts.turn == other.facts.turn &&
-           this->facts.EPdata == other.facts.EPdata &&
-           this->facts.castlingRights == other.facts.castlingRights;
-}
-
-size_t Board::getHashCode() const
-{
-    return this->hasher.hashValue;
+	return facts == other.facts;
 }

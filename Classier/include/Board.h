@@ -64,7 +64,6 @@ public:
     bool squareIsPopulated(int, int) const;
     bool squareIsType(int, int, int) const;
     double dividePerft(int) const;
-    char convertToAlg(int) const;
     bool getCastlingRights(bool, bool) const;
     char getCastlingRights() const;
     void setCastlingRights(bool, bool, bool);
@@ -75,20 +74,10 @@ private:
     int kingCoordinates;
     int moveCounter;
     int halfMoveCounter;
-    ZobristHasher hasher;
 
 	void updatePositionalScore(PieceType type, bool color, int x, int y);
 };
 
-namespace std
-{
-template <> struct hash<Board>
-{
-    size_t operator()(const Board& board) const
-    {
-        return board.getHashCode();
-    }
-};
-}
+
 
 #endif

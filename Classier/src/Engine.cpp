@@ -144,20 +144,20 @@ std::string Engine::toAlg(int val)
 void Engine::updateTranspositionBestIfDeeper(const Board& newBoard, int depth, Move newMove)
 {
     this->clearTranspositionIfFull();
-    if (this->transpositionTable[newBoard].bestDepth < depth)
+    if (this->transpositionTable[newBoard.facts].bestDepth < depth)
     {
-        this->transpositionTable[newBoard].bestDepth = depth;
-        this->transpositionTable[newBoard].bestMove = newMove;
+        this->transpositionTable[newBoard.facts].bestDepth = depth;
+        this->transpositionTable[newBoard.facts].bestMove = newMove;
     }
 }
 
 void Engine::updateTranspositionCutoffIfDeeper(const Board& newBoard, int depth, Move newMove)
 {
     this->clearTranspositionIfFull();
-    if (this->transpositionTable[newBoard].cutoffDepth < depth)
+    if (this->transpositionTable[newBoard.facts].cutoffDepth < depth)
     {
-        this->transpositionTable[newBoard].cutoffDepth = depth;
-        this->transpositionTable[newBoard].cutoffMove = newMove;
+        this->transpositionTable[newBoard.facts].cutoffDepth = depth;
+        this->transpositionTable[newBoard.facts].cutoffMove = newMove;
     }
 }
 
@@ -192,7 +192,7 @@ void Engine::clearTranspositionIfFull()
 
 TranspositionCache Engine::getTransposition(const Board& lookupBoard)
 {
-    return this->transpositionTable[lookupBoard];
+    return this->transpositionTable[lookupBoard.facts];
 }
 
 void Engine::exportTransTable(std::string path)
