@@ -20,6 +20,8 @@ public:
 	BoardInfo facts;
 
 	double pawnPositionalValue;
+	double knightPositionalValue;
+	double bishopPositionalValue;
 
     Board();
     Board(int);

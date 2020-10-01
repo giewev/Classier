@@ -30,6 +30,8 @@ Board::Board()
 
 	halfMoveCounter = 0;
 	pawnPositionalValue = 0;
+	knightPositionalValue = 0;
+	bishopPositionalValue = 0;
 }
 
 Board::Board(int null)
@@ -46,6 +48,8 @@ void Board::loadFEN(std::string fenFile)
 
     //Blanking out the Board
 	pawnPositionalValue = 0;
+	knightPositionalValue = 0;
+	bishopPositionalValue = 0;
     for(int i=0; i<7; i++)
     {
         facts.pieces[i] = 0ull;
@@ -536,30 +540,38 @@ void Board::setSquare(PieceType type, bool color, int x, int y)
 void Board::updatePositionalScore(PieceType type, bool color, int x, int y)
 {
 	PieceType deadPieceType = getSquareType(x, y);
+	bool deadPieceColor = getSquareColor(x, y);
 
-	if (deadPieceType == PieceType::Pawn)
+	switch (deadPieceType)
 	{
-		bool deadPieceColor = getSquareColor(x, y);
-		if (deadPieceColor)
-		{
-			pawnPositionalValue -= whitePawnPositionValue[x][y];
-		}
-		else 
-		{
-			pawnPositionalValue += blackPawnPositionValue[x][y];
-		}
+		case(PieceType::Pawn):
+			if (deadPieceColor) pawnPositionalValue -= whitePawnPositionValue[x][y];
+			else pawnPositionalValue += blackPawnPositionValue[x][y];
+			break;
+		case(PieceType::Knight):
+			if (deadPieceColor) knightPositionalValue -= whiteKnightPositionValue[x][y];
+			else knightPositionalValue += blackKnightPositionValue[x][y];
+			break;
+		case(PieceType::Bishop):
+			if (deadPieceColor) bishopPositionalValue -= whiteBishopPositionValue[x][y];
+			else bishopPositionalValue += blackBishopPositionValue[x][y];
+			break;
 	}
 
-	if (type == PieceType::Pawn)
+	switch (type)
 	{
-		if (color)
-		{
-			pawnPositionalValue += whitePawnPositionValue[x][y];
-		}
-		else
-		{
-			pawnPositionalValue -= blackPawnPositionValue[x][y];
-		}
+		case(PieceType::Pawn):
+			if (color) pawnPositionalValue += whitePawnPositionValue[x][y];
+			else pawnPositionalValue -= blackPawnPositionValue[x][y];
+			break;
+		case(PieceType::Knight):
+			if (color) knightPositionalValue += whiteKnightPositionValue[x][y];
+			else knightPositionalValue -= blackKnightPositionValue[x][y];
+			break;
+		case(PieceType::Bishop):
+			if (color) bishopPositionalValue += whiteBishopPositionValue[x][y];
+			else bishopPositionalValue -= blackBishopPositionValue[x][y];
+			break;
 	}
 }
 

@@ -23,6 +23,8 @@ double PositionalEvaluator::evaluate(Board boardState)
     score -= doubledPawnValue * bitwise::countBits(blackPawns & (blackPawns >> 8));
 
 	score += boardState.pawnPositionalValue;
+	score += boardState.knightPositionalValue;
+	score += boardState.bishopPositionalValue;
 
 	// Count the number of passed pawns for each player
 	int whitePawnFiles[8];
@@ -65,16 +67,16 @@ double PositionalEvaluator::evaluate(Board boardState)
 	}
 
     // Knights on the rim are grim
-    bitBoard sideKnights = boardState.facts.pieces[PieceType::Knight] & (aFile | hFile);
+    /*bitBoard sideKnights = boardState.facts.pieces[PieceType::Knight] & (aFile | hFile);
     score += rimKnightValue * bitwise::countBits(sideKnights & boardState.facts.pieces[0]);
-    score -= rimKnightValue * bitwise::countBits(sideKnights & (~boardState.facts.pieces[0]));
+    score -= rimKnightValue * bitwise::countBits(sideKnights & (~boardState.facts.pieces[0]));*/
 
     //Bishop and Knight development
-    bitBoard knightsAndBishops = (boardState.facts.pieces[PieceType::Bishop] | boardState.facts.pieces[PieceType::Knight]);
+    /*bitBoard knightsAndBishops = (boardState.facts.pieces[PieceType::Bishop] | boardState.facts.pieces[PieceType::Knight]);
     bitBoard whiteUndeveloped = knightsAndBishops & rank1 & boardState.facts.pieces[0];
     bitBoard blackUndeveloped = knightsAndBishops & rank8 & (~boardState.facts.pieces[0]);
     score -= developmentValue * bitwise::countBits(whiteUndeveloped);
-    score += developmentValue * bitwise::countBits(blackUndeveloped);
+    score += developmentValue * bitwise::countBits(blackUndeveloped);*/
 
     //Kings far from center during the main game, but near the center when there are few pieces left
     double kingLocationMultiplier = 1;
