@@ -77,7 +77,7 @@ void loadStartingPosition_test()
 
     Board testBoard = Board();
     testBoard.loadFEN(startingFEN);
-	assert(testBoard.turn == true);
+	assert(testBoard.facts.turn == true);
 
     assert(testBoard.getSquareType(0, 0) == PieceType::Rook);
     assert(testBoard.getSquareType(1, 0) == PieceType::Knight);
@@ -115,7 +115,7 @@ void loadingStartingPosAfterE4_test()
 
 	Board testBoard = Board();
 	testBoard.loadFEN(startingFEN);
-	assert(testBoard.turn == false);
+	assert(testBoard.facts.turn == false);
 
 	assert(testBoard.getSquareType(0, 0) == PieceType::Rook);
 	assert(testBoard.getSquareType(1, 0) == PieceType::Knight);
@@ -333,19 +333,19 @@ void centerPawnMask_test()
 
     Board board = Board();
     board.loadFEN(fullCenterFEN);
-    assert(bitwise::countBits(board.pieces[PieceType::Pawn] & centerBoard) == 4);
+    assert(bitwise::countBits(board.facts.pieces[PieceType::Pawn] & centerBoard) == 4);
 
     board.loadFEN(threeCenterFEN);
-    assert(bitwise::countBits(board.pieces[PieceType::Pawn] & centerBoard) == 3);
+    assert(bitwise::countBits(board.facts.pieces[PieceType::Pawn] & centerBoard) == 3);
 
     board.loadFEN(twoCenterFEN);
-    assert(bitwise::countBits(board.pieces[PieceType::Pawn] & centerBoard) == 2);
+    assert(bitwise::countBits(board.facts.pieces[PieceType::Pawn] & centerBoard) == 2);
 
     board.loadFEN(oneCenterFEN);
-    assert(bitwise::countBits(board.pieces[PieceType::Pawn] & centerBoard) == 1);
+    assert(bitwise::countBits(board.facts.pieces[PieceType::Pawn] & centerBoard) == 1);
 
     board.loadFEN(emptyCenterFEN);
-    assert(bitwise::countBits(board.pieces[PieceType::Pawn] & centerBoard) == 0);
+    assert(bitwise::countBits(board.facts.pieces[PieceType::Pawn] & centerBoard) == 0);
 }
 
 void semiCenterPawnMask_test()
@@ -355,10 +355,10 @@ void semiCenterPawnMask_test()
 
     Board board = Board();
     board.loadFEN(fullWhiteSemiCenter);
-    assert(bitwise::countBits(board.pieces[PieceType::Pawn] & whiteSemiCenter) == 6);
+    assert(bitwise::countBits(board.facts.pieces[PieceType::Pawn] & whiteSemiCenter) == 6);
 
     board.loadFEN(fullBlackSemiCenter);
-    assert(bitwise::countBits(board.pieces[PieceType::Pawn] & blackSemiCenter) == 6);
+    assert(bitwise::countBits(board.facts.pieces[PieceType::Pawn] & blackSemiCenter) == 6);
 }
 
 void firstAndLastRankMask_test() {
@@ -367,12 +367,12 @@ void firstAndLastRankMask_test() {
 
 	Board board = Board();
 	board.loadFEN(firstRankFEN);
-	assert(bitwise::countBits(board.pieces[PieceType::Pawn] & rank1) == 8);
-	assert(bitwise::countBits(board.pieces[PieceType::Pawn] & rank8) == 0);
+	assert(bitwise::countBits(board.facts.pieces[PieceType::Pawn] & rank1) == 8);
+	assert(bitwise::countBits(board.facts.pieces[PieceType::Pawn] & rank8) == 0);
 
 	board.loadFEN(lastRankFEN);
-	assert(bitwise::countBits(board.pieces[PieceType::Pawn] & rank1) == 0);
-	assert(bitwise::countBits(board.pieces[PieceType::Pawn] & rank8) == 8);
+	assert(bitwise::countBits(board.facts.pieces[PieceType::Pawn] & rank1) == 0);
+	assert(bitwise::countBits(board.facts.pieces[PieceType::Pawn] & rank8) == 8);
 }
 
 void saveAndLoadEmptyTransTable_test()

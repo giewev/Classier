@@ -26,11 +26,11 @@ Danger::Danger(const Board& gameBoard) : dataBoard(gameBoard)
     doubleCheck = false;
     pinCount = 0;
     safeSquareCount = 0;
-    Piece King = gameBoard.findKing(gameBoard.turn);
+    Piece King = gameBoard.findKing(gameBoard.facts.turn);
     defenderX = King.getX();
     defenderY = King.getY();
 
-    loadData(gameBoard, gameBoard.findKing(gameBoard.turn));
+    loadData(gameBoard, gameBoard.findKing(gameBoard.facts.turn));
 }
 
 Danger::Danger(const Board& gameBoard, Piece defender) : dataBoard(gameBoard)
@@ -292,7 +292,7 @@ void Danger::addPin(int data)
 
 void Danger::loadData(const Board& gameBoard, Piece defender)
 {
-    bool color = gameBoard.turn;
+    bool color = gameBoard.facts.turn;
     int direction = -1;
     if(color)
     {

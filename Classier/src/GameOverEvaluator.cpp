@@ -14,7 +14,7 @@ double GameOverEvaluator::evaluate(Board boardState)
 {
     // We want negative scores for white turns and positive scores for black turns
     // Because if it's white's turn and there is a checkmate, it's good for black, and vice versa
-    int modifier = 1 - (boardState.turn * 2);
+    int modifier = 1 - (boardState.facts.turn * 2);
 
     switch(boardState.gameOverCheck())
     {

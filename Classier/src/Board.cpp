@@ -19,18 +19,17 @@ using namespace std;
 
 Board::Board()
 {
-    turn = true;
-    castlingRights = 15;
-    EPdata = -1;
-    allPieces = 0ull;
+    facts.turn = true;
+    facts.castlingRights = 15;
+    facts.EPdata = -1;
+    facts.allPieces = 0ull;
     for(int i=0; i<7; i++)
     {
-        pieces[i] = 0ull;
+        facts.pieces[i] = 0ull;
     }
 
 	halfMoveCounter = 0;
 	pawnPositionalValue = 0;
-
 }
 
 Board::Board(int null)
@@ -49,7 +48,7 @@ void Board::loadFEN(std::string fenFile)
 	pawnPositionalValue = 0;
     for(int i=0; i<7; i++)
     {
-        pieces[i] = 0ull;
+        facts.pieces[i] = 0ull;
     }
 
     int x = 0;
@@ -132,7 +131,7 @@ void Board::loadFEN(std::string fenFile)
             y -= 1;
         }
 
-        //Done setting pieces up
+        //Done setting facts.pieces up
         if(y == -1)
         {
             bookmark = i+1;
@@ -140,18 +139,18 @@ void Board::loadFEN(std::string fenFile)
         }
     }
 
-    //setting turn
+    //setting facts.turn
     for(; bookmark < fenFile.length(); bookmark++)
     {
         if(fenFile[bookmark] == 'w')
         {
-            turn = true;
+            facts.turn = true;
             bookmark++;
             break;
         }
         else if(fenFile[bookmark] == 'b')
         {
-            turn = false;
+            facts.turn = false;
             bookmark++;
             break;
         }
@@ -227,7 +226,7 @@ void Board::loadFEN(std::string fenFile)
             {
                 rank = 4;
             }
-            setEP(fenFile[bookmark]-97, rank, !turn);
+            setEP(fenFile[bookmark]-97, rank, !facts.turn);
             break;
         }
         bookmark += 2;
@@ -393,7 +392,7 @@ string Board::outputFEN() const
 
 		if (y != 0) FEN += "/";
     }
-    if(turn)
+    if(facts.turn)
     {
         FEN += " w";
     }
@@ -410,39 +409,39 @@ Board Board::newCopy() const
     Board newBoard = Board(0);
     for(int i=0; i<7; i++)
     {
-        newBoard.pieces[i] = pieces[i];
+        newBoard.facts.pieces[i] = facts.pieces[i];
     }
 
-    newBoard.allPieces = allPieces;
-    newBoard.EPdata = EPdata;
+    newBoard.facts.allPieces = facts.allPieces;
+    newBoard.facts.EPdata = facts.EPdata;
 
     newBoard.setCastlingRights(true,  true,  getCastlingRights(true, true));
     newBoard.setCastlingRights(true,  false, getCastlingRights(true, false));
     newBoard.setCastlingRights(false, true,  getCastlingRights(false, true));
     newBoard.setCastlingRights(false, false, getCastlingRights(false, false));
-    newBoard.turn = turn;
+    newBoard.facts.turn = facts.turn;
     newBoard.kingCoordinates = kingCoordinates;
     newBoard.moveCounter = moveCounter;
     newBoard.halfMoveCounter = halfMoveCounter;
     newBoard.hasher = ZobristHasher(this->hasher);
 
-    return(newBoard);
+    return newBoard;
 }
 
 Piece Board::getSquare(int x, int y) const
 {
     throwIfOutOfBounds(x, y);
     int type = 0;
-    bool color = (pieces[0] >> (x + 8 * y)) & 1;
+    bool color = (facts.pieces[0] >> (x + 8 * y)) & 1;
     //Empty SquareCheck
-    if (false && !(((pieces[PieceType::Pawn] | pieces[PieceType::Bishop] | pieces[PieceType::Knight] |
-                     pieces[PieceType::Queen] | pieces[PieceType::Rook] | pieces[PieceType::King]) >> (x + 8 * y)) & 1))
+    if (false && !(((facts.pieces[PieceType::Pawn] | facts.pieces[PieceType::Bishop] | facts.pieces[PieceType::Knight] |
+                     facts.pieces[PieceType::Queen] | facts.pieces[PieceType::Rook] | facts.pieces[PieceType::King]) >> (x + 8 * y)) & 1))
     {
         return Piece(PieceType::Empty, x, y, color);
     }
     for(int i=1; i<7; i++)
     {
-        if(((pieces[i] >> (x + 8 * y)) & 1))
+        if(((facts.pieces[i] >> (x + 8 * y)) & 1))
         {
             type = i;
             break;
@@ -461,7 +460,7 @@ PieceType Board::getSquareType(int x, int y) const
 
     for(int i=1; i<7; i++)
     {
-        if((pieces[i] >> (x + 8 * y)) & 1)
+        if((facts.pieces[i] >> (x + 8 * y)) & 1)
         {
             return (PieceType)i;
         }
@@ -473,7 +472,7 @@ PieceType Board::getSquareType(int x, int y) const
 bool Board::getSquareColor(int x, int y) const
 {
     throwIfOutOfBounds(x, y);
-    return (pieces[0] >> (x + 8 * y)) & 1;
+    return (facts.pieces[0] >> (x + 8 * y)) & 1;
 }
 
 int Board::getKingX(bool getColor) const
@@ -512,25 +511,25 @@ void Board::setSquare(PieceType type, bool color, int x, int y)
 	updatePositionalScore(type, color, x, y);
     for(int i=1; i<7; i++)
     {
-        pieces[i] &= ~(1ull << (x + 8*y));
+        facts.pieces[i] &= ~(1ull << (x + 8*y));
     }
     if(type > 0)
     {
-        pieces[type] |= (1ull << (x + 8 * y));
-        allPieces |= (1ull << (x + 8 * y));
+        facts.pieces[type] |= (1ull << (x + 8 * y));
+        facts.allPieces |= (1ull << (x + 8 * y));
     }
     else
     {
-        allPieces &= ~(1ull << (x + 8 * y));
+        facts.allPieces &= ~(1ull << (x + 8 * y));
     }
 
     if(color)
     {
-        pieces[0] |= (1ull << (x + 8 * y));
+        facts.pieces[0] |= (1ull << (x + 8 * y));
     }
     else
     {
-        pieces[0] &= ~(1ull << (x + 8 * y));
+        facts.pieces[0] &= ~(1ull << (x + 8 * y));
     }
 }
 
@@ -586,7 +585,7 @@ void Board::generateMoveArray(Move* finalMoveList, int& moveCounter) const
     {
         for(int x = 0; x < 8; x++)
         {
-            if(getSquareColor(x, y) == turn)
+            if(getSquareColor(x, y) == facts.turn)
             {
                 Piece::appendMoveArray(finalMoveList, moveCounter, x, y, *this);
             }
@@ -610,7 +609,7 @@ void Board::generateCaptureMoves(Move* moveList, int& moveCounter) const
     {
         for(int x = 0; x < 8; x++)
         {
-            if(getSquareColor(x, y) == turn)
+            if(getSquareColor(x, y) == facts.turn)
             {
                 Piece::appendMoveArray(moveList, moveCounter, x, y, *this);
             }
@@ -655,8 +654,8 @@ int Board::gameOverCheck() const
                 continue;
             }
             //If the piece is the right color, add its moves to the list
-            //if(getSquareColor(x, y) == turn){
-            if (getSquareColor(x, y) == turn)
+            //if(getSquareColor(x, y) == facts.turn){
+            if (getSquareColor(x, y) == facts.turn)
             {
                 Piece target = getSquare(x, y);
                 moveCounter = 0;
@@ -687,9 +686,9 @@ int Board::gameOverCheck() const
 void Board::unmakeMove(Move data)
 {
 	if (data.null) {
-		turn = !turn;
-		EPdata = data.oldEPData;
-		castlingRights = data.oldCastlingRights;
+		facts.turn = !facts.turn;
+		facts.EPdata = data.oldEPData;
+		facts.castlingRights = data.oldCastlingRights;
 
 		// Zobrist unmakeUpdate
 		this->hasher.update(*this, data);
@@ -698,14 +697,14 @@ void Board::unmakeMove(Move data)
 
 	// Move the piece back
 	PieceType movedType = getSquareType(data.endX, data.endY);
-	bool movedColor = !turn;
+	bool movedColor = !facts.turn;
 	setSquare(movedType, movedColor, data.startX, data.startY);
 	// Replace any captured piece (Except EP capture)
 	setSquare(data.pieceCaptured, !movedColor, data.endX, data.endY);
 
 	// Replace EP data 
 	// Need to do this before checking if it was an EP capture
-	EPdata = data.oldEPData;
+	facts.EPdata = data.oldEPData;
 
 	// Special undo EP cature
 	Piece ep = getEP();
@@ -742,8 +741,8 @@ void Board::unmakeMove(Move data)
 		setKingLocation(movedColor, data.startX, data.startY);
 	}
 
-	castlingRights = data.oldCastlingRights;
-	turn = !turn;
+	facts.castlingRights = data.oldCastlingRights;
+	facts.turn = !facts.turn;
 
 	// Zobrist unmakeUpdate
 	this->hasher.update(*this, data);
@@ -751,9 +750,9 @@ void Board::unmakeMove(Move data)
 
 void Board::makeMove(Move data)
 {
-	// A null move only passes the turn
+	// A null move only passes the facts.turn
 	if (data.null) {
-		turn = !turn;
+		facts.turn = !facts.turn;
 		setEP(Piece(PieceType::Empty));
 		this->hasher.update(*this, data);
 		return;
@@ -770,7 +769,7 @@ void Board::makeMove(Move data)
         //Check for double move
         if(fabs(data.endY - data.startY) == 2)
         {
-            setEP(data.endX, data.endY, turn);
+            setEP(data.endX, data.endY, facts.turn);
         }
         //Check for enPassent capture
         else
@@ -787,7 +786,7 @@ void Board::makeMove(Move data)
             movingPiece.type = data.promotion;
         }
     }
-    else if(EPdata != -1)
+    else if(facts.EPdata != -1)
     {
         setEP(Piece(PieceType::Empty));
     }
@@ -811,8 +810,8 @@ void Board::makeMove(Move data)
             }
         }
         setKingLocation(movingPiece.getColor(), data.endX, data.endY);
-		setCastlingRights(turn, true, false);
-		setCastlingRights(turn, false, false);
+		setCastlingRights(facts.turn, true, false);
+		setCastlingRights(facts.turn, false, false);
     }
 
     //Castling Rights handling
@@ -859,7 +858,7 @@ void Board::makeMove(Move data)
     movingPiece.yPos = data.endY;
     setSquare(movingPiece, data.endX, data.endY);
 
-    turn = !turn;
+    facts.turn = !facts.turn;
 }
 
 //Depth:    Expect:
@@ -942,33 +941,33 @@ bool Board::getCastlingRights(bool color, bool side) const
     {
         placer+=1;
     }
-    return((castlingRights >> placer) & 1);
+    return((facts.castlingRights >> placer) & 1);
 }
 
 char Board::getCastlingRights() const
 {
-    return castlingRights;
+    return facts.castlingRights;
 }
 
 void Board::setEP(Piece loadEP)
 {
     if(loadEP.type != PieceType::Pawn)
     {
-        EPdata = -1;
+        facts.EPdata = -1;
         return;
     }
     if(loadEP.color)
     {
-        EPdata = 1;
+        facts.EPdata = 1;
     }
     else
     {
-        EPdata = 0;
+        facts.EPdata = 0;
     }
-    EPdata <<= 3;
-    EPdata |= loadEP.getY();
-    EPdata <<= 3;
-    EPdata |= loadEP.getX();
+    facts.EPdata <<= 3;
+    facts.EPdata |= loadEP.getY();
+    facts.EPdata <<= 3;
+    facts.EPdata |= loadEP.getX();
 }
 
 void Board::setEP(int x, int y, bool color)
@@ -976,28 +975,28 @@ void Board::setEP(int x, int y, bool color)
     throwIfOutOfBounds(x, y);
     if (color)
     {
-        EPdata = 1;
+        facts.EPdata = 1;
     }
     else
     {
-        EPdata = 0;
+        facts.EPdata = 0;
     }
-    EPdata <<= 3;
-    EPdata |= y;
-    EPdata <<= 3;
-    EPdata |= x;
+    facts.EPdata <<= 3;
+    facts.EPdata |= y;
+    facts.EPdata <<= 3;
+    facts.EPdata |= x;
 }
 
 Piece Board::getEP() const
 {
-    if(EPdata == -1)
+    if(facts.EPdata == -1)
     {
         return Piece(PieceType::Empty);
     }
     int x;
     int y;
     bool color;
-    int copyData = EPdata;
+    int copyData = facts.EPdata;
     x = copyData & 7;
     copyData >>= 3;
     y = copyData & 7;
@@ -1014,12 +1013,12 @@ Piece Board::getEP() const
 
 int Board::getEPData() const
 {
-	return EPdata;
+	return facts.EPdata;
 }
 
 int Board::getCastlingData() const
 {
-	return castlingRights;
+	return facts.castlingRights;
 }
 
 void Board::setCastlingRights(bool color, bool side, bool value)
@@ -1038,18 +1037,18 @@ void Board::setCastlingRights(bool color, bool side, bool value)
     if(value)
     {
         //sets the corresponding bit
-        castlingRights = castlingRights | (1 << placer);
+        facts.castlingRights = facts.castlingRights | (1 << placer);
     }
     else
     {
         //Deletes the bit at the corresponding spot
-        castlingRights = castlingRights & ~(1 << placer);
+        facts.castlingRights = facts.castlingRights & ~(1 << placer);
     }
 }
 
 void Board::setCastlingRights(char rights)
 {
-    castlingRights = rights;
+    facts.castlingRights = rights;
 }
 
 void Board::countPieces() const
@@ -1073,46 +1072,46 @@ void Board::countPieces() const
 
 int Board::pieceCount() const
 {
-    return bitwise::countBits(allPieces);
+    return bitwise::countBits(facts.allPieces);
 }
 
 int Board::pieceCount(bool color) const
 {
-    bitBoard mask = pieces[0];
+    bitBoard mask = facts.pieces[0];
     if (!color)
     {
         mask = ~mask;
     }
 
-    return bitwise::countBits(allPieces & mask);
+    return bitwise::countBits(facts.allPieces & mask);
 }
 
 int Board::pieceCount(PieceType type) const
 {
-    return bitwise::countBits(pieces[type]);
+    return bitwise::countBits(facts.pieces[type]);
 }
 
 int Board::pieceCount(PieceType type, bool color) const
 {
-    bitBoard mask = pieces[0];
+    bitBoard mask = facts.pieces[0];
     if (!color)
     {
         mask = ~mask;
     }
 
-    return bitwise::countBits(pieces[type] & mask);
+    return bitwise::countBits(facts.pieces[type] & mask);
 }
 
 bool Board::squareIsPopulated(int x, int y) const
 {
     throwIfOutOfBounds(x, y);
-    return (allPieces >> (x + 8 * y)) & 1;
+    return (facts.allPieces >> (x + 8 * y)) & 1;
 }
 
 bool Board::squareIsType(int x, int y, int type) const
 {
     throwIfOutOfBounds(x, y);
-    return (pieces[type] >> (x + 8 * y)) & 1;
+    return (facts.pieces[type] >> (x + 8 * y)) & 1;
 }
 
 void Board::throwIfOutOfBounds(int x, int y)
@@ -1127,25 +1126,25 @@ bool Board::operator==(const Board &other) const
 {
     for (int i = 1; i < 7; i++)
     {
-        if (this->pieces[i] != other.pieces[i])
+        if (this->facts.pieces[i] != other.facts.pieces[i])
         {
             return false;
         }
     }
 
-    if ((this->pieces[0] & this->allPieces) != (other.pieces[0] & other.allPieces))
+    if ((this->facts.pieces[0] & this->facts.allPieces) != (other.facts.pieces[0] & other.facts.allPieces))
     {
         return false;
     }
 
-    if ((~this->pieces[0] & this->allPieces) != (~other.pieces[0] & other.allPieces))
+    if ((~this->facts.pieces[0] & this->facts.allPieces) != (~other.facts.pieces[0] & other.facts.allPieces))
     {
         return false;
     }
 
-    return this->turn == other.turn &&
-           this->EPdata == other.EPdata &&
-           this->castlingRights == other.castlingRights;
+    return this->facts.turn == other.facts.turn &&
+           this->facts.EPdata == other.facts.EPdata &&
+           this->facts.castlingRights == other.facts.castlingRights;
 }
 
 size_t Board::getHashCode() const

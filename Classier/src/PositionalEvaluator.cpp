@@ -17,8 +17,8 @@ double PositionalEvaluator::evaluate(Board boardState)
     double score = 0;
 
     // Count how many pawns are doubled up on a friendly pawn
-    bitBoard whitePawns = boardState.pieces[PieceType::Pawn] & boardState.pieces[0];
-    bitBoard blackPawns = boardState.pieces[PieceType::Pawn] & ~boardState.pieces[0];
+    bitBoard whitePawns = boardState.facts.pieces[PieceType::Pawn] & boardState.facts.pieces[0];
+    bitBoard blackPawns = boardState.facts.pieces[PieceType::Pawn] & ~boardState.facts.pieces[0];
     score += doubledPawnValue * bitwise::countBits(whitePawns & (whitePawns << 8));
     score -= doubledPawnValue * bitwise::countBits(blackPawns & (blackPawns >> 8));
 
@@ -65,14 +65,14 @@ double PositionalEvaluator::evaluate(Board boardState)
 	}
 
     // Knights on the rim are grim
-    bitBoard sideKnights = boardState.pieces[PieceType::Knight] & (aFile | hFile);
-    score += rimKnightValue * bitwise::countBits(sideKnights & boardState.pieces[0]);
-    score -= rimKnightValue * bitwise::countBits(sideKnights & (~boardState.pieces[0]));
+    bitBoard sideKnights = boardState.facts.pieces[PieceType::Knight] & (aFile | hFile);
+    score += rimKnightValue * bitwise::countBits(sideKnights & boardState.facts.pieces[0]);
+    score -= rimKnightValue * bitwise::countBits(sideKnights & (~boardState.facts.pieces[0]));
 
     //Bishop and Knight development
-    bitBoard knightsAndBishops = (boardState.pieces[PieceType::Bishop] | boardState.pieces[PieceType::Knight]);
-    bitBoard whiteUndeveloped = knightsAndBishops & rank1 & boardState.pieces[0];
-    bitBoard blackUndeveloped = knightsAndBishops & rank8 & (~boardState.pieces[0]);
+    bitBoard knightsAndBishops = (boardState.facts.pieces[PieceType::Bishop] | boardState.facts.pieces[PieceType::Knight]);
+    bitBoard whiteUndeveloped = knightsAndBishops & rank1 & boardState.facts.pieces[0];
+    bitBoard blackUndeveloped = knightsAndBishops & rank8 & (~boardState.facts.pieces[0]);
     score -= developmentValue * bitwise::countBits(whiteUndeveloped);
     score += developmentValue * bitwise::countBits(blackUndeveloped);
 

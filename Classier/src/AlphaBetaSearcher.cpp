@@ -34,7 +34,7 @@ Move AlphaBetaSearcher::alphaBeta(Board& boardState, int depth, double alpha, do
         return transposition.bestMove;
     }
     else if (transposition.cutoffDepth >= depth && // Cutoff info is good enough
-        causesAlphaBetaBreak(transposition.cutoffMove.score, alpha, beta, boardState.turn))
+        causesAlphaBetaBreak(transposition.cutoffMove.score, alpha, beta, boardState.facts.turn))
     {
         return transposition.cutoffMove;
     }
@@ -57,7 +57,7 @@ Move AlphaBetaSearcher::alphaBeta(Board& boardState, int depth, double alpha, do
 			boardState.unmakeMove(nullMove);
 			nullMode = false;
 			nullMove.score = nullResponse.score;
-			if (causesAlphaBetaBreak(nullMove.score, alpha, beta, boardState.turn))
+			if (causesAlphaBetaBreak(nullMove.score, alpha, beta, boardState.facts.turn))
 			{
 				return nullMove;
 			}
@@ -119,10 +119,10 @@ Move AlphaBetaSearcher::alphaBeta(Board& boardState, int depth, double alpha, do
         }
 
 		boardState.unmakeMove(moveList[i]);
-        bestIndex = bestMove(moveList, bestIndex, i, boardState.turn);
-        updateAlphaBeta(moveList[bestIndex].score, boardState.turn, alpha, beta);
+        bestIndex = bestMove(moveList, bestIndex, i, boardState.facts.turn);
+        updateAlphaBeta(moveList[bestIndex].score, boardState.facts.turn, alpha, beta);
 
-        if (causesAlphaBetaBreak(moveList[i].score, alpha, beta, boardState.turn))
+        if (causesAlphaBetaBreak(moveList[i].score, alpha, beta, boardState.facts.turn))
         {
             engine.updateTranspositionCutoffIfDeeper(boardState, depth, moveList[i]);
 			if (moveList[i].pieceCaptured == PieceType::Empty)
@@ -182,13 +182,13 @@ void AlphaBetaSearcher::updateAlphaBeta(double score, bool turn, double& alpha, 
 double AlphaBetaSearcher::quiesce(Board& boardState, double alpha, double beta)
 {
     double staticScore = engine.lazyEvaluatePosition(boardState);
-    if (causesAlphaBetaBreak(staticScore, alpha, beta, boardState.turn))
+    if (causesAlphaBetaBreak(staticScore, alpha, beta, boardState.facts.turn))
     {
         return staticScore;
     }
 
-    updateAlphaBeta(staticScore, boardState.turn, alpha, beta);
-	double minDelta = deltaToAlphaBeta(staticScore, boardState.turn, alpha, beta) - 2;
+    updateAlphaBeta(staticScore, boardState.facts.turn, alpha, beta);
+	double minDelta = deltaToAlphaBeta(staticScore, boardState.facts.turn, alpha, beta) - 2;
 
     int moveCount = 0;
     Move moveList[220];
@@ -213,21 +213,21 @@ double AlphaBetaSearcher::quiesce(Board& boardState, double alpha, double beta)
         double score = quiesce(boardState, alpha, beta);
 		boardState.unmakeMove(moveList[i]);
 
-        if (causesAlphaBetaBreak(score, alpha, beta, boardState.turn))
+        if (causesAlphaBetaBreak(score, alpha, beta, boardState.facts.turn))
         {
             return score;
         }
 
-        updateAlphaBeta(score, boardState.turn, alpha, beta);
-        bestIndex = bestMove(moveList, bestIndex, i, boardState.turn);
+        updateAlphaBeta(score, boardState.facts.turn, alpha, beta);
+        bestIndex = bestMove(moveList, bestIndex, i, boardState.facts.turn);
     }
 
     if (bestIndex == -1)
     {
         return staticScore;
     }
-    else if ((boardState.turn && staticScore > moveList[bestIndex].score) ||
-        (!boardState.turn && staticScore < moveList[bestIndex].score))
+    else if ((boardState.facts.turn && staticScore > moveList[bestIndex].score) ||
+        (!boardState.facts.turn && staticScore < moveList[bestIndex].score))
     {
         return staticScore;
     }

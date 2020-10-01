@@ -46,6 +46,7 @@
     <ClInclude Include="include\ArgumentParser.h" />
     <ClInclude Include="include\Bitwise.h" />
     <ClInclude Include="include\Board.h" />
+    <ClInclude Include="include\BoardInfo.h" />
     <ClInclude Include="include\Danger.h" />
     <ClInclude Include="include\Engine.h" />
     <ClInclude Include="include\Evaluation Constants.h" />

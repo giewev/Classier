@@ -70,7 +70,7 @@ Move Engine::searchToDepth(int depth, chrono::steady_clock::time_point cancelTim
 	}
 	else {
 		int centipawnScore = (int)(bestMove.getScore() * 100);
-		if (!gameBoard.turn) centipawnScore *= -1;
+		if (!gameBoard.facts.turn) centipawnScore *= -1;
 		printf("info depth %d nodes %d score cp %d pv ", depth, searcher.nodesVisited, centipawnScore);
 		std::cout << bestMove.basicAlg() << std::endl;
 	}

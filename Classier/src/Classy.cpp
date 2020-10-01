@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
 			{
 				int i;
 				int timefactor;
-				if (board.turn) i = line.find("wtime");
+				if (board.facts.turn) i = line.find("wtime");
 				else i = line.find("btime");
 				if (i != -1) // Tournament time
 				{

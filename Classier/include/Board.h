@@ -6,6 +6,7 @@
 #include <inttypes.h>
 #include "ZobristHasher.h"
 #include "Move.h"
+#include "BoardInfo.h"
 
 struct Move;
 class Piece;
@@ -16,9 +17,7 @@ enum PieceType : char;
 class Board
 {
 public:
-    bool turn;
-    bitBoard pieces[7];
-    bitBoard allPieces;
+	BoardInfo facts;
 
 	double pawnPositionalValue;
 
@@ -72,15 +71,8 @@ public:
     void setCastlingRights(char);
     static void throwIfOutOfBounds(int x, int y);
 
-    template <class Archive>
-    void serialize(Archive& ar)
-    {
-        ar(turn, allPieces, pieces, castlingRights, kingCoordinates, EPdata, moveCounter, halfMoveCounter, hasher);
-    }
 private:
-    char castlingRights;
     int kingCoordinates;
-    int EPdata;
     int moveCounter;
     int halfMoveCounter;
     ZobristHasher hasher;

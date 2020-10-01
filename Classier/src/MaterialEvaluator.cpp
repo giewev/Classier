@@ -15,7 +15,7 @@ double MaterialEvaluator::evaluate(Board boardState)
 {
     double score = 0;
 
-    double knightBishopMod = knightBishopWeight * (bitwise::countBits(boardState.pieces[PieceType::Pawn] & centerBoard) - 2);
+    double knightBishopMod = knightBishopWeight * (bitwise::countBits(boardState.facts.pieces[PieceType::Pawn] & centerBoard) - 2);
     score += (knightValue + knightBishopMod) * boardState.pieceCount(PieceType::Knight, true);
     score -= (knightValue + knightBishopMod) * boardState.pieceCount(PieceType::Knight, false);
     score += (bishopValue - knightBishopMod) * boardState.pieceCount(PieceType::Bishop, true);

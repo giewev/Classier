@@ -62,7 +62,7 @@ void ZobristHasher::load(const Board& board)
     this->loadPieces(board);
     this->loadCastlingRights(board);
     this->loadEnPassant(board);
-    if (board.turn)
+    if (board.facts.turn)
     {
         this->hashValue ^= this->turnHashCode;
     }

@@ -144,7 +144,7 @@ bool Move::isSafe(Danger safetyData)
                 {
 					Board gameBoard = safetyData.getBoard();
 					gameBoard.makeMove(*this);
-					bool safe = gameBoard.getSquare(gameBoard.getKingX(!gameBoard.turn), gameBoard.getKingY(!gameBoard.turn)).isSafe(gameBoard);
+					bool safe = gameBoard.getSquare(gameBoard.getKingX(!gameBoard.facts.turn), gameBoard.getKingY(!gameBoard.facts.turn)).isSafe(gameBoard);
 					gameBoard.unmakeMove(*this);
 					return safe;
                 }
