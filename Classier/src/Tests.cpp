@@ -13,6 +13,14 @@ void assertAlmost(double expected, double actual)
 	assert(fabs(expected - actual) < 1e-6);
 }
 
+void knightMoveMaps()
+{
+	assert(bitwise::genKnightMovement(7, 7) == 0x20400000000000);
+	assert(bitwise::genKnightMovement(0, 0) == 0x20400);
+	assert(bitwise::genKnightMovement(7, 0) == 0x402000);
+	assert(bitwise::genKnightMovement(0, 7) == 0x4020000000000);
+}
+
 void startingPerft_test()
 {
     std::string startingFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w";
@@ -425,6 +433,7 @@ void nullMoveChangesOnlyTurn_test()
 
 void runAllTests()
 {
+	knightMoveMaps();
 	pawnPositionalScore_test_1();
 	pawnPositionalScore_test_2();
 	makeUnmakeEPCapture_test();

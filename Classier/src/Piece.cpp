@@ -217,7 +217,7 @@ void Piece::queenMoveArray(Move* moveList, int& moveCounter, int xPos, int yPos,
 
 void Piece::bishopMoveArray(Move* moveList, int& moveCounter, int xPos, int yPos, const Board& gameBoard)
 {
-    bool ownColor = gameBoard.getSquareColor(xPos, yPos);
+	bool ownColor = gameBoard.facts.turn;
     for(int i=-1; i<=1; i+=2)
     {
         for(int j=-1; j<=1; j+=2)
@@ -253,37 +253,23 @@ void Piece::bishopMoveArray(Move* moveList, int& moveCounter, int xPos, int yPos
         }
     }
 }
+
 void Piece::knightMoveArray(Move* moveList, int& moveCounter, int xPos, int yPos, const Board& gameBoard)
 {
-    bool ownColor = gameBoard.getSquareColor(xPos, yPos);
-    for(int j=-2; j<=2; j++)
-    {
-        for(int k=-2; k<=2; k++)
-        {
-            if(j==0 || k==0) //Polar movement
-            {
-                continue;
-            }
-            if(j==k || j==-1*k) //square movement
-            {
-                continue;
-            }
-            if(xPos+j >= 8 || xPos+j < 0 || yPos+k >= 8 || yPos+k < 0) //trying to move outside board
-            {
-                continue;
-            }
+	bool ownColor = gameBoard.getSquareColor(xPos, yPos);
+	bitBoard obstacles;
+	if (ownColor) obstacles = gameBoard.facts.allPieces & gameBoard.facts.pieces[0];
+	else obstacles = gameBoard.facts.allPieces & ~gameBoard.facts.pieces[0];
 
-            if(gameBoard.squareIsPopulated(xPos + j, yPos + k))
-            {
-                if(gameBoard.getSquareColor(xPos + j, yPos + k) == ownColor)
-                {
-                    continue;
-                }
-            }
-
-            moveList[moveCounter++] = Move(xPos, yPos, xPos+j, yPos+k, PieceType::Empty, gameBoard);
-        }
-    }
+	bitBoard legalDestinations = ~obstacles & knightMoves[xPos][yPos];
+	unsigned long legalIndex;
+	while (_BitScanForward64(&legalIndex, legalDestinations))
+	{
+		int x = bitwise::bitBoardX(legalIndex);
+		int y = bitwise::bitBoardY(legalIndex);
+		moveList[moveCounter++] = Move(xPos, yPos, x, y, PieceType::Empty, gameBoard);
+		legalDestinations &= legalDestinations - 1;
+	}
 }
 
 void Piece::rookMoveArray(Move* moveList, int& moveCounter, int xPos, int yPos, const Board& gameBoard)

@@ -1,5 +1,4 @@
-#ifndef BITWISE_H
-#define BITWISE_H
+#pragma once
 
 #include <inttypes.h>
 #define bitBoard uint64_t
@@ -73,6 +72,10 @@ const bitBoard files[8] =
 const bitBoard centerBoard = 0x0000001818000000;
 const bitBoard outsideRim  = 0xFF818181818181FF;
 
+const bitBoard knightPatternC3 = 0x0000000A1100110A;
+
+extern bitBoard knightMoves[8][8];
+
 const bitBoard whitePawnChains[6] =
 {
     0x0408000000000000,
@@ -101,7 +104,6 @@ const bitBoard a8h1 = 0x0102040810204080;
 const bitBoard a1h8 = 0x8040201008040201;
 
 
-const bitBoard knightMovement = 0x0000000A1100110A;
 const bitBoard pawnAttack = 0x0000000000010001;
 
 const bitBoard BishopSquareTable[4] =
@@ -121,16 +123,14 @@ void trimRight(bitBoard& toTrim, int layers);
 
 int countBits(bitBoard data);
 
-bitBoard knightSquares(int x, int y);
-
-int firstBit(bitBoard input);
-int lastBit(bitBoard input);
-
 int getX(int raw);
 int getY(int raw);
 
+int bitBoardX(unsigned long& index);
+int bitBoardY(unsigned long& index);
+
 bitBoard file(int i);
 bitBoard rank(int i);
+bitBoard genKnightMovement(int x, int y);
+void initializeBitboards();
 }
-
-#endif // BITWISE_H

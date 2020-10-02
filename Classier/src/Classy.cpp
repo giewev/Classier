@@ -8,12 +8,14 @@
 #include "Move.h"
 #include "ArgumentParser.h"
 #include "Piece.h"
+#include "Bitwise.h"
 
 void runAllTests();
 
 int main(int argc, char *argv[])
 {
     ArgumentParser argParser = ArgumentParser(argc, argv);
+	bitwise::initializeBitboards();
     if (argParser.flagExists("-t"))
     {
         runAllTests();

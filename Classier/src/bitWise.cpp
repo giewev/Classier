@@ -1,12 +1,15 @@
 #include "Bitwise.h"
 #include <iostream>
 #include <bitset>
+#include <intrin.h>
+
+bitBoard knightMoves[8][8];
 
 void bitwise::trimBottom(bitBoard& toTrim, int layers)
 {
     for (int i = 0; i < layers; i++)
     {
-        toTrim &= ~(rank1 << i);
+		toTrim &= ~rank(i);
     }
 }
 
@@ -14,7 +17,7 @@ void bitwise::trimTop(bitBoard& toTrim, int layers)
 {
     for (int i = 0; i < layers; i++)
     {
-        toTrim &= ~(rank1 << (7 - i));
+		toTrim &= ~rank(7 - i);
     }
 }
 
@@ -22,7 +25,7 @@ void bitwise::trimLeft(bitBoard& toTrim, int layers)
 {
     for (int i = 0; i < layers; i++)
     {
-        toTrim &= ~(aFile << (i * 8));
+		toTrim &= ~file(i);
     }
 }
 
@@ -30,90 +33,13 @@ void bitwise::trimRight(bitBoard& toTrim, int layers)
 {
     for (int i = 0; i < layers; i++)
     {
-        toTrim &= ~(aFile << (8 * (7 - i)));
+		toTrim &= ~file(7-i);
     }
 }
 
 int bitwise::countBits(bitBoard data)
 {
-	return std::bitset<64>(data).count();
-    int count = 0;
-    while (data)
-    {
-        data &= data - 1;
-        count++;
-    }
-
-    return count;
-}
-
-bitBoard bitwise::knightSquares(int x, int y)
-{
-    bitBoard toReturn = knightMovement;
-    //std::cout << toReturn << std::endl;
-    if (x < 3)
-    {
-        trimLeft(toReturn, 3 - x);
-    }
-    else if (x > 6)
-    {
-        trimRight(toReturn, x - 3);
-    }
-    if (y < 3)
-    {
-        trimBottom(toReturn, 3 - y);
-    }
-    if (y > 6)
-    {
-        trimTop(toReturn, y - 3);
-    }
-
-    int toShift = -18;
-    toShift += y;
-    toShift += x * 8;
-    if (toShift < 0)
-    {
-        toReturn >>= -toShift;
-    }
-    else
-    {
-        toReturn <<= toShift;
-    }
-    return toReturn;
-}
-
-int bitwise::firstBit(bitBoard input)
-{
-    int index = 0;
-    while (!(input & 1) && index < 64)
-    {
-        input >>= 1;
-        index++;
-    }
-    //std::cout << "info string ending first bit" << std::endl;
-    if (index == 64)
-    {
-        return -1;
-    }
-    else
-    {
-        return index;
-    }
-}
-
-int bitwise::lastBit(bitBoard input)
-{
-    bitBoard save = input;
-    while (input)
-    {
-        input &= (input - 1);
-        if (input)
-        {
-            save = input;
-        }
-    }
-
-    return firstBit(save);
+	return __popcnt64(data);
 }
 
 bitBoard bitwise::file(int i)
@@ -136,6 +62,8 @@ bitBoard bitwise::rank(int i)
 	return 0;
 }
 
+
+
 int bitwise::getX(int raw)
 {
     return (raw >> 3) + 1;
@@ -144,4 +72,71 @@ int bitwise::getX(int raw)
 int bitwise::getY(int raw)
 {
     return (raw % 8) + 1;
+}
+
+int bitwise::bitBoardX(unsigned long& index)
+{
+	return index % 8;
+}
+
+int bitwise::bitBoardY(unsigned long& index)
+{
+	return index / 8;
+}
+
+bitBoard bitwise::genKnightMovement(int x, int y)
+{
+	bitBoard base = knightPatternC3;
+
+	switch (x)
+	{
+	case(0):
+		base &= ~file(1);
+	case(1):
+		base &= ~file(0);
+		break;
+	case(7):
+		base &= ~file(3);
+	case(6):
+		base &= ~file(4);
+		break;
+	}
+
+	switch (y)
+	{
+	case(0):
+		base &= ~rank(1);
+	case(1):
+		base &= ~rank(0);
+		break;
+	case(7):
+		base &= ~rank(3);
+	case(6):
+		base &= ~rank(4);
+		break;
+	}
+
+	int toShift = -18;
+	toShift += x;
+	toShift += y * 8;
+	if (toShift < 0)
+	{
+		base >>= -toShift;
+	}
+	else
+	{
+		base <<= toShift;
+	}
+	return base;
+}
+
+void bitwise::initializeBitboards()
+{
+	for (int x = 0; x < 8; x++)
+	{
+		for (int y = 0; y < 8; y++)
+		{
+			knightMoves[x][y] = genKnightMovement(x, y);
+		}
+	}
 }
