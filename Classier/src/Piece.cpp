@@ -138,75 +138,39 @@ void Piece::appendMoveArray(Move* moveList, int& moveCounter, int x, int y, cons
 
 void Piece::kingMoveArray(Move* moveList, int& moveCounter, int xPos, int yPos, const Board& gameBoard)
 {
-    bool ownColor = gameBoard.getSquareColor(xPos, yPos);
-    for (int j=-1; j<=1; j++)
-    {
-        for (int k=-1; k<=1; k++)
-        {
-            if(j==0 && k==0) //if not moving
-            {
-                continue;
-            }
+	bool ownColor = gameBoard.getSquareColor(xPos, yPos);
+	bitBoard legalMoves = kingMoves[xPos][yPos];
+	if (ownColor) legalMoves &= ~(gameBoard.facts.allPieces & gameBoard.facts.pieces[0]);
+	else legalMoves &= ~gameBoard.facts.allPieces | gameBoard.facts.pieces[0];
 
-            if(xPos+j >= 8 || xPos+j < 0) //if moving horizontally off the board
-            {
-                continue;
-            }
-            if(yPos+k >= 8 || yPos+k < 0) //if moving vertically off the board
-            {
-                continue;
-            }
+	unsigned long legalIndex;
+	while (_BitScanForward64(&legalIndex, legalMoves))
+	{
+		int x = bitwise::bitBoardX(legalIndex);
+		int y = bitwise::bitBoardY(legalIndex);
+		moveList[moveCounter++] = Move(xPos, yPos, x, y, PieceType::Empty, gameBoard);
+		legalMoves &= legalMoves - 1;
+	}
 
-            //Check to see if Friendly Piece is there
-            if(gameBoard.squareIsPopulated(xPos + j, yPos + k))
-            {
-                if(gameBoard.getSquareColor(xPos + j, yPos + k) == ownColor)
-                {
-                    continue;
-                }
-            }
-            //Everything is good, so make a move and add it to the moveList
-            moveList[moveCounter++] = Move(xPos, yPos, xPos+j, yPos+k, PieceType::Empty, gameBoard);
-        }
-    }
+	// Kingside castling
+	if (gameBoard.getCastlingRights(ownColor, 0))
+	{
+		bitBoard castlingObstacles = kingCastlingMoves[ownColor][0] & gameBoard.facts.allPieces;
+		if (!castlingObstacles)
+		{
+			moveList[moveCounter++] = Move(xPos, yPos, xPos - 2, yPos, PieceType::Empty, gameBoard);
+		}
+	}
 
-    //CastlingMoves
-    for(int i=0; i<=1; i++)
-    {
-        if(gameBoard.getCastlingRights(ownColor, i==1))
-        {
-            if(i)
-            {
-                if(gameBoard.squareIsPopulated(xPos+1, yPos))
-                {
-                    continue;
-                }
-                if(gameBoard.squareIsPopulated(xPos+2, yPos))
-                {
-                    continue;
-                }
-
-                moveList[moveCounter++] = Move(xPos, yPos, xPos + 2, yPos, PieceType::Empty, gameBoard);
-            }
-            else
-            {
-                if(gameBoard.squareIsPopulated(xPos-1, yPos))
-                {
-                    continue;
-                }
-                if(gameBoard.squareIsPopulated(xPos-2, yPos))
-                {
-                    continue;
-                }
-
-                if(gameBoard.squareIsPopulated(xPos-3, yPos))
-                {
-                    continue;
-                }
-                moveList[moveCounter++] = Move(xPos, yPos, xPos - 2, yPos, PieceType::Empty, gameBoard);
-            }
-        }
-    }
+	// Queenside castling
+	if (gameBoard.getCastlingRights(ownColor, 1))
+	{
+		bitBoard castlingObstacles = kingCastlingMoves[ownColor][1] & gameBoard.facts.allPieces;
+		if (!castlingObstacles)
+		{
+			moveList[moveCounter++] = Move(xPos, yPos, xPos + 2, yPos, PieceType::Empty, gameBoard);
+		}
+	}
 }
 
 void Piece::queenMoveArray(Move* moveList, int& moveCounter, int xPos, int yPos, const Board& gameBoard)

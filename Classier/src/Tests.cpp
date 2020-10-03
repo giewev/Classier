@@ -32,6 +32,12 @@ void pawnMoveMaps()
 	assert(bitwise::genPawnCaptureMovement(false, 3, 6) == 0x140000000000);
 }
 
+void kingMoveMaps()
+{
+	assert(bitwise::genKingMovement(4, 0) == 0x3828);
+	assert(bitwise::genKingMovement(4, 7) == 0x2838000000000000);
+}
+
 void startingPerft_test()
 {
     std::string startingFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w";
@@ -432,6 +438,7 @@ void runAllTests()
 {
 	pawnMoveMaps();
 	knightMoveMaps();
+	kingMoveMaps();
 	pawnPositionalScore_test_1();
 	pawnPositionalScore_test_2();
 	makeUnmakeEPCapture_test();

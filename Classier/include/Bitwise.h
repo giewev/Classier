@@ -76,11 +76,25 @@ const bitBoard knightPatternC3 = 0x0000000A1100110A;
 const bitBoard pawnSingleMovePattern = 0x100;
 const bitBoard pawnDoubleMovePattern = 0x10100;
 const bitBoard pawnCaptureMovePattern = 0x500;
+const bitBoard kingPatternB2 = 0x70507;
 
 extern bitBoard knightMoves[8][8];
 extern bitBoard pawnSingleMoves[2][8][8];
 extern bitBoard pawnDoubleMoves[2][8][8];
 extern bitBoard pawnCaptureMoves[2][8][8];
+extern bitBoard kingMoves[8][8];
+
+const bitBoard kingCastlingMoves[2][2]
+{
+	{
+		0xe00000000000000,
+		0x6000000000000000
+	},
+	{
+		0xe,
+		0x60
+	}
+};
 
 const bitBoard promotionSquares = 0xff000000000000ff;
 
@@ -107,5 +121,6 @@ bitBoard genKnightMovement(int x, int y);
 bitBoard genSinglePawnMovement(bool color, int x, int y);
 bitBoard genDoublePawnMovement(bool color, int x, int y);
 bitBoard genPawnCaptureMovement(bool color, int x, int y);
+bitBoard genKingMovement(int x, int y);
 void initializeBitboards();
 }

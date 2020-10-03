@@ -36,6 +36,17 @@ int main(int argc, char *argv[])
             double searchTime = std::stod(argParser.argumentContent("-time")) * 1000;
             std::cout << engine.searchForTime(searchTime).basicAlg() << std::endl;
         }
+		else if (argParser.flagExists("-moves"))
+		{
+			Move moveList[210];
+			int moveCounter = 0;
+			board.generateMoveArray(moveList, moveCounter);
+			std::cout << moveCounter << std::endl;
+			for (int i = 0; i < moveCounter; i++)
+			{
+				std::cout << moveList[i].basicAlg() << std::endl;
+			}
+		}
     }
 	else {
 		Board board = Board();

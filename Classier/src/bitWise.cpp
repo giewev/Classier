@@ -7,6 +7,7 @@ bitBoard knightMoves[8][8];
 bitBoard pawnSingleMoves[2][8][8];
 bitBoard pawnDoubleMoves[2][8][8];
 bitBoard pawnCaptureMoves[2][8][8];
+bitBoard kingMoves[8][8];
 
 void bitwise::trimBottom(bitBoard& toTrim, int layers)
 {
@@ -209,6 +210,41 @@ bitBoard bitwise::genPawnCaptureMovement(bool color, int x, int y)
 	return mask;
 }
 
+bitBoard bitwise::genKingMovement(int x, int y)
+{
+	bitBoard base = kingPatternB2;
+
+	if (x == 0)
+	{
+		base &= ~aFile;
+	}
+
+	if (x == 7)
+	{
+		base &= ~cFile;
+	}
+
+	if (y == 0)
+	{
+		base &= ~rank1;
+	}
+
+	if (y == 7)
+	{
+		base &= ~rank3;
+	}
+
+	int toShift = -9 + bitwise::coordToIndex(x, y);
+	if (toShift < 0)
+	{
+		return base >> -toShift;
+	}
+	else
+	{
+		return base << toShift;
+	}
+}
+
 void bitwise::initializeBitboards()
 {
 	for (int x = 0; x < 8; x++)
@@ -222,6 +258,7 @@ void bitwise::initializeBitboards()
 			pawnDoubleMoves[1][x][y] = genDoublePawnMovement(true, x, y);
 			pawnCaptureMoves[0][x][y] = genPawnCaptureMovement(false, x, y);
 			pawnCaptureMoves[1][x][y] = genPawnCaptureMovement(true, x, y);
+			kingMoves[x][y] = genKingMovement(x, y);
 		}
 	}
 }
