@@ -21,6 +21,17 @@ void knightMoveMaps()
 	assert(bitwise::genKnightMovement(0, 7) == 0x4020000000000);
 }
 
+void pawnMoveMaps()
+{
+	assert(bitwise::genPawnCaptureMovement(true, 0, 1) == 0x20000);
+	assert(bitwise::genPawnCaptureMovement(true, 7, 1) == 0x400000);
+	assert(bitwise::genPawnCaptureMovement(false, 0, 6) == 0x20000000000);
+	assert(bitwise::genPawnCaptureMovement(false, 7, 6) == 0x400000000000);
+
+	assert(bitwise::genPawnCaptureMovement(true, 3, 1) == 0x140000);
+	assert(bitwise::genPawnCaptureMovement(false, 3, 6) == 0x140000000000);
+}
+
 void startingPerft_test()
 {
     std::string startingFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w";
@@ -49,7 +60,6 @@ void kiwipetePerft_test()
         assert(testBoard.perft(i) == expectedPerfts[i]);
     }
 }
-
 
 void endgamePerft_test()
 {
@@ -356,19 +366,6 @@ void centerPawnMask_test()
     assert(bitwise::countBits(board.facts.pieces[PieceType::Pawn] & centerBoard) == 0);
 }
 
-void semiCenterPawnMask_test()
-{
-    std::string fullWhiteSemiCenter = "8/8/8/8/2P2P2/2PPPP2/8/8 w - - 0 1";
-    std::string fullBlackSemiCenter = "8/8/2pppp2/2p2p2/8/8/8/8 w - - 0 1";
-
-    Board board = Board();
-    board.loadFEN(fullWhiteSemiCenter);
-    assert(bitwise::countBits(board.facts.pieces[PieceType::Pawn] & whiteSemiCenter) == 6);
-
-    board.loadFEN(fullBlackSemiCenter);
-    assert(bitwise::countBits(board.facts.pieces[PieceType::Pawn] & blackSemiCenter) == 6);
-}
-
 void firstAndLastRankMask_test() {
 	std::string firstRankFEN = "8/8/8/8/8/8/8/PPPPPPPP w - - 0 1 ";
 	std::string lastRankFEN = "PPPPPPPP/8/8/8/8/8/8/8 w - - 0 1 ";
@@ -433,6 +430,7 @@ void nullMoveChangesOnlyTurn_test()
 
 void runAllTests()
 {
+	pawnMoveMaps();
 	knightMoveMaps();
 	pawnPositionalScore_test_1();
 	pawnPositionalScore_test_2();
@@ -449,7 +447,6 @@ void runAllTests()
     avoidMatePuzzle_test_1();
     zobristConsistancy_test();
     centerPawnMask_test();
-    semiCenterPawnMask_test();
 	firstAndLastRankMask_test();
 	nullMoveChangesOnlyTurn_test();
 	//mateInThreePuzzle_test_1();

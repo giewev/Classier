@@ -454,7 +454,7 @@ Piece Board::getSquare(int x, int y) const
     return Piece((PieceType)type, x, y, color);
 }
 
-PieceType Board::getSquareType(int x, int y) const
+PieceType Board::getSquareType(const int& x, const int& y) const
 {
     throwIfOutOfBounds(x, y);
     if (!squareIsPopulated(x, y))
@@ -888,6 +888,11 @@ double Board::perft(int depth)
     Move moveList[220];
     generateMoveArray(moveList, moveGenCount);
 
+	/*for (int i = 0; i < moveGenCount; i++)
+	{
+		std::cout << moveList[i].basicAlg() << std::endl;
+	}*/
+
     if(depth == 1)
     {
         return(moveGenCount);//How many moves can we make RIGHT NOW
@@ -1114,7 +1119,7 @@ int Board::pieceCount(PieceType type, bool color) const
     return bitwise::countBits(facts.pieces[type] & mask);
 }
 
-bool Board::squareIsPopulated(int x, int y) const
+bool Board::squareIsPopulated(const int& x, const int& y) const
 {
     throwIfOutOfBounds(x, y);
     return (facts.allPieces >> (x + 8 * y)) & 1;
@@ -1128,10 +1133,12 @@ bool Board::squareIsType(int x, int y, int type) const
 
 void Board::throwIfOutOfBounds(int x, int y)
 {
-    if (x < 0 || x > 7 || y < 0 || y > 7)
-    {
-        throw "Trying to get out of bounds coordinates";
-    }
+#ifdef SAFETYCHECK
+	if (x < 0 || x > 7 || y < 0 || y > 7)
+	{
+		throw "Trying to get out of bounds coordinates";
+	}
+#endif // SAFETYCHECK
 }
 
 bool Board::operator==(const Board &other) const

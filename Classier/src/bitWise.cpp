@@ -4,6 +4,9 @@
 #include <intrin.h>
 
 bitBoard knightMoves[8][8];
+bitBoard pawnSingleMoves[2][8][8];
+bitBoard pawnDoubleMoves[2][8][8];
+bitBoard pawnCaptureMoves[2][8][8];
 
 void bitwise::trimBottom(bitBoard& toTrim, int layers)
 {
@@ -62,8 +65,6 @@ bitBoard bitwise::rank(int i)
 	return 0;
 }
 
-
-
 int bitwise::getX(int raw)
 {
     return (raw >> 3) + 1;
@@ -82,6 +83,16 @@ int bitwise::bitBoardX(unsigned long& index)
 int bitwise::bitBoardY(unsigned long& index)
 {
 	return index / 8;
+}
+
+int bitwise::coordToIndex(int x, int y)
+{
+	return x + (8 * y);
+}
+
+bitBoard bitwise::coordToBoard(int x, int y)
+{
+	return 1ll << coordToIndex(x, y);
 }
 
 bitBoard bitwise::genKnightMovement(int x, int y)
@@ -130,6 +141,74 @@ bitBoard bitwise::genKnightMovement(int x, int y)
 	return base;
 }
 
+bitBoard bitwise::genSinglePawnMovement(bool color, int x, int y)
+{
+	bitBoard pawnPosition = 1ll << bitwise::coordToIndex(x, y);
+	if (color)
+	{
+		return (pawnPosition << 8);
+	}
+	else
+	{
+		return (pawnPosition >> 8);
+	}
+}
+
+bitBoard bitwise::genDoublePawnMovement(bool color, int x, int y)
+{
+	bitBoard pawnPosition = 1ll << bitwise::coordToIndex(x, y);
+	if (color)
+	{
+		if (y != 1) {
+			return 0ll;
+		}
+
+		return (pawnPosition << 8) | (pawnPosition << 16);
+	}
+	else
+	{
+		if (y != 6) {
+			return 0ll;
+		}
+
+		return (pawnPosition >> 8) | (pawnPosition >> 16);
+	}
+}
+
+bitBoard bitwise::genPawnCaptureMovement(bool color, int x, int y)
+{
+	int baseIndex = coordToIndex(x, y);
+	bitBoard mask = 0;
+
+	// Left attack
+	if (x > 0)
+	{
+		if (color)
+		{
+			mask |= 1ll << (baseIndex + 7);
+		}
+		else 
+		{
+			mask |= 1ll << (baseIndex - 9);
+		}
+	}
+
+	// Right attack
+	if (x < 7)
+	{
+		if (color)
+		{
+			mask |= 1ll << (baseIndex + 9);
+		}
+		else
+		{
+			mask |= 1ll << (baseIndex - 7);
+		}
+	}
+
+	return mask;
+}
+
 void bitwise::initializeBitboards()
 {
 	for (int x = 0; x < 8; x++)
@@ -137,6 +216,12 @@ void bitwise::initializeBitboards()
 		for (int y = 0; y < 8; y++)
 		{
 			knightMoves[x][y] = genKnightMovement(x, y);
+			pawnSingleMoves[0][x][y] = genSinglePawnMovement(false, x, y);
+			pawnSingleMoves[1][x][y] = genSinglePawnMovement(true, x, y);
+			pawnDoubleMoves[0][x][y] = genDoublePawnMovement(false, x, y);
+			pawnDoubleMoves[1][x][y] = genDoublePawnMovement(true, x, y);
+			pawnCaptureMoves[0][x][y] = genPawnCaptureMovement(false, x, y);
+			pawnCaptureMoves[1][x][y] = genPawnCaptureMovement(true, x, y);
 		}
 	}
 }

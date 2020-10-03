@@ -316,76 +316,76 @@ void Piece::rookMoveArray(Move* moveList, int& moveCounter, int xPos, int yPos, 
 
 void Piece::pawnMoveArray(Move* moveList, int& moveCounter, int xPos, int yPos, const Board& gameBoard)
 {
-    bool ownColor = gameBoard.getSquareColor(xPos, yPos);
-    int direction = -1;
-    if(ownColor)
-    {
-        direction = 1;
-    }
+	bool ownColor = gameBoard.facts.turn;
+	unsigned long legalIndex;
 
-    if(!gameBoard.squareIsPopulated(xPos, yPos + direction)) //Normal Moves
-    {
-        if(yPos+direction == 7 || yPos+direction == 0)
-        {
-            moveList[moveCounter++] = Move(xPos, yPos, xPos, yPos+direction, PieceType::Queen, gameBoard);
-            moveList[moveCounter++] = Move(xPos, yPos, xPos, yPos+direction, PieceType::Knight, gameBoard);
-            moveList[moveCounter++] = Move(xPos, yPos, xPos, yPos+direction, PieceType::Rook, gameBoard);
-            moveList[moveCounter++] = Move(xPos, yPos, xPos, yPos+direction, PieceType::Bishop, gameBoard);
-        }
-        else
-        {
-            moveList[moveCounter++] = Move(xPos, yPos, xPos, yPos+direction, PieceType::Empty, gameBoard);
-        }
+	bitBoard doubleMoves = pawnDoubleMoves[ownColor][xPos][yPos] & ~gameBoard.facts.allPieces;
+	if (bitwise::countBits(doubleMoves) == 2)
+	{
+		while (_BitScanForward64(&legalIndex, doubleMoves))
+		{
+			int x = bitwise::bitBoardX(legalIndex);
+			int y = bitwise::bitBoardY(legalIndex);
+			moveList[moveCounter++] = Move(xPos, yPos, x, y, PieceType::Empty, gameBoard);
+			doubleMoves &= doubleMoves - 1;
+		}
+	}
+	else
+	{
+		bitBoard singleMove = pawnSingleMoves[ownColor][xPos][yPos] & ~gameBoard.facts.allPieces;
+		if (_BitScanForward64(&legalIndex, singleMove))
+		{
+			int x = bitwise::bitBoardX(legalIndex);
+			int y = bitwise::bitBoardY(legalIndex);
 
-        if((yPos == 1 && ownColor) || (yPos == 6 && !ownColor)) //Double Moves
-        {
-            if(!gameBoard.squareIsPopulated(xPos, yPos + 2 * direction))
-            {
-                moveList[moveCounter++] = Move(xPos, yPos, xPos, yPos+2*direction, PieceType::Empty, gameBoard);
-            }
-        }
-    }
+			if (promotionSquares & singleMove)
+			{
+				moveList[moveCounter++] = Move(xPos, yPos, x, y, PieceType::Queen, gameBoard);
+				moveList[moveCounter++] = Move(xPos, yPos, x, y, PieceType::Knight, gameBoard);
+				moveList[moveCounter++] = Move(xPos, yPos, x, y, PieceType::Rook, gameBoard);
+				moveList[moveCounter++] = Move(xPos, yPos, x, y, PieceType::Bishop, gameBoard);
+			}
+			else
+			{
+				moveList[moveCounter++] = Move(xPos, yPos, x, y, PieceType::Empty, gameBoard);
+			}
+		}
+	}
 
-    //Capture Moves
-    for(int i = -1; i<=1; i+=2)
-    {
-        if(xPos+i >= 8 || xPos+i < 0)
-        {
-            continue;
-        }
+	bitBoard enemies = gameBoard.facts.pieces[0];
+	if (ownColor) enemies = ~enemies;
+	bitBoard epTargets = 0ll;
+	if (gameBoard.getEPData() != -1)
+	{
+		Piece ep = gameBoard.getEP();
+		if (ep.color)
+		{
+			epTargets |= bitwise::coordToBoard(ep.xPos, ep.yPos - 1);
+		}
+		else
+		{
+			epTargets |= bitwise::coordToBoard(ep.xPos, ep.yPos + 1);
+		}
+	}
 
-        if(!gameBoard.squareIsPopulated(xPos + i, yPos + direction))
-        {
-            if(yPos == gameBoard.getEP().getY())
-            {
-                if(xPos + i == gameBoard.getEP().getX())
-                {
-                    if(gameBoard.getEP().getColor() != ownColor)
-                    {
-                        moveList[moveCounter++] = Move(xPos, yPos, xPos+i, yPos+direction, PieceType::Empty, gameBoard);
-                    }
-                }
-            }
-            continue;
-        }
-
-        if(gameBoard.getSquareColor(xPos + i, yPos + direction) == ownColor)
-        {
-            continue;
-        }
-
-        if(yPos+direction == 7 || yPos+direction == 0)
-        {
-            moveList[moveCounter++] = Move(xPos, yPos, xPos+i, yPos+direction, PieceType::Queen, gameBoard);
-            moveList[moveCounter++] = Move(xPos, yPos, xPos+i, yPos+direction, PieceType::Knight, gameBoard);
-            moveList[moveCounter++] = Move(xPos, yPos, xPos+i, yPos+direction, PieceType::Rook, gameBoard);
-            moveList[moveCounter++] = Move(xPos, yPos, xPos+i, yPos+direction, PieceType::Bishop, gameBoard);
-        }
-        else
-        {
-            moveList[moveCounter++] = Move(xPos, yPos, xPos+i, yPos+direction, PieceType::Empty, gameBoard);
-        }
-    }
+	bitBoard captureMoves = pawnCaptureMoves[ownColor][xPos][yPos] & ((gameBoard.facts.allPieces & enemies) | epTargets);
+	while (_BitScanForward64(&legalIndex, captureMoves))
+	{
+		int x = bitwise::bitBoardX(legalIndex);
+		int y = bitwise::bitBoardY(legalIndex);
+		if (promotionSquares & captureMoves)
+		{
+			moveList[moveCounter++] = Move(xPos, yPos, x, y, PieceType::Queen, gameBoard);
+			moveList[moveCounter++] = Move(xPos, yPos, x, y, PieceType::Knight, gameBoard);
+			moveList[moveCounter++] = Move(xPos, yPos, x, y, PieceType::Rook, gameBoard);
+			moveList[moveCounter++] = Move(xPos, yPos, x, y, PieceType::Bishop, gameBoard);
+		}
+		else
+		{
+			moveList[moveCounter++] = Move(xPos, yPos, x, y, PieceType::Empty, gameBoard);
+		}
+		captureMoves &= captureMoves - 1;
+	}
 }
 
 //Returns false if the Piece is in check, true otherwise

@@ -42,7 +42,7 @@ public:
 	int getEPData() const;
 	int getCastlingData() const;
 
-    PieceType getSquareType(int, int) const;
+    PieceType getSquareType(const int&, const int&) const;
     bool getSquareColor(int, int) const;
 
     void setSquare(Piece, int, int);
@@ -63,7 +63,7 @@ public:
 
     bool operator==(const Board&) const;
 
-    bool squareIsPopulated(int, int) const;
+    bool squareIsPopulated(const int& x, const int& y) const;
     bool squareIsType(int, int, int) const;
     double dividePerft(int) const;
     bool getCastlingRights(bool, bool) const;
