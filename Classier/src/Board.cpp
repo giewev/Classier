@@ -593,16 +593,21 @@ void Board::setKingLocation(bool setColor, int x, int y)
 
 void Board::generateMoveArray(Move* finalMoveList, int& moveCounter) const
 {
-    for(int y = 0; y < 8; y++)
-    {
-        for(int x = 0; x < 8; x++)
-        {
-            if(getSquareColor(x, y) == facts.turn)
-            {
-                Piece::appendMoveArray(finalMoveList, moveCounter, x, y, *this);
-            }
-        }
-    }
+	unsigned long scanIndex;
+	bitBoard ownColorMap;
+	if (facts.turn) ownColorMap = facts.pieces[0];
+	else ownColorMap = ~facts.pieces[0];
+	for (char pType = 1; pType < 7; pType++)
+	{
+		bitBoard moveables = facts.pieces[pType] & ownColorMap;
+		while (_BitScanForward64(&scanIndex, moveables))
+		{
+			int x = bitwise::bitBoardX(scanIndex);
+			int y = bitwise::bitBoardY(scanIndex);
+			Piece::appendMoveArray(finalMoveList, moveCounter, (PieceType)pType, x, y, *this);
+			moveables &= moveables - 1;
+		}
+	}
 
     Danger safetyData = Danger(*this);
     for(int i = moveCounter - 1; i >= 0; i--)
@@ -617,16 +622,21 @@ void Board::generateMoveArray(Move* finalMoveList, int& moveCounter) const
 
 void Board::generateCaptureMoves(Move* moveList, int& moveCounter) const
 {
-    for(int y = 0; y < 8; y++)
-    {
-        for(int x = 0; x < 8; x++)
-        {
-            if(getSquareColor(x, y) == facts.turn)
-            {
-                Piece::appendMoveArray(moveList, moveCounter, x, y, *this);
-            }
-        }
-    }
+	unsigned long scanIndex;
+	bitBoard ownColorMap;
+	if (facts.turn) ownColorMap = facts.pieces[0];
+	else ownColorMap = ~facts.pieces[0];
+	for (char pType = 1; pType < 7; pType++)
+	{
+		bitBoard moveables = facts.pieces[pType] & ownColorMap;
+		while (_BitScanForward64(&scanIndex, moveables))
+		{
+			int x = bitwise::bitBoardX(scanIndex);
+			int y = bitwise::bitBoardY(scanIndex);
+			Piece::appendMoveArray(moveList, moveCounter, (PieceType)pType, x, y, *this);
+			moveables &= moveables - 1;
+		}
+	}
 
     for (int i = moveCounter - 1; i >= 0; i--)
     {

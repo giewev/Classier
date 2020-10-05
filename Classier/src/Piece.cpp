@@ -99,41 +99,35 @@ void Piece::generateMoves(std::vector<Move>& moveList, int x, int y, const Board
     }
 }
 
+void Piece::appendMoveArray(Move* moveList, int& moveCounter, PieceType movingType, int x, int y, const Board& gameBoard)
+{
+	switch (movingType)
+	{
+	case (PieceType::Pawn):
+		pawnMoveArray(moveList, moveCounter, x, y, gameBoard);
+		break;
+	case (PieceType::King):
+		kingMoveArray(moveList, moveCounter, x, y, gameBoard);
+		break;
+	case (PieceType::Queen):
+		queenMoveArray(moveList, moveCounter, x, y, gameBoard);
+		break;
+	case (PieceType::Bishop):
+		bishopMoveArray(moveList, moveCounter, x, y, gameBoard);
+		break;
+	case (PieceType::Knight):
+		knightMoveArray(moveList, moveCounter, x, y, gameBoard);
+		break;
+	case (PieceType::Rook):
+		rookMoveArray(moveList, moveCounter, x, y, gameBoard);
+		break;
+	}
+}
+
 void Piece::appendMoveArray(Move* moveList, int& moveCounter, int x, int y, const Board& gameBoard)
 {
     PieceType type = gameBoard.getSquareType(x, y);
-    if(type == PieceType::Empty)
-    {
-    }
-    else if(type == PieceType::Pawn)
-    {
-        pawnMoveArray(moveList, moveCounter, x, y, gameBoard);
-    }
-    else if(type == PieceType::King)
-    {
-        kingMoveArray(moveList, moveCounter, x, y, gameBoard);
-    }
-    else if(type == PieceType::Queen)
-    {
-        queenMoveArray(moveList, moveCounter, x, y, gameBoard);
-    }
-    else if(type == PieceType::Bishop)
-    {
-        bishopMoveArray(moveList, moveCounter, x, y, gameBoard);
-    }
-    else if(type == PieceType::Knight)
-    {
-        knightMoveArray(moveList, moveCounter, x, y, gameBoard);
-    }
-    else if(type == PieceType::Rook)
-    {
-        rookMoveArray(moveList, moveCounter, x, y, gameBoard);
-    }
-    else
-    {
-        std::cout << "No matching piece in appendMoveArray" << std::endl;
-    }
-    return;
+	appendMoveArray(moveList, moveCounter, type, x, y, gameBoard);
 }
 
 void Piece::kingMoveArray(Move* moveList, int& moveCounter, int xPos, int yPos, const Board& gameBoard)

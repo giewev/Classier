@@ -37,7 +37,8 @@ public:
 
     static void generateMoves(std::vector<Move>&, int x, int y, const Board&);
 
-    static void appendMoveArray(Move*, int&, int x, int y, const Board&);
+	static void appendMoveArray(Move*, int&, PieceType, int x, int y, const Board&);
+	static void appendMoveArray(Move*, int&, int x, int y, const Board&);
     static void kingMoveArray(Move*, int&, int x, int y, const Board&);
     static void queenMoveArray(Move*, int&, int x, int y, const Board&);
     static void pawnMoveArray(Move*, int&, int x, int y, const Board&);
