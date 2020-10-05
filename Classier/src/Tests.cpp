@@ -38,6 +38,13 @@ void kingMoveMaps()
 	assert(bitwise::genKingMovement(4, 7) == 0x2838000000000000);
 }
 
+void notBehindMaps()
+{
+	assert(bitwise::genNotBehind(0, 8) == 0xfefefefefefeffff);
+	assert(bitwise::genNotBehind(7, 6) == 0xffffffffffffffc0);
+	assert(bitwise::genNotBehind(2, 11) == 0xffff7fbfdfefffff);
+}
+
 void startingPerft_test()
 {
     std::string startingFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w";
@@ -46,9 +53,10 @@ void startingPerft_test()
 
     double expectedPerfts[10] = { 1, 20, 400, 8902, 197281, 4865609, 119060324, 3195901860 };
 
-    for(int i = 0; i < 5; i++)
+    for(int i = 0; i < 6; i++)
     {
 		double result = testBoard.perft(i);
+		std::cout << result << std::endl;
         assert(result == expectedPerfts[i]);
     }
 }
@@ -436,6 +444,7 @@ void nullMoveChangesOnlyTurn_test()
 
 void runAllTests()
 {
+	notBehindMaps();
 	pawnMoveMaps();
 	knightMoveMaps();
 	kingMoveMaps();

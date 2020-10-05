@@ -71,6 +71,7 @@ const bitBoard files[8] =
 
 const bitBoard centerBoard = 0x0000001818000000;
 const bitBoard outsideRim  = 0xFF818181818181FF;
+const bitBoard allSquares  = 0xFFFFFFFFFFFFFFFF;
 
 const bitBoard knightPatternC3 = 0x0000000A1100110A;
 const bitBoard pawnSingleMovePattern = 0x100;
@@ -83,6 +84,14 @@ extern bitBoard pawnSingleMoves[2][8][8];
 extern bitBoard pawnDoubleMoves[2][8][8];
 extern bitBoard pawnCaptureMoves[2][8][8];
 extern bitBoard kingMoves[8][8];
+extern bitBoard rookMoves[8][8];
+extern bitBoard bishopMoves[8][8];
+extern bitBoard queenMoves[8][8];
+
+extern bitBoard rookBlockerMask[8][8];
+extern bitBoard bishopBlockerMask[8][8];
+extern bitBoard queenBlockerMask[8][8];
+extern bitBoard notBehind[64][64];
 
 const bitBoard kingCastlingMoves[2][2]
 {
@@ -122,5 +131,12 @@ bitBoard genSinglePawnMovement(bool color, int x, int y);
 bitBoard genDoublePawnMovement(bool color, int x, int y);
 bitBoard genPawnCaptureMovement(bool color, int x, int y);
 bitBoard genKingMovement(int x, int y);
+bitBoard genRookMovement(int x, int y);
+bitBoard genBishopMovement(int x, int y);
+bitBoard genQueenMovement(int x, int y);
+
+void populateBlockerMasks(int x, int y);
+
+bitBoard genNotBehind(unsigned long f, unsigned long t);
 void initializeBitboards();
 }

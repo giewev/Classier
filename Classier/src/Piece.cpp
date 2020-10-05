@@ -175,47 +175,54 @@ void Piece::kingMoveArray(Move* moveList, int& moveCounter, int xPos, int yPos, 
 
 void Piece::queenMoveArray(Move* moveList, int& moveCounter, int xPos, int yPos, const Board& gameBoard)
 {
-    rookMoveArray(moveList, moveCounter, xPos, yPos, gameBoard);
-    bishopMoveArray(moveList, moveCounter, xPos, yPos, gameBoard);
+	bool ownColor = gameBoard.facts.turn;
+	bitBoard moves = queenMoves[xPos][yPos];
+	bitBoard blockers = queenBlockerMask[xPos][yPos] & gameBoard.facts.allPieces;
+	int queenIndex = bitwise::coordToIndex(xPos, yPos);
+
+	unsigned long scanIndex;
+	while (_BitScanForward64(&scanIndex, blockers))
+	{
+		moves &= notBehind[queenIndex][scanIndex];
+		blockers &= blockers - 1;
+	}
+
+	if (ownColor) moves &= ~gameBoard.facts.allPieces | ~gameBoard.facts.pieces[0];
+	else moves &= ~gameBoard.facts.allPieces | gameBoard.facts.pieces[0];
+
+	while (_BitScanForward64(&scanIndex, moves))
+	{
+		int x = bitwise::bitBoardX(scanIndex);
+		int y = bitwise::bitBoardY(scanIndex);
+		moveList[moveCounter++] = Move(xPos, yPos, x, y, PieceType::Empty, gameBoard);
+		moves &= moves - 1;
+	}
 }
 
 void Piece::bishopMoveArray(Move* moveList, int& moveCounter, int xPos, int yPos, const Board& gameBoard)
 {
 	bool ownColor = gameBoard.facts.turn;
-    for(int i=-1; i<=1; i+=2)
-    {
-        for(int j=-1; j<=1; j+=2)
-        {
-            if(i==0 || j==0)
-            {
-                continue;
-            }
-            for(int k=1; k<=7; k++)
-            {
+	bitBoard moves = bishopMoves[xPos][yPos];
+	bitBoard blockers = bishopBlockerMask[xPos][yPos] & gameBoard.facts.allPieces;
+	int bishopIndex = bitwise::coordToIndex(xPos, yPos);
 
-                if(xPos+(k*i) < 0 || xPos+(k*i) >= 8 || yPos+(k*j) < 0 || yPos+(k*j) >= 8) //Too Far
-                {
-                    break;
-                }
+	unsigned long scanIndex;
+	while (_BitScanForward64(&scanIndex, blockers))
+	{
+		moves &= notBehind[bishopIndex][scanIndex];
+		blockers &= blockers - 1;
+	}
 
-                if(gameBoard.squareIsPopulated(xPos+(k*i), yPos+(k*j)))
-                {
-                    if(gameBoard.getSquareColor(xPos+(k*i), yPos+(k*j)) == ownColor)
-                    {
-                        break;
-                    }
-                    else
-                    {
-                        moveList[moveCounter++] = Move(xPos, yPos, xPos+(k*i), yPos+(k*j), PieceType::Empty, gameBoard);
-                        break;
-                    }
-                }
+	if (ownColor) moves &= ~gameBoard.facts.allPieces | ~gameBoard.facts.pieces[0];
+	else moves &= ~gameBoard.facts.allPieces | gameBoard.facts.pieces[0];
 
-                moveList[moveCounter++] = Move(xPos, yPos, xPos+(k*i), yPos+(k*j), PieceType::Empty, gameBoard);
-
-            }
-        }
-    }
+	while (_BitScanForward64(&scanIndex, moves))
+	{
+		int x = bitwise::bitBoardX(scanIndex);
+		int y = bitwise::bitBoardY(scanIndex);
+		moveList[moveCounter++] = Move(xPos, yPos, x, y, PieceType::Empty, gameBoard);
+		moves &= moves - 1;
+	}
 }
 
 void Piece::knightMoveArray(Move* moveList, int& moveCounter, int xPos, int yPos, const Board& gameBoard)
@@ -238,44 +245,28 @@ void Piece::knightMoveArray(Move* moveList, int& moveCounter, int xPos, int yPos
 
 void Piece::rookMoveArray(Move* moveList, int& moveCounter, int xPos, int yPos, const Board& gameBoard)
 {
-    bool ownColor = gameBoard.getSquareColor(xPos, yPos);
-    for(int i=-1; i<=1; i++)
-    {
-        for(int j=-1; j<=1; j++)
-        {
-            if(!i == !j) // diagonal or no motion
-            {
-                continue;
-            }
-            for(int k = 1; k < 8; k++)
-            {
+	bool ownColor = gameBoard.facts.turn;
+	bitBoard moves = rookMoves[xPos][yPos];
+	bitBoard blockers = rookBlockerMask[xPos][yPos] & gameBoard.facts.allPieces;
+	int rookIndex = bitwise::coordToIndex(xPos, yPos);
 
-                if(xPos+(i*k) < 0 || xPos+(i*k) >= 8) //out of bounds X
-                {
-                    continue;
-                }
-                if(yPos+(j*k) < 0 || yPos+(j*k) >= 8) //out of Bounds Y
-                {
-                    continue;
-                }
+	unsigned long scanIndex;
+	while (_BitScanForward64(&scanIndex, blockers))
+	{
+		moves &= notBehind[rookIndex][scanIndex];
+		blockers &= blockers - 1;
+	}
 
-                if(gameBoard.squareIsPopulated(xPos+(i*k), yPos+(j*k)))
-                {
-                    if(gameBoard.getSquareColor(xPos+(i*k), yPos+(j*k)) == ownColor)
-                    {
-                        break;
-                    }
-                    else
-                    {
-                        moveList[moveCounter++] = Move(xPos, yPos, xPos+(k*i), yPos+(k*j), PieceType::Empty, gameBoard);
-                        break;
-                    }
-                }
+	if (ownColor) moves &= ~gameBoard.facts.allPieces | ~gameBoard.facts.pieces[0];
+	else moves &= ~gameBoard.facts.allPieces | gameBoard.facts.pieces[0];
 
-                moveList[moveCounter++] = Move(xPos, yPos, xPos+(k*i), yPos+(k*j), PieceType::Empty, gameBoard);
-            }
-        }
-    }
+	while (_BitScanForward64(&scanIndex, moves))
+	{
+		int x = bitwise::bitBoardX(scanIndex);
+		int y = bitwise::bitBoardY(scanIndex);
+		moveList[moveCounter++] = Move(xPos, yPos, x, y, PieceType::Empty, gameBoard);
+		moves &= moves - 1;
+	}
 }
 
 void Piece::pawnMoveArray(Move* moveList, int& moveCounter, int xPos, int yPos, const Board& gameBoard)
