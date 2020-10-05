@@ -210,6 +210,21 @@ std::string Move::basicAlg()
 {
     std::string move = "";
     move = Engine::toAlg(startX) + patch::to_string(startY + 1) + Engine::toAlg(endX) + patch::to_string(endY + 1);
+	switch (promotion)
+	{
+	case Queen:
+		move += "q";
+		break;
+	case Bishop:
+		move += "b";
+		break;
+	case Knight:
+		move += "n";
+		break;
+	case Rook:
+		move += "r";
+		break;
+	}
     return move;
 }
 

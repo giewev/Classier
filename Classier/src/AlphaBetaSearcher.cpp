@@ -84,10 +84,11 @@ Move AlphaBetaSearcher::alphaBeta(Board& boardState, int depth, double alpha, do
         {
             returnedMove.setScore(0);
         }
+		else
+		{
+			returnedMove.setGameOverDepth(0);
+		}
 
-		returnedMove.setGameOverDepth(0);
-
-        engine.updateTranspositionBestIfDeeper(boardState, depth, returnedMove);
         return returnedMove;
     }
 
