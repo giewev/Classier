@@ -11,6 +11,9 @@ class MoveSorter
 {
 public:
     static const double piecePriorities[];
+	static long transHits;
+	static long sortAttempts;
+	static long hashMoveExistsCount;
 
     MoveSorter(Move* moveList, int moveCount, Board boardState, TranspositionCache transposition, const MoveLookup& killers, const Move& lastMove);
     void sortMoves();
@@ -23,7 +26,6 @@ private:
 	const MoveLookup& killers;
 	const Move& lastMove;
 
-    bool moveBetter(const Move& left, const Move& right);
     void assignOrderingScores();
 };
 

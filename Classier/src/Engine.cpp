@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <fstream>
 #include <chrono>
+#include <assert.h>
 
 using namespace std;
 
@@ -24,12 +25,14 @@ Engine::Engine()
 {
     gameBoard = Board();
     evaluator = FullEvaluator();
+	transpositionTable.reserve(64 * 1024 * 1024);
 }
 
 Engine::Engine(Board loadBoard)
 {
     gameBoard = loadBoard;
     evaluator = FullEvaluator();
+	transpositionTable.reserve(64 * 1024 * 1024);
 }
 
 Engine::~Engine()
@@ -76,7 +79,12 @@ Move Engine::searchToDepth(int depth, chrono::steady_clock::time_point cancelTim
 		printf("info depth %d nodes %d score cp %d pv ", depth, searcher.nodesVisited, centipawnScore);
 		std::cout << bestMove.basicAlg() << std::endl;
 	}
-	
+
+	printf("info transhits %d transchecks %d hashmoves %d tablesize %d \n", MoveSorter::transHits, MoveSorter::sortAttempts, MoveSorter::hashMoveExistsCount, transpositionTable.size());
+	MoveSorter::transHits = 0;
+	MoveSorter::sortAttempts = 0;
+	MoveSorter::hashMoveExistsCount = 0;
+
 	return bestMove;
 }
 
@@ -146,11 +154,20 @@ std::string Engine::toAlg(int val)
 void Engine::updateTranspositionBestIfDeeper(const Board& newBoard, int depth, Move newMove)
 {
     this->clearTranspositionIfFull();
+	/*int before = transpositionTable.size();
+	bool shouldInc = transpositionTable.find(newBoard.facts) == transpositionTable.end();
+	assert(!shouldInc);*/
+
     if (this->transpositionTable[newBoard.facts].bestDepth < depth)
     {
         this->transpositionTable[newBoard.facts].bestDepth = depth;
         this->transpositionTable[newBoard.facts].bestMove = newMove;
     }
+
+	/*if (shouldInc)
+	{
+		assert(before + 1 == transpositionTable.size());
+	}*/
 }
 
 void Engine::updateTranspositionCutoffIfDeeper(const Board& newBoard, int depth, Move newMove)
@@ -194,7 +211,14 @@ void Engine::clearTranspositionIfFull()
 
 TranspositionCache Engine::getTransposition(const Board& lookupBoard)
 {
-    return this->transpositionTable[lookupBoard.facts];
+	if (transpositionTable.find(lookupBoard.facts) != transpositionTable.end())
+	{
+		return this->transpositionTable[lookupBoard.facts];
+	}
+	else
+	{
+		return TranspositionCache();
+	}
 }
 
 void Engine::exportTransTable(std::string path)

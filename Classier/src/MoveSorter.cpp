@@ -5,6 +5,14 @@
 #include <set>
 
 const double MoveSorter::piecePriorities[] = { 1, 2, 6, 7, 4, 3, 5 };
+long MoveSorter::transHits = 0;
+long MoveSorter::sortAttempts = 0;
+long MoveSorter::hashMoveExistsCount = 0;
+
+bool moveBetter(const Move& left, const Move& right)
+{
+	return left.score > right.score;
+}
 
 MoveSorter::MoveSorter(Move* moveList, int moveCount, Board boardState, TranspositionCache transposition, const MoveLookup& killers, const Move& lastMove) : killers(killers), lastMove(lastMove)
 {
@@ -17,28 +25,27 @@ MoveSorter::MoveSorter(Move* moveList, int moveCount, Board boardState, Transpos
 
 void MoveSorter::sortMoves()
 {
-    std::sort(this->moveList, this->moveList + this->moveCount,
-              [this] (const Move& left, const Move& right)
-    {
-        return this->moveBetter(left, right);
-    });
-}
-
-bool MoveSorter::moveBetter(const Move& left, const Move& right)
-{
-    return left.score > right.score;
+    std::sort(this->moveList, this->moveList + this->moveCount, moveBetter);
 }
 
 void MoveSorter::assignOrderingScores()
 {
+	if (!lastMove.null && (!transposition.bestMove.null || !transposition.cutoffMove.null))
+	{
+		hashMoveExistsCount++;
+	}
+
+	sortAttempts++;
     for (int i = 0; i < this->moveCount; i++)
     {
         if (this->moveList[i] == this->transposition.bestMove)
         {
+			transHits++;
             this->moveList[i].score = 999;
         }
         else if (this->moveList[i] == this->transposition.cutoffMove)
         {
+			transHits++;
             this->moveList[i].score = 998;
         }
 		else if (this->moveList[i].endX == lastMove.endX && this->moveList[i].endY == lastMove.endY)
@@ -57,9 +64,9 @@ void MoveSorter::assignOrderingScores()
 
 			if (victimType != PieceType::Empty)
 			{
-				this->moveList[i].score = victimValue * MaterialEvaluator::pieceValue(PieceType::Queen);
-				this->moveList[i].score -= attackerValue;
-				//this->moveList[i].score = victimValue - attackerValue;
+				//this->moveList[i].score = victimValue * MaterialEvaluator::pieceValue(PieceType::Queen);
+				//this->moveList[i].score -= attackerValue;
+				this->moveList[i].score = 10 * victimValue - attackerValue;
 			}
 			else if (killers.contains(moveList[i]))
 			{
@@ -67,7 +74,7 @@ void MoveSorter::assignOrderingScores()
 			}
 			else 
 			{
-				this->moveList[i].score = -1;
+				this->moveList[i].score = -100;
 			}
 		}
     }
