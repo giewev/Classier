@@ -5,7 +5,8 @@
 #include "Bitwise.h"
 #include "Piece.h"
 
-std::mt19937_64 ZobristHasher::hashGenerator;
+std::random_device rd;
+std::mt19937_64 ZobristHasher::hashGenerator(rd());
 long long ZobristHasher::whitePieceHashCodes[8][8][6];
 long long ZobristHasher::blackPieceHashCodes[8][8][6];
 long long ZobristHasher::castlingHashCodes[4];

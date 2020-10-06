@@ -355,6 +355,18 @@ void zobristConsistancy_test()
     zobristConsistancy_test_helper(testBoard, castingRuinedByRookMove);
 }
 
+void zobristConsistancy_perft_test()
+{
+	std::string startingFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w";
+	Board testBoard = Board();
+	testBoard.loadFEN(startingFEN);
+
+	long long beforeHash = testBoard.facts.hasher.hashValue;
+	testBoard.perft(5);
+	long long afterHash = testBoard.facts.hasher.hashValue;
+	assert(beforeHash == afterHash);
+}
+
 void centerPawnMask_test()
 {
     std::string fullCenterFEN = "8/8/8/3Pp3/3pP3/8/8/8 w - - 0 1";
@@ -444,6 +456,7 @@ void nullMoveChangesOnlyTurn_test()
 
 void runAllTests()
 {
+	zobristConsistancy_perft_test();
 	notBehindMaps();
 	pawnMoveMaps();
 	knightMoveMaps();
