@@ -101,7 +101,7 @@ Move AlphaBetaSearcher::alphaBeta(Board& boardState, int depth, double alpha, do
         {
             if (quiescence_enabled && moveList[i].pieceCaptured != PieceType::Empty)
             {
-                moveList[i].score = quiesce(boardState, alpha, beta);
+                moveList[i].score = quiesce(boardState, alpha, beta, moveList[i]);
             }
             else
             {
@@ -180,7 +180,7 @@ void AlphaBetaSearcher::updateAlphaBeta(double score, bool turn, double& alpha, 
     }
 }
 
-double AlphaBetaSearcher::quiesce(Board& boardState, double alpha, double beta)
+double AlphaBetaSearcher::quiesce(Board& boardState, double alpha, double beta, Move lastCap)
 {
     double staticScore = engine.lazyEvaluatePosition(boardState);
     if (causesAlphaBetaBreak(staticScore, alpha, beta, boardState.facts.turn))
@@ -194,7 +194,7 @@ double AlphaBetaSearcher::quiesce(Board& boardState, double alpha, double beta)
     int moveCount = 0;
     Move moveList[220];
     boardState.generateCaptureMoves(moveList, moveCount); 
-	MoveSorter sorter = MoveSorter(moveList, moveCount, boardState, TranspositionCache(), MoveLookup(), Move());
+	MoveSorter sorter = MoveSorter(moveList, moveCount, boardState, TranspositionCache(), MoveLookup(), lastCap);
 	sorter.sortMoves();
 
     int bestIndex = -1;
@@ -211,7 +211,7 @@ double AlphaBetaSearcher::quiesce(Board& boardState, double alpha, double beta)
 		}
 
 		boardState.makeMove(moveList[i]);
-        double score = quiesce(boardState, alpha, beta);
+        double score = quiesce(boardState, alpha, beta, moveList[i]);
 		boardState.unmakeMove(moveList[i]);
 
         if (causesAlphaBetaBreak(score, alpha, beta, boardState.facts.turn))
@@ -219,6 +219,7 @@ double AlphaBetaSearcher::quiesce(Board& boardState, double alpha, double beta)
             return score;
         }
 
+		moveList[i].setScore(score);
         updateAlphaBeta(score, boardState.facts.turn, alpha, beta);
         bestIndex = bestMove(moveList, bestIndex, i, boardState.facts.turn);
     }

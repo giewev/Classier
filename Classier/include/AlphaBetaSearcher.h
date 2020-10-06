@@ -27,7 +27,7 @@ class AlphaBetaSearcher
         static bool causesAlphaBetaBreak(double score, double alpha, double beta, bool turn);
         static void updateAlphaBeta(double newScore, bool turn, double& alpha, double& beta);
 		static double deltaToAlphaBeta(const double currentScore, const bool turn, const double alpha, const double beta);
-        double quiesce(Board& boardState, double alpha, double beta);
+        double quiesce(Board& boardState, double alpha, double beta, Move lastCap);
 		bool nullMode;
 		std::chrono::steady_clock::time_point dieTime;
 		int topDepth;
