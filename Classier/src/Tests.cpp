@@ -406,42 +406,6 @@ void firstAndLastRankMask_test() {
 	assert(bitwise::countBits(board.facts.pieces[PieceType::Pawn] & rank8) == 8);
 }
 
-void saveAndLoadEmptyTransTable_test()
-{
-    Engine engine = Engine();
-    engine.exportTransTable("dump.trans");
-    engine.importTransTable("dump.trans");
-}
-
-void loadingEmptyTransTableClearsEntries_test()
-{
-    std::string startingFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w";
-
-    Board board = Board();
-    board.loadFEN(startingFEN);
-    Engine engine = Engine(board);
-    engine.exportTransTable("dump.trans");
-    engine.updateTranspositionBestIfDeeper(board, 5, Move(1,1,2,2, PieceType::Empty, board));
-    engine.importTransTable("dump.trans");
-    assert(engine.getTransposition(board).bestDepth == -1);
-}
-
-void loadingTranspositionTableLoadsEntries_test()
-{
-    std::string startingFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w";
-
-    Board board = Board();
-    board.loadFEN(startingFEN);
-    Engine originalEngine = Engine(board);
-    originalEngine.updateTranspositionBestIfDeeper(board, 5, Move(1,1,2,2, PieceType::Empty, board));
-    originalEngine.exportTransTable("dump.trans");
-
-    Engine futureEngine = Engine(board);
-    futureEngine.importTransTable("dump.trans");
-    assert(futureEngine.getTransposition(board).bestDepth == 5);
-    assert(futureEngine.getTransposition(board).bestMove == Move(1,1,2,2, PieceType::Empty, board));
-}
-
 void nullMoveChangesOnlyTurn_test()
 {
 	std::string startingFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w";
@@ -479,9 +443,4 @@ void runAllTests()
 	firstAndLastRankMask_test();
 	nullMoveChangesOnlyTurn_test();
 	//mateInThreePuzzle_test_1();
-
-
-    //saveAndLoadEmptyTransTable_test();
-    //loadingEmptyTransTableClearsEntries_test();
-    //loadingTranspositionTableLoadsEntries_test();
 }

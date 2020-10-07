@@ -77,7 +77,11 @@ Move Engine::searchToDepth(int depth, chrono::steady_clock::time_point cancelTim
 		int centipawnScore = (int)(bestMove.getScore() * 100);
 		if (!gameBoard.facts.turn) centipawnScore *= -1;
 		printf("info depth %d nodes %d score cp %d pv ", depth, searcher.nodesVisited, centipawnScore);
-		std::cout << bestMove.basicAlg() << std::endl;
+		for (int i = 1; i < depth + 1; i++)
+		{
+			std::cout << searcher.variations[0][i].basicAlg() << " ";
+		}
+		std::cout << std::endl;
 	}
 
 	printf("info transhits %d transchecks %d hashmoves %d tablesize %d \n", MoveSorter::transHits, MoveSorter::sortAttempts, MoveSorter::hashMoveExistsCount, transpositionTable.size());
@@ -151,61 +155,21 @@ std::string Engine::toAlg(int val)
     return(alpha[val]);
 }
 
-void Engine::updateTranspositionBestIfDeeper(const Board& newBoard, int depth, Move newMove)
+void Engine::updateTranspositionBestIfDeeper(const Board& newBoard, int height, Move newMove)
 {
-    this->clearTranspositionIfFull();
-	/*int before = transpositionTable.size();
-	bool shouldInc = transpositionTable.find(newBoard.facts) == transpositionTable.end();
-	assert(!shouldInc);*/
-
-    if (this->transpositionTable[newBoard.facts].bestDepth < depth)
+    if (this->transpositionTable[newBoard.facts].bestHeight < height)
     {
-        this->transpositionTable[newBoard.facts].bestDepth = depth;
+        this->transpositionTable[newBoard.facts].bestHeight = height;
         this->transpositionTable[newBoard.facts].bestMove = newMove;
     }
-
-	/*if (shouldInc)
-	{
-		assert(before + 1 == transpositionTable.size());
-	}*/
 }
 
-void Engine::updateTranspositionCutoffIfDeeper(const Board& newBoard, int depth, Move newMove)
+void Engine::updateTranspositionCutoffIfDeeper(const Board& newBoard, int height, Move newMove)
 {
-    this->clearTranspositionIfFull();
-    if (this->transpositionTable[newBoard.facts].cutoffDepth < depth)
+    if (this->transpositionTable[newBoard.facts].cutoffHeight < height)
     {
-        this->transpositionTable[newBoard.facts].cutoffDepth = depth;
+        this->transpositionTable[newBoard.facts].cutoffHeight = height;
         this->transpositionTable[newBoard.facts].cutoffMove = newMove;
-    }
-}
-
-void Engine::clearTranspositionIfFull()
-{
-	return;
-
-	if (this->transpositionTable.size() > this->transTableMax)
-	{
-		resetTransTable();
-		return;
-	}
-
-    int eraseDepth = 1;
-    while (this->transpositionTable.size() > this->transTableMax)
-    {
-        for (auto entry = this->transpositionTable.begin(); entry != this->transpositionTable.end();)
-        {
-            if (entry->second.bestDepth <= eraseDepth && entry->second.cutoffDepth <= eraseDepth)
-            {
-                entry = this->transpositionTable.erase(entry);
-            }
-            else
-            {
-                entry++;
-            }
-        }
-
-        eraseDepth++;
     }
 }
 

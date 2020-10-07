@@ -9,13 +9,13 @@ AlphaBetaSearcher::AlphaBetaSearcher(Engine& linkedEngine, std::chrono::steady_c
 {
 	nullMode = false;
 	dieTime = end;
-	topDepth = 0;
+	horizonDepth = 0;
 	nodesVisited = 0;
 }
 
 Move AlphaBetaSearcher::alphaBeta(Board& boardState, int depth)
 {
-	topDepth = depth;
+	horizonDepth = depth;
 	nodesVisited = 0;
 	nodesAtDepths.clear();
 	nodesAtDepths.resize(depth + 1);
@@ -23,17 +23,17 @@ Move AlphaBetaSearcher::alphaBeta(Board& boardState, int depth)
 	killerMoves.resize(depth + 1);
 	lastMoveMade.clear();
 	lastMoveMade.resize(depth + 2);
-    return this->alphaBeta(boardState, depth, -1000, 1000);
+    return this->alphaBeta(boardState, 1, -1000, 1000);
 }
 
 Move AlphaBetaSearcher::alphaBeta(Board& boardState, int depth, double alpha, double beta)
 {
     TranspositionCache transposition = engine.getTransposition(boardState);
-    if (transposition.bestDepth >= depth)
+    if (transposition.bestHeight >= distanceToHorizon(depth))
     {
         return transposition.bestMove;
     }
-    else if (transposition.cutoffDepth >= depth && // Cutoff info is good enough
+    else if (transposition.bestHeight >= distanceToHorizon(depth) && // Cutoff info is good enough
         causesAlphaBetaBreak(transposition.cutoffMove.score, alpha, beta, boardState.facts.turn))
     {
         return transposition.cutoffMove;
@@ -45,7 +45,7 @@ Move AlphaBetaSearcher::alphaBeta(Board& boardState, int depth, double alpha, do
 
 	// Null move heuristic
 	// If we are searching a significant depth, we check to see if not making move at all would already cause a cutoff
-	if (null_move_enabled && !nullMode && depth > 3)
+	if (null_move_enabled && !nullMode && distanceToHorizon(depth) > 3)
 	{
 		if (!safetyinfo.getCheck())
 		{
@@ -53,7 +53,7 @@ Move AlphaBetaSearcher::alphaBeta(Board& boardState, int depth, double alpha, do
 			Move nullMove = Move(boardState);
 			boardState.makeMove(nullMove);
 			lastMoveMade[depth] = nullMove;
-			Move nullResponse = alphaBeta(boardState, depth - 2, alpha, beta);
+			Move nullResponse = alphaBeta(boardState, depth + 2, alpha, beta);
 			boardState.unmakeMove(nullMove);
 			nullMode = false;
 			nullMove.score = nullResponse.score;
@@ -67,7 +67,9 @@ Move AlphaBetaSearcher::alphaBeta(Board& boardState, int depth, double alpha, do
     int moveCount = 0;
     Move moveList[220];
     boardState.generateMoveArray(moveList, moveCount);
-	MoveSorter sorter = MoveSorter(moveList, moveCount, boardState, transposition, killerMoves[depth], lastMoveMade[depth + 1]);
+	
+	Move lastMove;
+	MoveSorter sorter = MoveSorter(moveList, moveCount, boardState, transposition, killerMoves[depth], lastMove);
 	sorter.sortMoves();
 
     unsigned int bestIndex = 0;
@@ -96,8 +98,9 @@ Move AlphaBetaSearcher::alphaBeta(Board& boardState, int depth, double alpha, do
     {
 		lastMoveMade[depth] = moveList[i];
         boardState.makeMove(moveList[i]);
+		variations[depth][depth] = moveList[i];
 
-        if(depth == 1)
+        if(distanceToHorizon(depth) == 0)
         {
             if (quiescence_enabled && moveList[i].pieceCaptured != PieceType::Empty)
             {
@@ -110,7 +113,7 @@ Move AlphaBetaSearcher::alphaBeta(Board& boardState, int depth, double alpha, do
         }
         else
         {
-            returnedMove = alphaBeta(boardState, depth - 1, alpha, beta);
+            returnedMove = alphaBeta(boardState, depth + 1, alpha, beta);
 
             moveList[i].setScore(returnedMove.score);
             if(returnedMove.getGameOverDepth() != -1)
@@ -122,10 +125,17 @@ Move AlphaBetaSearcher::alphaBeta(Board& boardState, int depth, double alpha, do
 		boardState.unmakeMove(moveList[i]);
         bestIndex = bestMove(moveList, bestIndex, i, boardState.facts.turn);
         updateAlphaBeta(moveList[bestIndex].score, boardState.facts.turn, alpha, beta);
+		if (bestIndex == i)
+		{
+			for (int j = horizonDepth; j >= depth; j--)
+			{
+				variations[depth - 1][j] = variations[depth][j];
+			}
+		}
 
         if (causesAlphaBetaBreak(moveList[i].score, alpha, beta, boardState.facts.turn))
         {
-            engine.updateTranspositionCutoffIfDeeper(boardState, depth, moveList[i]);
+            engine.updateTranspositionCutoffIfDeeper(boardState, distanceToHorizon(depth), moveList[i]);
 			if (moveList[i].pieceCaptured == PieceType::Empty)
 			{
 				killerMoves[depth].add(moveList[i]);
@@ -134,13 +144,13 @@ Move AlphaBetaSearcher::alphaBeta(Board& boardState, int depth, double alpha, do
             return(moveList[i]);
         }
 
-		if ((depth >= topDepth && depth > 4) && std::chrono::steady_clock::now() > dieTime)
+		if ((depth <= 1 && depth < 4) && std::chrono::steady_clock::now() > dieTime)
 		{
 			return moveList[bestIndex];
 		}
     }
 
-    engine.updateTranspositionBestIfDeeper(boardState, depth, moveList[bestIndex]);
+    engine.updateTranspositionBestIfDeeper(boardState, distanceToHorizon(depth), moveList[bestIndex]);
     return moveList[bestIndex];
 }
 
@@ -279,4 +289,9 @@ int AlphaBetaSearcher::chooseBetweenEqualMoves(Move* moveList, int bestIndex, in
     {
         return bestIndex;
     }
+}
+
+int AlphaBetaSearcher::distanceToHorizon(int depth)
+{
+	return horizonDepth - depth;
 }
