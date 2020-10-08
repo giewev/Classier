@@ -18,6 +18,7 @@ class AlphaBetaSearcher
 		long nodesVisited;
 		std::vector<long> nodesAtDepths;
 		std::vector<Move> lastMoveMade;
+		Move variations[50][50];
     protected:
     private:
         Engine& engine;
@@ -28,9 +29,10 @@ class AlphaBetaSearcher
         static void updateAlphaBeta(double newScore, bool turn, double& alpha, double& beta);
 		static double deltaToAlphaBeta(const double currentScore, const bool turn, const double alpha, const double beta);
         double quiesce(Board& boardState, double alpha, double beta, Move lastCap);
+		int distanceToHorizon(int depth);
 		bool nullMode;
 		std::chrono::steady_clock::time_point dieTime;
-		int topDepth;
+		int horizonDepth;
 		std::vector<MoveLookup> killerMoves;
 };
 

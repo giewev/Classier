@@ -5,20 +5,14 @@
 struct TranspositionCache
 {
 public:
-    int bestDepth;
+    int bestHeight;
     Move bestMove;
 
-    int cutoffDepth;
+    int cutoffHeight;
     Move cutoffMove;
 
     TranspositionCache();
-    TranspositionCache(int bestDepth, Move newMove, int cutoffDepth, Move cutoffMove);
-
-    template <class Archive>
-    void serialize(Archive& ar)
-    {
-        ar(bestDepth, bestMove, cutoffDepth, cutoffMove);
-    }
+    TranspositionCache(int bestHeight, Move newMove, int cutoffHeight, Move cutoffMove);
 
 protected:
 private:
