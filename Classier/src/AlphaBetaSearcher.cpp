@@ -69,7 +69,7 @@ Move AlphaBetaSearcher::alphaBeta(Board& boardState, int depth, double alpha, do
     boardState.generateMoveArray(moveList, moveCount);
 	
 	Move lastMove;
-	MoveSorter sorter = MoveSorter(moveList, moveCount, boardState, transposition, killerMoves[depth], lastMove);
+	MoveSorter sorter = MoveSorter(moveList, moveCount, boardState, transposition, killerMoves[depth], lastMove, this->variations[0][depth]);
 	sorter.sortMoves();
 
     unsigned int bestIndex = 0;
@@ -203,7 +203,7 @@ double AlphaBetaSearcher::quiesce(Board& boardState, double alpha, double beta, 
     int moveCount = 0;
     Move moveList[220];
     boardState.generateCaptureMoves(moveList, moveCount); 
-	MoveSorter sorter = MoveSorter(moveList, moveCount, boardState, TranspositionCache(), MoveLookup(), lastCap);
+	MoveSorter sorter = MoveSorter(moveList, moveCount, boardState, TranspositionCache(), MoveLookup(), lastCap, Move());
 	sorter.sortMoves();
 
     int bestIndex = -1;

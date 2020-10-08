@@ -14,7 +14,7 @@ bool moveBetter(const Move& left, const Move& right)
 	return left.score > right.score;
 }
 
-MoveSorter::MoveSorter(Move* moveList, int moveCount, Board boardState, TranspositionCache transposition, const MoveLookup& killers, const Move& lastMove) : killers(killers), lastMove(lastMove)
+MoveSorter::MoveSorter(Move* moveList, int moveCount, Board boardState, TranspositionCache transposition, const MoveLookup& killers, const Move& lastMove, const Move& pvMove) : killers(killers), lastMove(lastMove), pvMove(pvMove)
 {
     this->moveList = moveList;
     this->moveCount = moveCount;
@@ -38,7 +38,11 @@ void MoveSorter::assignOrderingScores()
 	sortAttempts++;
     for (int i = 0; i < this->moveCount; i++)
     {
-        if (this->moveList[i] == this->transposition.bestMove)
+		if (this->moveList[i] == this->pvMove)
+		{
+			this->moveList[i].score = 1000;
+		}
+        else if (this->moveList[i] == this->transposition.bestMove)
         {
 			transHits++;
             this->moveList[i].score = 999;

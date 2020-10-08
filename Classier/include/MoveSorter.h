@@ -15,7 +15,7 @@ public:
 	static long sortAttempts;
 	static long hashMoveExistsCount;
 
-    MoveSorter(Move* moveList, int moveCount, Board boardState, TranspositionCache transposition, const MoveLookup& killers, const Move& lastMove);
+    MoveSorter(Move* moveList, int moveCount, Board boardState, TranspositionCache transposition, const MoveLookup& killers, const Move& lastMove, const Move& pvMove);
     void sortMoves();
 protected:
 private:
@@ -25,6 +25,7 @@ private:
     TranspositionCache transposition;
 	const MoveLookup& killers;
 	const Move& lastMove;
+	const Move& pvMove;
 
     void assignOrderingScores();
 };
