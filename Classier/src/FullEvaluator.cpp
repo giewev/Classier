@@ -3,7 +3,6 @@
 
 FullEvaluator::FullEvaluator()
 {
-    gameOverEvaluator = GameOverEvaluator();
     materialEvaluator = MaterialEvaluator();
     positionalEvaluator = PositionalEvaluator();
 }

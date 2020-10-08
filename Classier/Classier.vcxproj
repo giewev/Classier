@@ -29,7 +29,6 @@
     <ClCompile Include="src\Engine.cpp" />
     <ClCompile Include="src\Evaluator.cpp" />
     <ClCompile Include="src\FullEvaluator.cpp" />
-    <ClCompile Include="src\GameOverEvaluator.cpp" />
     <ClCompile Include="src\Logger.cpp" />
     <ClCompile Include="src\MaterialEvaluator.cpp" />
     <ClCompile Include="src\Move.cpp" />
@@ -53,7 +52,6 @@
     <ClInclude Include="include\Evaluation Constants.h" />
     <ClInclude Include="include\Evaluator.h" />
     <ClInclude Include="include\FullEvaluator.h" />
-    <ClInclude Include="include\GameOverEvaluator.h" />
     <ClInclude Include="include\Logger.h" />
     <ClInclude Include="include\MaterialEvaluator.h" />
     <ClInclude Include="include\Move.h" />

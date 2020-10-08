@@ -35,16 +35,13 @@ public:
         return(color);
     }
 
-    static void generateMoves(std::vector<Move>&, int x, int y, const Board&);
-
-	static void appendMoveArray(Move*, int&, PieceType, int x, int y, const Board&);
-	static void appendMoveArray(Move*, int&, int x, int y, const Board&);
-    static void kingMoveArray(Move*, int&, int x, int y, const Board&);
-    static void queenMoveArray(Move*, int&, int x, int y, const Board&);
-    static void pawnMoveArray(Move*, int&, int x, int y, const Board&);
-    static void bishopMoveArray(Move*, int&, int x, int y, const Board&);
-    static void knightMoveArray(Move*, int&, int x, int y, const Board&);
-    static void rookMoveArray(Move*, int&, int x, int y, const Board&);
+	static void appendMoveArray(Move*, int&, PieceType, int x, int y, const Board&, bool captureOnly);
+    static void kingMoveArray(Move*, int&, int x, int y, const Board&, bool captureOnly);
+    static void queenMoveArray(Move*, int&, int x, int y, const Board&, bool captureOnly);
+    static void pawnMoveArray(Move*, int&, int x, int y, const Board&, bool captureOnly);
+    static void bishopMoveArray(Move*, int&, int x, int y, const Board&, bool captureOnly);
+    static void knightMoveArray(Move*, int&, int x, int y, const Board&, bool captureOnly);
+    static void rookMoveArray(Move*, int&, int x, int y, const Board&, bool captureOnly);
 
     bool isSafe(const Board&);
     bool operator!=(Piece);

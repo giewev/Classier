@@ -51,13 +51,11 @@ public:
     void setEP(int, int, bool);
     void setKingLocation(bool, int, int);
 
-    size_t getHashCode() const;
     void loadFEN(std::string);
     std::string outputFEN() const;
     double perft(int);
     void generateMoveArray(Move*, int&) const;
     void generateCaptureMoves(Move* moveList, int& moveCounter) const;
-    int gameOverCheck() const;
     void makeMove(Move);
 	void unmakeMove(Move);
 

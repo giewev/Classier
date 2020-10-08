@@ -596,7 +596,7 @@ void Board::generateMoveArray(Move* finalMoveList, int& moveCounter) const
 	unsigned long scanIndex;
 	bitBoard ownColorMap;
 	if (facts.turn) ownColorMap = facts.pieces[0];
-	else ownColorMap = ~facts.pieces[0];
+	else ownColorMap = ~facts.pieces[0] & facts.allPieces;
 	for (char pType = 1; pType < 7; pType++)
 	{
 		bitBoard moveables = facts.pieces[pType] & ownColorMap;
@@ -604,7 +604,7 @@ void Board::generateMoveArray(Move* finalMoveList, int& moveCounter) const
 		{
 			int x = bitwise::bitBoardX(scanIndex);
 			int y = bitwise::bitBoardY(scanIndex);
-			Piece::appendMoveArray(finalMoveList, moveCounter, (PieceType)pType, x, y, *this);
+			Piece::appendMoveArray(finalMoveList, moveCounter, (PieceType)pType, x, y, *this, false);
 			moveables &= moveables - 1;
 		}
 	}
@@ -625,7 +625,7 @@ void Board::generateCaptureMoves(Move* moveList, int& moveCounter) const
 	unsigned long scanIndex;
 	bitBoard ownColorMap;
 	if (facts.turn) ownColorMap = facts.pieces[0];
-	else ownColorMap = ~facts.pieces[0];
+	else ownColorMap = ~facts.pieces[0] & facts.allPieces;
 	for (char pType = 1; pType < 7; pType++)
 	{
 		bitBoard moveables = facts.pieces[pType] & ownColorMap;
@@ -633,19 +633,10 @@ void Board::generateCaptureMoves(Move* moveList, int& moveCounter) const
 		{
 			int x = bitwise::bitBoardX(scanIndex);
 			int y = bitwise::bitBoardY(scanIndex);
-			Piece::appendMoveArray(moveList, moveCounter, (PieceType)pType, x, y, *this);
+			Piece::appendMoveArray(moveList, moveCounter, (PieceType)pType, x, y, *this, true);
 			moveables &= moveables - 1;
 		}
 	}
-
-    for (int i = moveCounter - 1; i >= 0; i--)
-    {
-        if (moveList[i].pieceCaptured == PieceType::Empty)
-        {
-            moveCounter--;
-            moveList[i] = moveList[moveCounter];
-        }
-    }
 
     if (moveCounter > 0)
     {
@@ -659,50 +650,6 @@ void Board::generateCaptureMoves(Move* moveList, int& moveCounter) const
             }
         }
     }
-}
-
-int Board::gameOverCheck() const
-{
-    int moveCounter = 0;
-    Move rawMoveList[27];
-    Danger safetyData = Danger(*this);
-    for(int y = 0; y < 8; y++)
-    {
-        for(int x = 0; x < 8; x++)
-        {
-            //What Piece is there
-            if(getSquareType(x, y) == PieceType::Empty)
-            {
-                continue;
-            }
-            //If the piece is the right color, add its moves to the list
-            //if(getSquareColor(x, y) == facts.turn){
-            if (getSquareColor(x, y) == facts.turn)
-            {
-                Piece target = getSquare(x, y);
-                moveCounter = 0;
-                target.appendMoveArray(rawMoveList, moveCounter, x, y, *this);
-                for(int i=0; i<moveCounter; i++)
-                {
-                    if(rawMoveList[i].isSafe(safetyData))
-                    {
-                        return 0;
-                    }
-                }
-            }
-        }
-    }
-    if(safetyData.getCheck())
-    {
-        //CheckMate
-        return 1;
-    }
-    else
-    {
-        //StaleMate
-        return 2;
-    }
-    return 0;
 }
 
 void Board::unmakeMove(Move data)

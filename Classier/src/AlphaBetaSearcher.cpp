@@ -77,18 +77,17 @@ Move AlphaBetaSearcher::alphaBeta(Board& boardState, int depth, double alpha, do
     if(moveCount == 0)
     {
         returnedMove = Move();
-		double gameOverScore = GameOverEvaluator().evaluate(boardState);
-		returnedMove.setScore(gameOverScore);
-
-        if (returnedMove.score == 1000)
-        {
-            returnedMove.setScore(0);
-        }
-		else
+		if (Danger(boardState).getCheck())
 		{
+			if (boardState.facts.turn) returnedMove.setScore(-999);
+			else returnedMove.setScore(999);
 			returnedMove.setGameOverDepth(0);
 		}
-
+		else
+		{
+			returnedMove.setScore(0);
+		}
+		
         return returnedMove;
     }
 
