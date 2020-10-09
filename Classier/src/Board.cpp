@@ -591,7 +591,7 @@ void Board::setKingLocation(bool setColor, int x, int y)
     }
 }
 
-void Board::generateMoveArray(Move* finalMoveList, int& moveCounter) const
+void Board::generateMoveArray(Move* finalMoveList, int& moveCounter)
 {
 	unsigned long scanIndex;
 	bitBoard ownColorMap;
@@ -609,18 +609,17 @@ void Board::generateMoveArray(Move* finalMoveList, int& moveCounter) const
 		}
 	}
 
-    Danger safetyData = Danger(*this);
     for(int i = moveCounter - 1; i >= 0; i--)
     {
-        if(!finalMoveList[i].isSafe(safetyData))
-        {
-            finalMoveList[i] = finalMoveList[moveCounter - 1];
-            moveCounter--;
-        }
+		if(!finalMoveList[i].isSafe(*this))
+		{
+			finalMoveList[i] = finalMoveList[moveCounter - 1];
+			moveCounter--;
+		}
     }
 }
 
-void Board::generateCaptureMoves(Move* moveList, int& moveCounter) const
+void Board::generateCaptureMoves(Move* moveList, int& moveCounter)
 {
 	unsigned long scanIndex;
 	bitBoard ownColorMap;
@@ -638,21 +637,22 @@ void Board::generateCaptureMoves(Move* moveList, int& moveCounter) const
 		}
 	}
 
-    if (moveCounter > 0)
-    {
-        Danger safetyData = Danger(*this);
-        for(int i = moveCounter - 1; i >= 0; i--)
-        {
-            if(!moveList[i].isSafe(safetyData))
-            {
-                moveList[i] = moveList[moveCounter - 1];
-                moveCounter--;
-            }
-        }
-    }
+	for (int i = moveCounter - 1; i >= 0; i--)
+	{
+		if (!moveList[i].isSafe(*this))
+		{
+			moveList[i] = moveList[moveCounter - 1];
+			moveCounter--;
+		}
+	}
 }
 
 void Board::unmakeMove(Move data)
+{
+	unmakeMove(data, true);
+}
+
+void Board::unmakeMove(Move data, bool updateHash)
 {
 	if (data.null) {
 		facts.turn = !facts.turn;
@@ -714,10 +714,18 @@ void Board::unmakeMove(Move data)
 	facts.turn = !facts.turn;
 
 	// Zobrist unmakeUpdate
-	facts.hasher.update(*this, data);
+	if (updateHash)
+	{
+		facts.hasher.update(*this, data);
+	}
 }
 
 void Board::makeMove(Move data)
+{
+	makeMove(data, true);
+}
+
+void Board::makeMove(Move data, bool updateHash)
 {
 	// A null move only passes the facts.turn
 	if (data.null) {
@@ -727,7 +735,10 @@ void Board::makeMove(Move data)
 		return;
 	}
 
-	facts.hasher.update(*this, data);
+	if (updateHash)
+	{
+		facts.hasher.update(*this, data);
+	}
 
     //Picking up the Piece
     Piece movingPiece = getSquare(data.startX, data.startY);
@@ -867,7 +878,7 @@ double Board::perft(int depth)
     return moveCounter;
 }
 
-double Board::dividePerft(int depth) const
+double Board::dividePerft(int depth)
 {
     if(depth == 0) return(1);//No moves at 0 depth
 
@@ -883,18 +894,17 @@ double Board::dividePerft(int depth) const
         return(moveGenCount);//How many moves can we make RIGHT NOW
     }
 
-    Board newBoard;
     double moveCounter = 0;
     double newBoardMoveCount;
 
     for(int i=0; i < moveGenCount; i++)
     {
-        newBoard = this->newCopy();
-        newBoard.makeMove(moveList[i]);
-        newBoardMoveCount = newBoard.perft(depth-1);
+		makeMove(moveList[i]);
+        newBoardMoveCount = perft(depth-1);
         std::cout << moveList[i].basicAlg() << " ";
         std::cout << std::fixed << newBoardMoveCount << std::endl;
         moveCounter += newBoardMoveCount;
+		unmakeMove(moveList[i]);
     }
     return moveCounter;
 }

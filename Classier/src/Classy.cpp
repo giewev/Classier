@@ -47,6 +47,10 @@ int main(int argc, char *argv[])
 				std::cout << moveList[i].basicAlg() << std::endl;
 			}
 		}
+		else if (argParser.flagExists("-divide"))
+		{
+			board.dividePerft(std::stoi(argParser.argumentContent("-divide")));
+		}
     }
 	else {
 		Board board = Board();

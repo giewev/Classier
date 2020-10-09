@@ -67,6 +67,10 @@ Move::Move(const Board& board)
 	pieceCaptured = getPieceCaptured(board);
 	oldEPData = board.getEPData();
 	oldCastlingRights = board.getCastlingData();
+	startX = -1;
+	startY = -1;
+	endX = -1;
+	endY = -1;
 }
 
 Move::Move()
@@ -124,6 +128,34 @@ int Move::getMateDistance()
 	}
 	
 	return 0;
+}
+
+bool Move::isSafe(Board& gameBoard)
+{
+	gameBoard.makeMove(*this, false);
+	bool kingColor = !gameBoard.facts.turn;
+	int kingX = gameBoard.getKingX(kingColor);
+	int kingY = gameBoard.getKingY(kingColor);
+	bool safe = gameBoard.getSquare(kingX, kingY).isSafe(gameBoard);
+	gameBoard.unmakeMove(*this, false);
+
+	if (safe)
+	{
+		kingX = gameBoard.getKingX(kingColor);
+		kingY = gameBoard.getKingY(kingColor);
+		// Special check if the in between square is being attacked when you castle
+		if (startX == kingX && startY == kingY)
+		{
+			if (fabs(startX - endX) == 2)
+			{
+				int betweenX = (startX + endX) / 2;
+				return Move(startX, startY, betweenX, endY, PieceType::Empty, gameBoard).isSafe(gameBoard) &&
+					Move(gameBoard).isSafe(gameBoard);
+			}
+		}
+	}
+	
+	return safe;
 }
 
 bool Move::isSafe(Danger safetyData)

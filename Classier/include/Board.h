@@ -54,16 +54,19 @@ public:
     void loadFEN(std::string);
     std::string outputFEN() const;
     double perft(int);
-    void generateMoveArray(Move*, int&) const;
-    void generateCaptureMoves(Move* moveList, int& moveCounter) const;
+    void generateMoveArray(Move*, int&);
+    void generateCaptureMoves(Move* moveList, int& moveCounter);
+
     void makeMove(Move);
+	void makeMove(Move, bool updateHash);
 	void unmakeMove(Move);
+	void unmakeMove(Move, bool updateHash);
 
     bool operator==(const Board&) const;
 
     bool squareIsPopulated(const int& x, const int& y) const;
     bool squareIsType(int, int, int) const;
-    double dividePerft(int) const;
+    double dividePerft(int);
     bool getCastlingRights(bool, bool) const;
     char getCastlingRights() const;
     void setCastlingRights(bool, bool, bool);

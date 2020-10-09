@@ -41,6 +41,7 @@ public:
     static bool bigger(Move, Move);
 
     bool isSafe(Danger);
+	bool isSafe(Board& gameBoard);
     std::string basicAlg();
     //bool isCapture(const Board&);
 

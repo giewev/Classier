@@ -71,7 +71,9 @@ void kiwipetePerft_test()
 
     for(int i = 0; i < 5; i++)
     {
-        assert(testBoard.perft(i) == expectedPerfts[i]);
+		double result = testBoard.perft(i);
+		std::cout << result << std::endl;
+        assert(result == expectedPerfts[i]);
     }
 }
 
@@ -85,7 +87,9 @@ void endgamePerft_test()
 
     for(int i = 0; i < 5; i++)
     {
-        assert(testBoard.perft(i) == expectedPerfts[i]);
+		double result = testBoard.perft(i);
+		std::cout << result << std::endl;
+		assert(result == expectedPerfts[i]);
     }
 }
 
