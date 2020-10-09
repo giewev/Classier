@@ -113,11 +113,10 @@ void Piece::appendMoveArray(Move* moveList, int& moveCounter, PieceType movingTy
 	}
 }
 
-void Piece::kingMoveArray(Move* moveList, int& moveCounter, int xPos, int yPos, const Board& gameBoard, bool captureOnly)
+bitBoard Piece::kingRegularMoveBoard(int x, int y, bool color, const Board& gameBoard, bool captureOnly)
 {
-	bool ownColor = gameBoard.getSquareColor(xPos, yPos);
 	bitBoard legalMoves;
-	if (ownColor) legalMoves = ~gameBoard.facts.pieces[0] & gameBoard.facts.allPieces;
+	if (color) legalMoves = ~gameBoard.facts.pieces[0] & gameBoard.facts.allPieces;
 	else legalMoves = gameBoard.facts.pieces[0] & gameBoard.facts.allPieces;
 
 	if (!captureOnly)
@@ -125,7 +124,14 @@ void Piece::kingMoveArray(Move* moveList, int& moveCounter, int xPos, int yPos, 
 		legalMoves |= ~gameBoard.facts.allPieces;
 	}
 
-	legalMoves &= kingMoves[xPos][yPos];
+	legalMoves &= kingMoves[x][y];
+	return legalMoves;
+}
+
+void Piece::kingMoveArray(Move* moveList, int& moveCounter, int xPos, int yPos, const Board& gameBoard, bool captureOnly)
+{
+	bool ownColor = gameBoard.getSquareColor(xPos, yPos);
+	bitBoard legalMoves = kingRegularMoveBoard(xPos, yPos, ownColor, gameBoard, captureOnly);
 
 	unsigned long legalIndex;
 	while (_BitScanForward64(&legalIndex, legalMoves))
@@ -160,12 +166,11 @@ void Piece::kingMoveArray(Move* moveList, int& moveCounter, int xPos, int yPos, 
 	}
 }
 
-void Piece::queenMoveArray(Move* moveList, int& moveCounter, int xPos, int yPos, const Board& gameBoard, bool captureOnly)
+bitBoard Piece::queenMoveBoard(int x, int y, bool color, const Board& gameBoard, bool captureOnly)
 {
-	bool ownColor = gameBoard.facts.turn;
-	bitBoard moves = queenMoves[xPos][yPos];
-	bitBoard blockers = queenBlockerMask[xPos][yPos] & gameBoard.facts.allPieces;
-	int queenIndex = bitwise::coordToIndex(xPos, yPos);
+	bitBoard moves = queenMoves[x][y];
+	bitBoard blockers = queenBlockerMask[x][y] & gameBoard.facts.allPieces;
+	int queenIndex = bitwise::coordToIndex(x, y);
 
 	unsigned long scanIndex;
 	while (_BitScanForward64(&scanIndex, blockers))
@@ -176,15 +181,24 @@ void Piece::queenMoveArray(Move* moveList, int& moveCounter, int xPos, int yPos,
 
 	if (captureOnly)
 	{
-		if (ownColor) moves &= ~gameBoard.facts.pieces[0] & gameBoard.facts.allPieces;
+		if (color) moves &= ~gameBoard.facts.pieces[0] & gameBoard.facts.allPieces;
 		else moves &= gameBoard.facts.pieces[0] & gameBoard.facts.allPieces;
 	}
-	else 
+	else
 	{
-		if (ownColor) moves &= ~gameBoard.facts.allPieces | ~gameBoard.facts.pieces[0];
+		if (color) moves &= ~gameBoard.facts.allPieces | ~gameBoard.facts.pieces[0];
 		else moves &= ~gameBoard.facts.allPieces | gameBoard.facts.pieces[0];
 	}
 
+	return moves;
+}
+
+void Piece::queenMoveArray(Move* moveList, int& moveCounter, int xPos, int yPos, const Board& gameBoard, bool captureOnly)
+{
+	bool ownColor = gameBoard.facts.turn;
+	bitBoard moves = queenMoveBoard(xPos, yPos, ownColor, gameBoard, captureOnly);
+
+	unsigned long scanIndex;
 	while (_BitScanForward64(&scanIndex, moves))
 	{
 		int x = bitwise::bitBoardX(scanIndex);
@@ -194,12 +208,11 @@ void Piece::queenMoveArray(Move* moveList, int& moveCounter, int xPos, int yPos,
 	}
 }
 
-void Piece::bishopMoveArray(Move* moveList, int& moveCounter, int xPos, int yPos, const Board& gameBoard, bool captureOnly)
+bitBoard Piece::bishopMoveBoard(int x, int y, bool color, const Board& gameBoard, bool captureOnly)
 {
-	bool ownColor = gameBoard.facts.turn;
-	bitBoard moves = bishopMoves[xPos][yPos];
-	bitBoard blockers = bishopBlockerMask[xPos][yPos] & gameBoard.facts.allPieces;
-	int bishopIndex = bitwise::coordToIndex(xPos, yPos);
+	bitBoard moves = bishopMoves[x][y];
+	bitBoard blockers = bishopBlockerMask[x][y] & gameBoard.facts.allPieces;
+	int bishopIndex = bitwise::coordToIndex(x, y);
 
 	unsigned long scanIndex;
 	while (_BitScanForward64(&scanIndex, blockers))
@@ -210,15 +223,24 @@ void Piece::bishopMoveArray(Move* moveList, int& moveCounter, int xPos, int yPos
 
 	if (captureOnly)
 	{
-		if (ownColor) moves &= ~gameBoard.facts.pieces[0] & gameBoard.facts.allPieces;
+		if (color) moves &= ~gameBoard.facts.pieces[0] & gameBoard.facts.allPieces;
 		else moves &= gameBoard.facts.pieces[0] & gameBoard.facts.allPieces;
 	}
 	else
 	{
-		if (ownColor) moves &= ~gameBoard.facts.allPieces | ~gameBoard.facts.pieces[0];
+		if (color) moves &= ~gameBoard.facts.allPieces | ~gameBoard.facts.pieces[0];
 		else moves &= ~gameBoard.facts.allPieces | gameBoard.facts.pieces[0];
 	}
 
+	return moves;
+}
+
+void Piece::bishopMoveArray(Move* moveList, int& moveCounter, int xPos, int yPos, const Board& gameBoard, bool captureOnly)
+{
+	bool ownColor = gameBoard.facts.turn;
+	bitBoard moves = bishopMoveBoard(xPos, yPos, ownColor, gameBoard, captureOnly);
+
+	unsigned long scanIndex;
 	while (_BitScanForward64(&scanIndex, moves))
 	{
 		int x = bitwise::bitBoardX(scanIndex);
@@ -228,15 +250,22 @@ void Piece::bishopMoveArray(Move* moveList, int& moveCounter, int xPos, int yPos
 	}
 }
 
+bitBoard Piece::knightMoveBoard(int x, int y, bool color, const Board& gameBoard, bool captureOnly)
+{
+	bitBoard obstacles;
+	if (color) obstacles = gameBoard.facts.allPieces & gameBoard.facts.pieces[0];
+	else obstacles = gameBoard.facts.allPieces & ~gameBoard.facts.pieces[0];
+
+	bitBoard legalDestinations = ~obstacles & knightMoves[x][y];
+	if (captureOnly) legalDestinations &= gameBoard.facts.allPieces;
+	return legalDestinations;
+}
+
 void Piece::knightMoveArray(Move* moveList, int& moveCounter, int xPos, int yPos, const Board& gameBoard, bool captureOnly)
 {
 	bool ownColor = gameBoard.getSquareColor(xPos, yPos);
-	bitBoard obstacles;
-	if (ownColor) obstacles = gameBoard.facts.allPieces & gameBoard.facts.pieces[0];
-	else obstacles = gameBoard.facts.allPieces & ~gameBoard.facts.pieces[0];
-
-	bitBoard legalDestinations = ~obstacles & knightMoves[xPos][yPos];
-	if (captureOnly) legalDestinations &= gameBoard.facts.allPieces;
+	bitBoard legalDestinations = knightMoveBoard(xPos, yPos, ownColor, gameBoard, captureOnly);
+	
 	unsigned long legalIndex;
 	while (_BitScanForward64(&legalIndex, legalDestinations))
 	{
@@ -247,12 +276,11 @@ void Piece::knightMoveArray(Move* moveList, int& moveCounter, int xPos, int yPos
 	}
 }
 
-void Piece::rookMoveArray(Move* moveList, int& moveCounter, int xPos, int yPos, const Board& gameBoard, bool captureOnly)
+bitBoard Piece::rookMoveBoard(int x, int y, bool color, const Board& gameBoard, bool captureOnly)
 {
-	bool ownColor = gameBoard.facts.turn;
-	bitBoard moves = rookMoves[xPos][yPos];
-	bitBoard blockers = rookBlockerMask[xPos][yPos] & gameBoard.facts.allPieces;
-	int rookIndex = bitwise::coordToIndex(xPos, yPos);
+	bitBoard moves = rookMoves[x][y];
+	bitBoard blockers = rookBlockerMask[x][y] & gameBoard.facts.allPieces;
+	int rookIndex = bitwise::coordToIndex(x, y);
 
 	unsigned long scanIndex;
 	while (_BitScanForward64(&scanIndex, blockers))
@@ -263,15 +291,24 @@ void Piece::rookMoveArray(Move* moveList, int& moveCounter, int xPos, int yPos, 
 
 	if (captureOnly)
 	{
-		if (ownColor) moves &= ~gameBoard.facts.pieces[0] & gameBoard.facts.allPieces;
+		if (color) moves &= ~gameBoard.facts.pieces[0] & gameBoard.facts.allPieces;
 		else moves &= gameBoard.facts.pieces[0] & gameBoard.facts.allPieces;
 	}
 	else
 	{
-		if (ownColor) moves &= ~gameBoard.facts.allPieces | ~gameBoard.facts.pieces[0];
+		if (color) moves &= ~gameBoard.facts.allPieces | ~gameBoard.facts.pieces[0];
 		else moves &= ~gameBoard.facts.allPieces | gameBoard.facts.pieces[0];
 	}
 
+	return moves;
+}
+
+void Piece::rookMoveArray(Move* moveList, int& moveCounter, int xPos, int yPos, const Board& gameBoard, bool captureOnly)
+{
+	bool ownColor = gameBoard.facts.turn;
+	bitBoard moves = rookMoveBoard(xPos, yPos, ownColor, gameBoard, captureOnly);
+
+	unsigned long scanIndex;
 	while (_BitScanForward64(&scanIndex, moves))
 	{
 		int x = bitwise::bitBoardX(scanIndex);
@@ -362,120 +399,36 @@ void Piece::pawnMoveArray(Move* moveList, int& moveCounter, int xPos, int yPos, 
 bool Piece::isSafe(const Board& gameBoard)
 {
     //Check for Bishop or Queen
-    for(int i=-1; i<=1; i+=2)
-    {
-        for(int j=-1; j<=1; j+=2)
-        {
-            for(int k=1; k<=7; k++)
-            {
-                int targetX = xPos+(i*k);
-                int targetY = yPos+(j*k);
-                //Out of bounds
-                if(targetX >= 8 || targetX < 0 || targetY >= 8 || targetY < 0)
-                {
-                    break;
-                }
-
-                //Found a piece
-                if(gameBoard.squareIsPopulated(targetX, targetY))
-                {
-                    bool targetColor = gameBoard.getSquareColor(targetX, targetY);
-                    if(targetColor != color)
-                    {
-                        PieceType targetType = gameBoard.getSquareType(targetX, targetY);
-                        if(targetType == PieceType::Bishop || targetType == PieceType::Queen)
-                        {
-                            return(false);
-                        }
-                        break;
-                    }
-                    break;
-                }
-            }
-        }
-    }
+	bitBoard bishopMap = Piece::bishopMoveBoard(xPos, yPos, color, gameBoard, false);
+	bishopMap &= gameBoard.facts.pieces[PieceType::Bishop] | gameBoard.facts.pieces[PieceType::Queen];
+	if (bishopMap)
+	{
+		return false;
+	}
 
     //Check for Rook or Queen
-    for(int i=-1; i<=1; i++)
-    {
-        for(int j=-1; j<=1; j++)
-        {
-            if(!i == !j)
-            {
-                continue;
-            }
-
-            for(int k=1; k<=7; k++)
-            {
-                int targetX = xPos+(i*k);
-                int targetY = yPos+(j*k);
-                //Out of bounds
-                if(targetX >= 8 || targetX < 0 || targetY >= 8 || targetY < 0)
-                {
-                    break;
-                }
-
-                //Found a piece
-                if(gameBoard.squareIsPopulated(targetX, targetY))
-                {
-                    int targetColor = gameBoard.getSquareColor(targetX, targetY);
-                    if(targetColor != color)
-                    {
-                        PieceType targetType = gameBoard.getSquareType(targetX, targetY);
-                        if(targetType == PieceType::Rook || targetType == PieceType::Queen)
-                        {
-                            return(false);
-                        }
-                        break;
-                    }
-                    break;
-                }
-            }
-        }
-    }
+	bitBoard rookMap = Piece::rookMoveBoard(xPos, yPos, color, gameBoard, false);
+	rookMap &= gameBoard.facts.pieces[PieceType::Rook] | gameBoard.facts.pieces[PieceType::Queen];
+	if (rookMap)
+	{
+		return false;
+	}
 
     //Check for Knight
-    for(int i=-2; i<=2; i+= 4)
-    {
-        for(int j=-1; j<=1; j+=2)
-        {
-            int targetX = xPos+i;
-            int targetY = yPos+j;
-            if(targetX >= 0 && targetX < 8 && targetY >= 0 && targetY < 8) // Within bounds
-            {
-                if(gameBoard.squareIsPopulated(targetX, targetY))
-                {
-                    bool targetColor = gameBoard.getSquareColor(targetX, targetY);
-                    if(targetColor != color)
-                    {
-                        PieceType targetType = gameBoard.getSquareType(targetX, targetY);
-                        if(targetType == PieceType::Knight)
-                        {
-                            return false;
-                        }
-                    }
-                }
-            }
+	bitBoard knightMap = Piece::knightMoveBoard(xPos, yPos, color, gameBoard, false);
+	knightMap &= gameBoard.facts.pieces[PieceType::Knight];
+	if (knightMap)
+	{
+		return false;
+	}
 
-            targetX = xPos+j;
-            targetY = yPos+i;
-            if(targetX >= 0 && targetX < 8 && targetY >= 0 && targetY < 8) // Within bounds
-            {
-                if(gameBoard.squareIsPopulated(targetX, targetY))
-                {
-                    bool targetColor = gameBoard.getSquareColor(targetX, targetY);
-                    if(targetColor != color)
-                    {
-                        PieceType targetType = gameBoard.getSquareType(targetX, targetY);
-                        if(targetType == PieceType::Knight)
-                        {
-                            return false;
-                        }
-                    }
-                }
-            }
-        }
-    }
+	//Check if next to a king
+	bitBoard kingMap = Piece::kingRegularMoveBoard(xPos, yPos, color, gameBoard, false);
+	kingMap &= gameBoard.facts.pieces[PieceType::King];
+	if (kingMap)
+	{
+		return false;
+	}
 
     //Check if Pawn ahead
     int direction = -1;
@@ -496,41 +449,6 @@ bool Piece::isSafe(const Board& gameBoard)
                 if(gameBoard.getSquareColor(targetX, targetY) != color)
                 {
                     return(false);
-                }
-            }
-        }
-    }
-
-    //Check if next to a king
-    for(int x=-1; x<=1; x++)
-    {
-        for(int y=-1; y<=1; y++)
-        {
-
-            if(!x && !y) //No motion
-            {
-                continue;
-            }
-
-            int targetX = xPos + x;
-            int targetY = yPos + y;
-            if(targetX >= 8 || targetX < 0) //if checking horizontally off the board
-            {
-                continue;
-            }
-            if(targetY >= 8 || targetY < 0) //if checking vertically off the board
-            {
-                continue;
-            }
-
-            if (gameBoard.squareIsPopulated(targetX, targetY))
-            {
-                if(gameBoard.getSquareType(targetX, targetY) == PieceType::King)
-                {
-                    if (gameBoard.getSquareColor(targetX, targetY) != color)
-                    {
-                        return(false);
-                    }
                 }
             }
         }

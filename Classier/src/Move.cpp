@@ -132,12 +132,12 @@ int Move::getMateDistance()
 
 bool Move::isSafe(Board& gameBoard)
 {
-	gameBoard.makeMove(*this, false);
+	gameBoard.makeMove(*this);
 	bool kingColor = !gameBoard.facts.turn;
 	int kingX = gameBoard.getKingX(kingColor);
 	int kingY = gameBoard.getKingY(kingColor);
 	bool safe = gameBoard.getSquare(kingX, kingY).isSafe(gameBoard);
-	gameBoard.unmakeMove(*this, false);
+	gameBoard.unmakeMove(*this);
 
 	if (safe)
 	{

@@ -1,5 +1,6 @@
 #include <string>
 #include <vector>
+#include "Bitwise.h"
 
 struct Move;
 class Board;
@@ -42,6 +43,12 @@ public:
     static void bishopMoveArray(Move*, int&, int x, int y, const Board&, bool captureOnly);
     static void knightMoveArray(Move*, int&, int x, int y, const Board&, bool captureOnly);
     static void rookMoveArray(Move*, int&, int x, int y, const Board&, bool captureOnly);
+
+	static bitBoard kingRegularMoveBoard(int x, int y, bool color, const Board& gameBoard, bool captureOnly);
+	static bitBoard queenMoveBoard(int x, int y, bool color, const Board& gameBoard, bool captureOnly);
+	static bitBoard bishopMoveBoard(int x, int y, bool color, const Board& gameBoard, bool captureOnly);
+	static bitBoard knightMoveBoard(int x, int y, bool color, const Board& gameBoard, bool captureOnly);
+	static bitBoard rookMoveBoard(int x, int y, bool color, const Board& gameBoard, bool captureOnly);
 
     bool isSafe(const Board&);
     bool operator!=(Piece);

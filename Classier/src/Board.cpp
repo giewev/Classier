@@ -32,6 +32,9 @@ Board::Board()
 	pawnPositionalValue = 0;
 	knightPositionalValue = 0;
 	bishopPositionalValue = 0;
+
+	hashingEnabled = true;
+	positionalScoresEnabled = true;
 }
 
 Board::Board(int null)
@@ -508,37 +511,74 @@ void Board::setSquare(Piece setPiece, int x, int y)
     setSquare(setPiece.type, setPiece.color, x, y);
 }
 
+void Board::setSquare(PieceType type, PieceType prevType, bool color, int x, int y)
+{
+	throwIfOutOfBounds(x, y);
+
+	updatePositionalScore(type, color, x, y);
+	bitBoard square = bitwise::coordToBoard(x, y);
+	bitBoard notSquare = ~square;
+
+	if (prevType != PieceType::Empty)
+	{
+		facts.pieces[prevType] &= notSquare;
+	}
+
+	if (type > 0)
+	{
+		facts.pieces[type] |= square;
+		facts.allPieces |= square;
+	}
+	else
+	{
+		facts.allPieces &= notSquare;
+	}
+
+	if (color)
+	{
+		facts.pieces[0] |= square;
+	}
+	else
+	{
+		facts.pieces[0] &= notSquare;
+	}
+}
+
 void Board::setSquare(PieceType type, bool color, int x, int y)
 {
     throwIfOutOfBounds(x, y);
 
 	updatePositionalScore(type, color, x, y);
+	bitBoard square = bitwise::coordToBoard(x, y);
+	bitBoard notSquare = ~square;
     for(int i=1; i<7; i++)
     {
-        facts.pieces[i] &= ~(1ull << (x + 8*y));
+        facts.pieces[i] &= notSquare;
     }
     if(type > 0)
     {
-        facts.pieces[type] |= (1ull << (x + 8 * y));
-        facts.allPieces |= (1ull << (x + 8 * y));
+        facts.pieces[type] |= square;
+        facts.allPieces |= square;
     }
     else
     {
-        facts.allPieces &= ~(1ull << (x + 8 * y));
+        facts.allPieces &= notSquare;
     }
 
     if(color)
     {
-        facts.pieces[0] |= (1ull << (x + 8 * y));
+        facts.pieces[0] |= square;
     }
     else
     {
-        facts.pieces[0] &= ~(1ull << (x + 8 * y));
+        facts.pieces[0] &= notSquare;
     }
 }
 
 void Board::updatePositionalScore(PieceType type, bool color, int x, int y)
 {
+	if (!positionalScoresEnabled) return;
+
 	PieceType deadPieceType = getSquareType(x, y);
 	bool deadPieceColor = getSquareColor(x, y);
 
@@ -609,6 +649,8 @@ void Board::generateMoveArray(Move* finalMoveList, int& moveCounter)
 		}
 	}
 
+	hashingEnabled = false;
+	positionalScoresEnabled = false;
     for(int i = moveCounter - 1; i >= 0; i--)
     {
 		if(!finalMoveList[i].isSafe(*this))
@@ -617,6 +659,8 @@ void Board::generateMoveArray(Move* finalMoveList, int& moveCounter)
 			moveCounter--;
 		}
     }
+	hashingEnabled = true;
+	positionalScoresEnabled = true;
 }
 
 void Board::generateCaptureMoves(Move* moveList, int& moveCounter)
@@ -637,6 +681,8 @@ void Board::generateCaptureMoves(Move* moveList, int& moveCounter)
 		}
 	}
 
+	hashingEnabled = false;
+	positionalScoresEnabled = false;
 	for (int i = moveCounter - 1; i >= 0; i--)
 	{
 		if (!moveList[i].isSafe(*this))
@@ -645,14 +691,11 @@ void Board::generateCaptureMoves(Move* moveList, int& moveCounter)
 			moveCounter--;
 		}
 	}
+	hashingEnabled = true;
+	positionalScoresEnabled = true;
 }
 
 void Board::unmakeMove(Move data)
-{
-	unmakeMove(data, true);
-}
-
-void Board::unmakeMove(Move data, bool updateHash)
 {
 	if (data.null) {
 		facts.turn = !facts.turn;
@@ -714,18 +757,13 @@ void Board::unmakeMove(Move data, bool updateHash)
 	facts.turn = !facts.turn;
 
 	// Zobrist unmakeUpdate
-	if (updateHash)
+	if (hashingEnabled)
 	{
 		facts.hasher.update(*this, data);
 	}
 }
 
 void Board::makeMove(Move data)
-{
-	makeMove(data, true);
-}
-
-void Board::makeMove(Move data, bool updateHash)
 {
 	// A null move only passes the facts.turn
 	if (data.null) {
@@ -735,16 +773,17 @@ void Board::makeMove(Move data, bool updateHash)
 		return;
 	}
 
-	if (updateHash)
+	if (hashingEnabled)
 	{
 		facts.hasher.update(*this, data);
 	}
 
     //Picking up the Piece
-    Piece movingPiece = getSquare(data.startX, data.startY);
-    movingPiece.setMoved(true);
+	PieceType movingType = getSquareType(data.startX, data.startY);
+	PieceType newType = movingType;
+	bool movingColor = facts.turn;
 
-    if(movingPiece.type == PieceType::Pawn)
+    if(movingType == PieceType::Pawn)
     {
         //Check for double move
         if(fabs(data.endY - data.startY) == 2)
@@ -757,41 +796,41 @@ void Board::makeMove(Move data, bool updateHash)
             Piece ePiece = getEP();
             if(data.endX == ePiece.getX() && data.startY == ePiece.getY())
             {
-                setSquare(Piece(PieceType::Empty), ePiece.getX(), ePiece.getY());
+                setSquare(PieceType::Empty, PieceType::Pawn, false, ePiece.getX(), ePiece.getY());
             }
-            setEP(Piece(PieceType::Empty));
+			clearEP();
         }
+
         if(data.endY == 7 || data.endY == 0)
         {
-            movingPiece.type = data.promotion;
+			newType = data.promotion;
         }
     }
     else if(facts.EPdata != -1)
     {
-        setEP(Piece(PieceType::Empty));
+		clearEP();
     }
-    if(movingPiece.type == PieceType::King)
+
+    if(movingType == PieceType::King)
     {
         //Move the rook if castling
         if(fabs(data.startX - data.endX) == 2)
         {
-            Piece getRook;
             if(data.endX == 2)
             {
-                getRook = getSquare(0, data.startY);
-                setSquare(getRook, 3, data.startY);
-                setSquare(Piece(PieceType::Empty), 0, data.startY);
+                setSquare(PieceType::Rook, PieceType::Empty, movingColor, 3, data.startY);
+                setSquare(PieceType::Empty, PieceType::Rook, false, 0, data.startY);
             }
             else if(data.endX == 6)
             {
-                getRook = getSquare(7, data.startY);
-                setSquare(getRook, 5, data.startY);
-                setSquare(Piece(PieceType::Empty), 7, data.startY);
+                setSquare(PieceType::Rook, PieceType::Empty, movingColor, 5, data.startY);
+                setSquare(PieceType::Empty, PieceType::Rook, false, 7, data.startY);
             }
         }
-        setKingLocation(movingPiece.getColor(), data.endX, data.endY);
-		setCastlingRights(facts.turn, true, false);
-		setCastlingRights(facts.turn, false, false);
+
+        setKingLocation(movingColor, data.endX, data.endY);
+		setCastlingRights(movingColor, true, false);
+		setCastlingRights(movingColor, false, false);
     }
 
     //Castling Rights handling
@@ -833,10 +872,8 @@ void Board::makeMove(Move data, bool updateHash)
         }
     }
 
-    setSquare(Piece(PieceType::Empty), data.startX, data.startY);
-    movingPiece.xPos = data.endX;
-    movingPiece.yPos = data.endY;
-    setSquare(movingPiece, data.endX, data.endY);
+    setSquare(PieceType::Empty, movingType, false, data.startX, data.startY);
+    setSquare(newType, data.pieceCaptured, movingColor, data.endX, data.endY);
 
     facts.turn = !facts.turn;
 }
@@ -971,6 +1008,11 @@ void Board::setEP(int x, int y, bool color)
     facts.EPdata |= x;
 }
 
+void Board::clearEP()
+{
+	facts.EPdata = -1;
+}
+
 Piece Board::getEP() const
 {
     if(facts.EPdata == -1)
@@ -993,7 +1035,6 @@ Piece Board::getEP() const
     ePiece.color = color;
     return ePiece;
 }
-
 
 int Board::getEPData() const
 {

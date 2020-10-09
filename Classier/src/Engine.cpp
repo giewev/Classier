@@ -25,14 +25,12 @@ Engine::Engine()
 {
     gameBoard = Board();
     evaluator = FullEvaluator();
-	transpositionTable.reserve(64 * 1024 * 1024);
 }
 
 Engine::Engine(Board loadBoard)
 {
     gameBoard = loadBoard;
     evaluator = FullEvaluator();
-	transpositionTable.reserve(64 * 1024 * 1024);
 }
 
 Engine::~Engine()

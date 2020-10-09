@@ -23,6 +23,9 @@ public:
 	double knightPositionalValue;
 	double bishopPositionalValue;
 
+	bool hashingEnabled;
+	bool positionalScoresEnabled;
+
     Board();
     Board(int);
     ~Board();
@@ -47,8 +50,10 @@ public:
 
     void setSquare(Piece, int, int);
     void setSquare(PieceType type, bool color, int x, int y);
+	void setSquare(PieceType type, PieceType prevType, bool color, int x, int y);
     void setEP(Piece);
     void setEP(int, int, bool);
+	void clearEP();
     void setKingLocation(bool, int, int);
 
     void loadFEN(std::string);
@@ -58,9 +63,7 @@ public:
     void generateCaptureMoves(Move* moveList, int& moveCounter);
 
     void makeMove(Move);
-	void makeMove(Move, bool updateHash);
 	void unmakeMove(Move);
-	void unmakeMove(Move, bool updateHash);
 
     bool operator==(const Board&) const;
 
