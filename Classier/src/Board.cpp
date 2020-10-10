@@ -515,7 +515,7 @@ void Board::setSquare(PieceType type, PieceType prevType, bool color, int x, int
 {
 	throwIfOutOfBounds(x, y);
 
-	updatePositionalScore(type, color, x, y);
+	updatePositionalScore(type, color, prevType, getSquareColor(x, y), x, y);
 	bitBoard square = bitwise::coordToBoard(x, y);
 	bitBoard notSquare = ~square;
 
@@ -577,10 +577,14 @@ void Board::setSquare(PieceType type, bool color, int x, int y)
 
 void Board::updatePositionalScore(PieceType type, bool color, int x, int y)
 {
-	if (!positionalScoresEnabled) return;
-
 	PieceType deadPieceType = getSquareType(x, y);
 	bool deadPieceColor = getSquareColor(x, y);
+	updatePositionalScore(type, color, deadPieceType, deadPieceColor, x, y);
+}
+
+void Board::updatePositionalScore(PieceType type, bool color, PieceType deadPieceType, bool deadPieceColor, int x, int y)
+{
+	if (!positionalScoresEnabled) return;
 
 	switch (deadPieceType)
 	{

@@ -82,6 +82,7 @@ private:
     int halfMoveCounter;
 
 	void updatePositionalScore(PieceType type, bool color, int x, int y);
+	void updatePositionalScore(PieceType type, bool color, PieceType deadPieceType, bool deadPieceColor, int x, int y);
 };
 
 
