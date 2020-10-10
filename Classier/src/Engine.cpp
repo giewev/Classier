@@ -58,9 +58,9 @@ Move Engine::searchToDepth(int depth, chrono::steady_clock::time_point cancelTim
 	AlphaBetaSearcher searcher = AlphaBetaSearcher(*this, cancelTime);
 	Move bestMove = searcher.alphaBeta(gameBoard, depth);
 
-	for (int i = depth - 1; i > 0; i--)
+	for (int i = 2; i <= depth; i++)
 	{
-		std::cout << (double)searcher.nodesAtDepths[i] / searcher.nodesAtDepths[i + 1] << " ";
+		std::cout << (double)searcher.nodesAtDepths[i] / searcher.nodesAtDepths[i - 1] << " ";
 	}
 	std::cout << std::endl;
 
@@ -82,10 +82,9 @@ Move Engine::searchToDepth(int depth, chrono::steady_clock::time_point cancelTim
 		std::cout << std::endl;
 	}
 
-	printf("info transhits %d transchecks %d hashmoves %d tablesize %d \n", MoveSorter::transHits, MoveSorter::sortAttempts, MoveSorter::hashMoveExistsCount, transpositionTable.size());
-	MoveSorter::transHits = 0;
-	MoveSorter::sortAttempts = 0;
-	MoveSorter::hashMoveExistsCount = 0;
+	printf("info transhits %d transchecks %d tablesize %d \n", transHits, transChecks, transpositionTable.size());
+	transChecks = 0; 
+	transHits = 0;
 
 	return bestMove;
 }
@@ -173,8 +172,10 @@ void Engine::updateTranspositionCutoffIfDeeper(const Board& newBoard, int height
 
 TranspositionCache Engine::getTransposition(const Board& lookupBoard)
 {
+	transChecks++;
 	if (transpositionTable.find(lookupBoard.facts) != transpositionTable.end())
 	{
+		transHits++;
 		return this->transpositionTable[lookupBoard.facts];
 	}
 	else

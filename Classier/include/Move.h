@@ -21,8 +21,6 @@ public:
 
 	Move();
     Move(const Board&);
-    //Move(int, int, int, int);
-    //Move(int, int, int, int, PieceType);
 	Move(int, int, int, int, PieceType, const Board&);
 	Move(std::string, const Board&);
 
@@ -43,13 +41,6 @@ public:
     bool isSafe(Danger);
 	bool isSafe(Board& gameBoard);
     std::string basicAlg();
-    //bool isCapture(const Board&);
-
-    template <class Archive>
-    void serialize(Archive& ar)
-    {
-        ar(startX, startY, endX, endY, promotion, score);
-    }
 private:
 	PieceType getPieceCaptured(const Board&);
 };

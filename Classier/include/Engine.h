@@ -49,6 +49,9 @@ private:
     unsigned long transTableMax = 1024 * 1024 * 64;
 
     void clearTranspositionIfFull();
+
+	unsigned long transChecks = 0;
+	unsigned long transHits = 0;
 };
 
 #endif

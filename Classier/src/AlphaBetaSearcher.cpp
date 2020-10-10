@@ -67,10 +67,6 @@ Move AlphaBetaSearcher::alphaBeta(Board& boardState, int depth, double alpha, do
     int moveCount = 0;
     Move moveList[220];
     boardState.generateMoveArray(moveList, moveCount);
-	
-	Move lastMove;
-	MoveSorter sorter = MoveSorter(moveList, moveCount, boardState, transposition, killerMoves[depth], lastMove, this->variations[0][depth]);
-	sorter.sortMoves();
 
     unsigned int bestIndex = 0;
     Move returnedMove;
@@ -92,6 +88,30 @@ Move AlphaBetaSearcher::alphaBeta(Board& boardState, int depth, double alpha, do
 		
         return returnedMove;
     }
+
+	MoveSorter sorter = MoveSorter(moveList, moveCount, boardState, transposition, killerMoves[depth], lastMoveMade[depth - 1], this->variations[0][depth]);
+	if (distanceToHorizon(depth) > 4 && transposition.bestMove.null)
+	{
+		for (int i = 0; i < moveCount; i++)
+		{
+			lastMoveMade[depth] = moveList[i];
+			boardState.makeMove(moveList[i]);
+			returnedMove = alphaBeta(boardState, depth + 2, alpha, beta);
+
+			moveList[i].setScore(returnedMove.score);
+			if (returnedMove.getGameOverDepth() != -1)
+			{
+				moveList[i].setGameOverDepth(returnedMove.getGameOverDepth() + 1);
+			}
+
+			boardState.unmakeMove(moveList[i]);
+		}
+	}
+	else
+	{
+		sorter.assignOrderingScores();
+	}
+	sorter.sortMoves();
 
     for(int i=0; i<moveCount; i++)
     {

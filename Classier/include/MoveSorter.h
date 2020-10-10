@@ -11,12 +11,10 @@ class MoveSorter
 {
 public:
     static const double piecePriorities[];
-	static long transHits;
-	static long sortAttempts;
-	static long hashMoveExistsCount;
 
     MoveSorter(Move* moveList, int moveCount, Board boardState, TranspositionCache transposition, const MoveLookup& killers, const Move& lastMove, const Move& pvMove);
     void sortMoves();
+	void assignOrderingScores();
 protected:
 private:
     Move* moveList;
@@ -26,8 +24,6 @@ private:
 	const MoveLookup& killers;
 	const Move& lastMove;
 	const Move& pvMove;
-
-    void assignOrderingScores();
 };
 
 #endif // MOVESORTER_H
