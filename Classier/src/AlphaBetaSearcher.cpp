@@ -123,7 +123,7 @@ Move AlphaBetaSearcher::alphaBeta(Board& boardState, int depth, double alpha, do
         {
             if (quiescence_enabled && moveList[i].pieceCaptured != PieceType::Empty)
             {
-                moveList[i].score = quiesce(boardState, alpha, beta, moveList[i]);
+                moveList[i].score = quiesce(boardState, alpha, beta, moveList[i], 3);
             }
             else
             {
@@ -209,10 +209,10 @@ void AlphaBetaSearcher::updateAlphaBeta(double score, bool turn, double& alpha, 
     }
 }
 
-double AlphaBetaSearcher::quiesce(Board& boardState, double alpha, double beta, Move lastCap)
+double AlphaBetaSearcher::quiesce(Board& boardState, double alpha, double beta, Move lastCap, int depth)
 {
     double staticScore = engine.lazyEvaluatePosition(boardState);
-    if (causesAlphaBetaBreak(staticScore, alpha, beta, boardState.facts.turn))
+    if (depth == 0 || causesAlphaBetaBreak(staticScore, alpha, beta, boardState.facts.turn))
     {
         return staticScore;
     }
@@ -240,7 +240,7 @@ double AlphaBetaSearcher::quiesce(Board& boardState, double alpha, double beta, 
 		}
 
 		boardState.makeMove(moveList[i]);
-        double score = quiesce(boardState, alpha, beta, moveList[i]);
+        double score = quiesce(boardState, alpha, beta, moveList[i], depth - 1);
 		boardState.unmakeMove(moveList[i]);
 
         if (causesAlphaBetaBreak(score, alpha, beta, boardState.facts.turn))
