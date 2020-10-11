@@ -4,7 +4,6 @@
 #include <fstream>
 #include "Board.h"
 #include "Engine.h"
-#include "Danger.h"
 #include "Move.h"
 #include "ArgumentParser.h"
 #include "Piece.h"
@@ -49,7 +48,7 @@ int main(int argc, char *argv[])
 		}
 		else if (argParser.flagExists("-divide"))
 		{
-			board.dividePerft(std::stoi(argParser.argumentContent("-divide")));
+			std::cout << board.dividePerft(std::stoi(argParser.argumentContent("-divide"))) << std::endl;
 		}
     }
 	else {

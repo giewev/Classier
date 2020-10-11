@@ -79,18 +79,18 @@ const bitBoard pawnDoubleMovePattern = 0x10100;
 const bitBoard pawnCaptureMovePattern = 0x500;
 const bitBoard kingPatternB2 = 0x70507;
 
-extern bitBoard knightMoves[8][8];
-extern bitBoard pawnSingleMoves[2][8][8];
-extern bitBoard pawnDoubleMoves[2][8][8];
-extern bitBoard pawnCaptureMoves[2][8][8];
-extern bitBoard kingMoves[8][8];
-extern bitBoard rookMoves[8][8];
-extern bitBoard bishopMoves[8][8];
-extern bitBoard queenMoves[8][8];
+extern bitBoard knightMoves[64];
+extern bitBoard pawnSingleMoves[2][64];
+extern bitBoard pawnDoubleMoves[2][64];
+extern bitBoard pawnCaptureMoves[2][64];
+extern bitBoard kingMoves[64];
+extern bitBoard rookMoves[64];
+extern bitBoard bishopMoves[64];
+extern bitBoard queenMoves[64];
 
-extern bitBoard rookBlockerMask[8][8];
-extern bitBoard bishopBlockerMask[8][8];
-extern bitBoard queenBlockerMask[8][8];
+extern bitBoard rookBlockerMask[64];
+extern bitBoard bishopBlockerMask[64];
+extern bitBoard queenBlockerMask[64];
 extern bitBoard notBehind[64][64];
 
 const bitBoard kingCastlingMoves[2][2]
@@ -123,6 +123,7 @@ int bitBoardX(unsigned long& index);
 int bitBoardY(unsigned long& index);
 int coordToIndex(int x, int y);
 bitBoard coordToBoard(int x, int y);
+bitBoard indexToBoard(int index);
 
 bitBoard file(int i);
 bitBoard rank(int i);

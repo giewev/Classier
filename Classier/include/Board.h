@@ -37,24 +37,19 @@ public:
     int pieceCount(PieceType) const;
     int pieceCount(PieceType, bool) const;
 
-    Piece getEP() const;
-    Piece getSquare(int, int) const;
-    Piece findKing(bool) const;
-    int getKingX(bool) const;
-    int getKingY(bool) const;
+	void setEP(int);
+	void clearEP();
 	int getEPData() const;
+
+	int getKingIndex(bool) const;
 	int getCastlingData() const;
 
-    PieceType getSquareType(const int&, const int&) const;
-    bool getSquareColor(int, int) const;
+    PieceType getSquareType(const int& index) const;
+    bool getSquareColor(int index) const;
 
-    void setSquare(Piece, int, int);
-    void setSquare(PieceType type, bool color, int x, int y);
-	void setSquare(PieceType type, PieceType prevType, bool color, int x, int y);
-    void setEP(Piece);
-    void setEP(int, int, bool);
-	void clearEP();
-    void setKingLocation(bool, int, int);
+	void setSquare(PieceType type, bool color, int index);
+	void setSquare(PieceType type, PieceType prevType, bool color, int index);
+    void setKingLocation(bool, int);
 
     void loadFEN(std::string);
     std::string outputFEN() const;
@@ -67,22 +62,24 @@ public:
 
     bool operator==(const Board&) const;
 
-    bool squareIsPopulated(const int& x, const int& y) const;
-    bool squareIsType(int, int, int) const;
+    bool squareIsPopulated(const int& index) const;
+    bool squareIsType(int index, int type) const;
     double dividePerft(int);
     bool getCastlingRights(bool, bool) const;
     char getCastlingRights() const;
     void setCastlingRights(bool, bool, bool);
     void setCastlingRights(char);
-    static void throwIfOutOfBounds(int x, int y);
+
+	bool squareAttacked(int index, bool byColor);
 
 private:
-    int kingCoordinates;
+	int whiteKingIndex;
+	int blackKingIndex;
     int moveCounter;
     int halfMoveCounter;
 
-	void updatePositionalScore(PieceType type, bool color, int x, int y);
-	void updatePositionalScore(PieceType type, bool color, PieceType deadPieceType, bool deadPieceColor, int x, int y);
+	void updatePositionalScore(PieceType type, bool color, int index);
+	void updatePositionalScore(PieceType type, bool color, PieceType deadPieceType, bool deadPieceColor, int index);
 };
 
 

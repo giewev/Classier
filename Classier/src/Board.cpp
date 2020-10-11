@@ -7,7 +7,6 @@
 #include "Piece.h"
 #include "Board.h"
 #include "Move.h"
-#include "Danger.h"
 #include "Engine.h"
 #include "Bitwise.h"
 #include "ZobristHasher.h"
@@ -63,57 +62,58 @@ void Board::loadFEN(std::string fenFile)
 
     for(unsigned int i=0; i<fenFile.length(); i++)
     {
+		int index = bitwise::coordToIndex(x, y);
 
         //checking for every value that represents a piece
         if     (fenFile[i] == 'r')
         {
-            setSquare(Piece(PieceType::Rook, x, y, false), x, y);
+            setSquare(PieceType::Rook, false, index);
         }
         else if(fenFile[i] == 'R')
         {
-            setSquare(Piece(PieceType::Rook, x, y, true), x, y);
+			setSquare(PieceType::Rook, true, index);
         }
         else if(fenFile[i] == 'n')
         {
-            setSquare(Piece(PieceType::Knight, x, y, false), x, y);
+			setSquare(PieceType::Knight, false, index);
         }
         else if(fenFile[i] == 'N')
         {
-            setSquare(Piece(PieceType::Knight, x, y, true), x, y);
+			setSquare(PieceType::Knight, true, index);
         }
         else if(fenFile[i] == 'b')
         {
-            setSquare(Piece(PieceType::Bishop, x, y, false), x, y);
+			setSquare(PieceType::Bishop, false, index);
         }
         else if(fenFile[i] == 'B')
         {
-            setSquare(Piece(PieceType::Bishop, x, y, true), x, y);
+			setSquare(PieceType::Bishop, true, index);
         }
         else if(fenFile[i] == 'q')
         {
-            setSquare(Piece(PieceType::Queen, x, y, false), x, y);
+			setSquare(PieceType::Queen, false, index);
         }
         else if(fenFile[i] == 'Q')
         {
-            setSquare(Piece(PieceType::Queen, x, y, true), x, y);
+			setSquare(PieceType::Queen, true, index);
         }
         else if(fenFile[i] == 'k')
         {
-            setKingLocation(false, x, y);
-            setSquare(Piece(PieceType::King, x, y, false), x, y);
+			setKingLocation(false, index);
+			setSquare(PieceType::King, false, index);
         }
         else if(fenFile[i] == 'K')
         {
-            setKingLocation(true, x, y);
-            setSquare(Piece(PieceType::King, x, y, true), x, y);
+			setKingLocation(true, index);
+			setSquare(PieceType::King, true, index);
         }
         else if(fenFile[i] == 'p')
         {
-            setSquare(Piece(PieceType::Pawn, x, y, false), x, y);
+			setSquare(PieceType::Pawn, false, index);
         }
         else if(fenFile[i] == 'P')
         {
-            setSquare(Piece(PieceType::Pawn, x, y, true), x, y);
+			setSquare(PieceType::Pawn, true, index);
         }
 
         //Checking if the value was a number
@@ -233,7 +233,7 @@ void Board::loadFEN(std::string fenFile)
             {
                 rank = 4;
             }
-            setEP(fenFile[bookmark]-97, rank, !facts.turn);
+            setEP(bitwise::coordToIndex(fenFile[bookmark]-97, rank));
             break;
         }
         bookmark += 2;
@@ -300,8 +300,10 @@ string Board::outputFEN() const
     {
         for(int x = 0; x < 8; x++)
         {
-            PieceType pieceType = getSquareType(x, y);
-            bool pieceColor = getSquareColor(x, y);
+			int index = bitwise::coordToIndex(x, y);
+
+            PieceType pieceType = getSquareType(index);
+            bool pieceColor = getSquareColor(index);
             if(pieceColor)
             {
                 if(pieceType == PieceType::Empty)
@@ -427,7 +429,8 @@ Board Board::newCopy() const
     newBoard.setCastlingRights(false, true,  getCastlingRights(false, true));
     newBoard.setCastlingRights(false, false, getCastlingRights(false, false));
     newBoard.facts.turn = facts.turn;
-    newBoard.kingCoordinates = kingCoordinates;
+	newBoard.whiteKingIndex = whiteKingIndex;
+	newBoard.blackKingIndex = blackKingIndex;
     newBoard.moveCounter = moveCounter;
     newBoard.halfMoveCounter = halfMoveCounter;
     newBoard.facts.hasher = ZobristHasher(facts.hasher);
@@ -435,39 +438,16 @@ Board Board::newCopy() const
     return newBoard;
 }
 
-Piece Board::getSquare(int x, int y) const
+PieceType Board::getSquareType(const int& index) const
 {
-    throwIfOutOfBounds(x, y);
-    int type = 0;
-    bool color = (facts.pieces[0] >> (x + 8 * y)) & 1;
-    //Empty SquareCheck
-    if (false && !(((facts.pieces[PieceType::Pawn] | facts.pieces[PieceType::Bishop] | facts.pieces[PieceType::Knight] |
-                     facts.pieces[PieceType::Queen] | facts.pieces[PieceType::Rook] | facts.pieces[PieceType::King]) >> (x + 8 * y)) & 1))
-    {
-        return Piece(PieceType::Empty, x, y, color);
-    }
-    for(int i=1; i<7; i++)
-    {
-        if(((facts.pieces[i] >> (x + 8 * y)) & 1))
-        {
-            type = i;
-            break;
-        }
-    }
-    return Piece((PieceType)type, x, y, color);
-}
-
-PieceType Board::getSquareType(const int& x, const int& y) const
-{
-    throwIfOutOfBounds(x, y);
-    if (!squareIsPopulated(x, y))
+    if (!squareIsPopulated(index))
     {
         return PieceType::Empty;
     }
 
     for(int i=1; i<7; i++)
     {
-        if((facts.pieces[i] >> (x + 8 * y)) & 1)
+        if((facts.pieces[i] >> index) & 1)
         {
             return (PieceType)i;
         }
@@ -476,47 +456,27 @@ PieceType Board::getSquareType(const int& x, const int& y) const
     return PieceType::Empty;
 }
 
-bool Board::getSquareColor(int x, int y) const
+bool Board::getSquareColor(int index) const
 {
-    throwIfOutOfBounds(x, y);
-    return (facts.pieces[0] >> (x + 8 * y)) & 1;
+    return (facts.pieces[0] >> index) & 1;
 }
 
-int Board::getKingX(bool getColor) const
+int Board::getKingIndex(bool getColor) const
 {
     if(getColor)
     {
-        return((kingCoordinates & 7));
+        return whiteKingIndex;
     }
     else
     {
-        return(((kingCoordinates >> 6) & 7));
+        return blackKingIndex;
     }
 }
 
-int Board::getKingY(bool getColor) const
+void Board::setSquare(PieceType type, PieceType prevType, bool color, int index)
 {
-    if(getColor)
-    {
-        return(((kingCoordinates >> 3) & 7));
-    }
-    else
-    {
-        return(((kingCoordinates >> 9) & 7));
-    }
-}
-
-void Board::setSquare(Piece setPiece, int x, int y)
-{
-    setSquare(setPiece.type, setPiece.color, x, y);
-}
-
-void Board::setSquare(PieceType type, PieceType prevType, bool color, int x, int y)
-{
-	throwIfOutOfBounds(x, y);
-
-	updatePositionalScore(type, color, prevType, getSquareColor(x, y), x, y);
-	bitBoard square = bitwise::coordToBoard(x, y);
+	updatePositionalScore(type, color, prevType, getSquareColor(index), index);
+	bitBoard square = bitwise::indexToBoard(index);
 	bitBoard notSquare = ~square;
 
 	if (prevType != PieceType::Empty)
@@ -544,95 +504,89 @@ void Board::setSquare(PieceType type, PieceType prevType, bool color, int x, int
 	}
 }
 
-void Board::setSquare(PieceType type, bool color, int x, int y)
+void Board::setSquare(PieceType type, bool color, int index)
 {
-    throwIfOutOfBounds(x, y);
-
-	updatePositionalScore(type, color, x, y);
-	bitBoard square = bitwise::coordToBoard(x, y);
+	updatePositionalScore(type, color, index);
+	bitBoard square = bitwise::indexToBoard(index);
 	bitBoard notSquare = ~square;
-    for(int i=1; i<7; i++)
-    {
-        facts.pieces[i] &= notSquare;
-    }
-    if(type > 0)
-    {
-        facts.pieces[type] |= square;
-        facts.allPieces |= square;
-    }
-    else
-    {
-        facts.allPieces &= notSquare;
-    }
+	for (int i = 1; i < 7; i++)
+	{
+		facts.pieces[i] &= notSquare;
+	}
+	if (type > 0)
+	{
+		facts.pieces[type] |= square;
+		facts.allPieces |= square;
+	}
+	else
+	{
+		facts.allPieces &= notSquare;
+	}
 
-    if(color)
-    {
-        facts.pieces[0] |= square;
-    }
-    else
-    {
-        facts.pieces[0] &= notSquare;
-    }
+	if (color)
+	{
+		facts.pieces[0] |= square;
+	}
+	else
+	{
+		facts.pieces[0] &= notSquare;
+	}
 }
 
-void Board::updatePositionalScore(PieceType type, bool color, int x, int y)
+void Board::updatePositionalScore(PieceType type, bool color, int index)
 {
-	PieceType deadPieceType = getSquareType(x, y);
-	bool deadPieceColor = getSquareColor(x, y);
-	updatePositionalScore(type, color, deadPieceType, deadPieceColor, x, y);
+	PieceType deadPieceType = getSquareType(index);
+	bool deadPieceColor = getSquareColor(index);
+	updatePositionalScore(type, color, deadPieceType, deadPieceColor, index);
 }
 
-void Board::updatePositionalScore(PieceType type, bool color, PieceType deadPieceType, bool deadPieceColor, int x, int y)
+void Board::updatePositionalScore(PieceType type, bool color, PieceType deadPieceType, bool deadPieceColor, int index)
 {
 	if (!positionalScoresEnabled) return;
 
 	switch (deadPieceType)
 	{
 		case(PieceType::Pawn):
-			if (deadPieceColor) pawnPositionalValue -= whitePawnPositionValue[x][y];
-			else pawnPositionalValue += blackPawnPositionValue[x][y];
+			if (deadPieceColor) pawnPositionalValue -= whitePawnPositionValue[index];
+			else pawnPositionalValue += blackPawnPositionValue[index];
 			break;
 		case(PieceType::Knight):
-			if (deadPieceColor) knightPositionalValue -= whiteKnightPositionValue[x][y];
-			else knightPositionalValue += blackKnightPositionValue[x][y];
+			if (deadPieceColor) knightPositionalValue -= whiteKnightPositionValue[index];
+			else knightPositionalValue += blackKnightPositionValue[index];
 			break;
 		case(PieceType::Bishop):
-			if (deadPieceColor) bishopPositionalValue -= whiteBishopPositionValue[x][y];
-			else bishopPositionalValue += blackBishopPositionValue[x][y];
+			if (deadPieceColor) bishopPositionalValue -= whiteBishopPositionValue[index];
+			else bishopPositionalValue += blackBishopPositionValue[index];
 			break;
 	}
 
 	switch (type)
 	{
 		case(PieceType::Pawn):
-			if (color) pawnPositionalValue += whitePawnPositionValue[x][y];
-			else pawnPositionalValue -= blackPawnPositionValue[x][y];
+			if (color) pawnPositionalValue += whitePawnPositionValue[index];
+			else pawnPositionalValue -= blackPawnPositionValue[index];
 			break;
 		case(PieceType::Knight):
-			if (color) knightPositionalValue += whiteKnightPositionValue[x][y];
-			else knightPositionalValue -= blackKnightPositionValue[x][y];
+			if (color) knightPositionalValue += whiteKnightPositionValue[index];
+			else knightPositionalValue -= blackKnightPositionValue[index];
 			break;
 		case(PieceType::Bishop):
-			if (color) bishopPositionalValue += whiteBishopPositionValue[x][y];
-			else bishopPositionalValue -= blackBishopPositionValue[x][y];
+			if (color) bishopPositionalValue += whiteBishopPositionValue[index];
+			else bishopPositionalValue -= blackBishopPositionValue[index];
 			break;
 	}
 }
 
-void Board::setKingLocation(bool setColor, int x, int y)
+void Board::setKingLocation(bool setColor, int index)
 {
-    throwIfOutOfBounds(x, y);
-    int placeHolder;
-    if(setColor)
-    {
-        placeHolder = kingCoordinates >> 6;
-        kingCoordinates = (placeHolder<<6) | x | (y<<3);
-    }
-    else
-    {
-        placeHolder = kingCoordinates & ((1<<6)-1);
-        kingCoordinates = placeHolder | (x<<6) | (y<<9);
-    }
+	if (setColor)
+	{
+		whiteKingIndex = index;
+	}
+	else 
+	{
+		blackKingIndex = index;
+	}
 }
 
 void Board::generateMoveArray(Move* finalMoveList, int& moveCounter)
@@ -646,9 +600,7 @@ void Board::generateMoveArray(Move* finalMoveList, int& moveCounter)
 		bitBoard moveables = facts.pieces[pType] & ownColorMap;
 		while (_BitScanForward64(&scanIndex, moveables))
 		{
-			int x = bitwise::bitBoardX(scanIndex);
-			int y = bitwise::bitBoardY(scanIndex);
-			Piece::appendMoveArray(finalMoveList, moveCounter, (PieceType)pType, x, y, *this, false);
+			Piece::appendMoveArray(finalMoveList, moveCounter, (PieceType)pType, scanIndex, *this, false);
 			moveables &= moveables - 1;
 		}
 	}
@@ -678,9 +630,7 @@ void Board::generateCaptureMoves(Move* moveList, int& moveCounter)
 		bitBoard moveables = facts.pieces[pType] & ownColorMap;
 		while (_BitScanForward64(&scanIndex, moveables))
 		{
-			int x = bitwise::bitBoardX(scanIndex);
-			int y = bitwise::bitBoardY(scanIndex);
-			Piece::appendMoveArray(moveList, moveCounter, (PieceType)pType, x, y, *this, true);
+			Piece::appendMoveArray(moveList, moveCounter, (PieceType)pType, scanIndex, *this, true);
 			moveables &= moveables - 1;
 		}
 	}
@@ -712,49 +662,53 @@ void Board::unmakeMove(Move data)
 	}
 
 	// Move the piece back
-	PieceType movedType = getSquareType(data.endX, data.endY);
+	PieceType movedType = getSquareType(data.endIndex);
 	bool movedColor = !facts.turn;
-	setSquare(movedType, movedColor, data.startX, data.startY);
+	setSquare(movedType, PieceType::Empty, movedColor, data.startIndex);
 	// Replace any captured piece (Except EP capture)
-	setSquare(data.pieceCaptured, !movedColor, data.endX, data.endY);
+	if (data.promotion == PieceType::Empty)
+	{
+		setSquare(data.pieceCaptured, movedType, !movedColor, data.endIndex);
+	}
+	else {
+		setSquare(data.pieceCaptured, data.promotion, !movedColor, data.endIndex);
+	}
 
 	// Replace EP data 
 	// Need to do this before checking if it was an EP capture
 	facts.EPdata = data.oldEPData;
 
 	// Special undo EP cature
-	Piece ep = getEP();
-	if (ep.type != PieceType::Empty)
+	if (getEPData() > -1)
 	{
-		setSquare(PieceType::Pawn, !movedColor, ep.xPos, ep.yPos);
+		setSquare(PieceType::Pawn, !movedColor, getEPData());
 	}
 
 	// Special undo promotion logic
 	if (data.promotion != PieceType::Empty)
 	{
-		setSquare(PieceType::Pawn, movedColor, data.startX, data.startY);
+		setSquare(PieceType::Pawn, movedColor, data.startIndex);
 	}
 
 	// Special undo castle logic
-	if (movedType == PieceType::King && fabs(data.startX - data.endX) == 2)
+	if (movedType == PieceType::King && fabs(data.startIndex - data.endIndex) == 2)
 	{
-		int castleY = data.startY;
-		int rookEndX = (data.startX + data.endX) / 2;
-		setSquare(PieceType::Empty, false, rookEndX, castleY);
-		if (data.endX == 2)
+		int rookEndIndex = (data.startIndex + data.endIndex) / 2;
+		setSquare(PieceType::Empty, false, rookEndIndex);
+		if (data.endIndex % 8 == 2)
 		{
-			setSquare(PieceType::Rook, movedColor, 0, castleY);
+			setSquare(PieceType::Rook, movedColor, data.endIndex - 2);
 		}
 		else 
 		{
-			setSquare(PieceType::Rook, movedColor, 7, castleY);
+			setSquare(PieceType::Rook, movedColor, data.endIndex + 1);
 		}
 	}
 
 	// Replace king location
 	if (movedType == PieceType::King)
 	{
-		setKingLocation(movedColor, data.startX, data.startY);
+		setKingLocation(movedColor, data.startIndex);
 	}
 
 	facts.castlingRights = data.oldCastlingRights;
@@ -772,7 +726,7 @@ void Board::makeMove(Move data)
 	// A null move only passes the facts.turn
 	if (data.null) {
 		facts.turn = !facts.turn;
-		setEP(Piece(PieceType::Empty));
+		clearEP();
 		facts.hasher.update(*this, data);
 		return;
 	}
@@ -783,29 +737,34 @@ void Board::makeMove(Move data)
 	}
 
     //Picking up the Piece
-	PieceType movingType = getSquareType(data.startX, data.startY);
+	PieceType movingType = getSquareType(data.startIndex);
 	PieceType newType = movingType;
 	bool movingColor = facts.turn;
 
     if(movingType == PieceType::Pawn)
     {
         //Check for double move
-        if(fabs(data.endY - data.startY) == 2)
+        if(fabs(data.endIndex - data.startIndex) == 16)
         {
-            setEP(data.endX, data.endY, facts.turn);
+            setEP(data.endIndex);
         }
         //Check for enPassent capture
         else
         {
-            Piece ePiece = getEP();
-            if(data.endX == ePiece.getX() && data.startY == ePiece.getY())
-            {
-                setSquare(PieceType::Empty, PieceType::Pawn, false, ePiece.getX(), ePiece.getY());
-            }
+			int epIndex = getEPData();
+			if (epIndex != -1)
+			{
+				if ((movingColor && data.endIndex == epIndex + 8)
+					|| (!movingColor && data.endIndex == epIndex - 8))
+				{
+					setSquare(PieceType::Empty, PieceType::Pawn, false, epIndex);
+				}
+			}
+			
 			clearEP();
         }
 
-        if(data.endY == 7 || data.endY == 0)
+        if(data.promotion != PieceType::Empty)
         {
 			newType = data.promotion;
         }
@@ -818,69 +777,115 @@ void Board::makeMove(Move data)
     if(movingType == PieceType::King)
     {
         //Move the rook if castling
-        if(fabs(data.startX - data.endX) == 2)
+        if(fabs(data.startIndex - data.endIndex) == 2)
         {
-            if(data.endX == 2)
-            {
-                setSquare(PieceType::Rook, PieceType::Empty, movingColor, 3, data.startY);
-                setSquare(PieceType::Empty, PieceType::Rook, false, 0, data.startY);
-            }
-            else if(data.endX == 6)
-            {
-                setSquare(PieceType::Rook, PieceType::Empty, movingColor, 5, data.startY);
-                setSquare(PieceType::Empty, PieceType::Rook, false, 7, data.startY);
-            }
+			// Castling to the right
+			if (data.startIndex < data.endIndex)
+			{
+				setSquare(PieceType::Rook, PieceType::Empty, movingColor, data.endIndex - 1);
+				setSquare(PieceType::Empty, PieceType::Rook, false, data.endIndex + 1);
+			}
+			else // Castling to the left
+			{
+				setSquare(PieceType::Rook, PieceType::Empty, movingColor, data.endIndex + 1);
+				setSquare(PieceType::Empty, PieceType::Rook, false, data.endIndex -2);
+			}
         }
 
-        setKingLocation(movingColor, data.endX, data.endY);
+        setKingLocation(movingColor, data.endIndex);
 		setCastlingRights(movingColor, true, false);
 		setCastlingRights(movingColor, false, false);
     }
 
-    //Castling Rights handling
-    if(data.startY == 0 || data.startY == 7 || data.endY == 0 || data.endY == 7)
-    {
-        //Rook Moved
-        if(data.startX == 0 && data.startY == 0)
-        {
-            setCastlingRights(true, false, false);
-        }
-        if(data.startX == 0 && data.startY == 7)
-        {
-            setCastlingRights(false, false, false);
-        }
-        if(data.startX == 7 && data.startY == 0)
-        {
-            setCastlingRights(true, true, false);
-        }
-        if(data.startX == 7 && data.startY == 7)
-        {
-            setCastlingRights(false, true, false);
-        }
-        //Something moved to the rooks square
-        if(data.endX == 0 && data.endY == 0)
-        {
-            setCastlingRights(true, false, false);
-        }
-        if(data.endX == 7 && data.endY == 0)
-        {
-            setCastlingRights(true, true, false);
-        }
-        if(data.endX == 0 && data.endY == 7)
-        {
-            setCastlingRights(false, false, false);
-        }
-        if(data.endX == 7 && data.endY == 7)
-        {
-            setCastlingRights(false, true, false);
-        }
-    }
+	switch (data.startIndex)
+	{
+	case(0):
+		setCastlingRights(true, false, false);
+		break;
+	case(7):
+		setCastlingRights(true, true, false);
+		break;
+	case(56):
+		setCastlingRights(false, false, false);
+		break;
+	case(63):
+		setCastlingRights(false, true, false);
+	}
 
-    setSquare(PieceType::Empty, movingType, false, data.startX, data.startY);
-    setSquare(newType, data.pieceCaptured, movingColor, data.endX, data.endY);
+	switch (data.endIndex)
+	{
+	case(0):
+		setCastlingRights(true, false, false);
+		break;
+	case(7):
+		setCastlingRights(true, true, false);
+		break;
+	case(56):
+		setCastlingRights(false, false, false);
+		break;
+	case(63):
+		setCastlingRights(false, true, false);
+	}
+
+    setSquare(PieceType::Empty, movingType, false, data.startIndex);
+    setSquare(newType, data.pieceCaptured, movingColor, data.endIndex);
 
     facts.turn = !facts.turn;
 }
+
+
+//Returns false if the Piece is in check, true otherwise
+bool Board::squareAttacked(int index, bool byColor)
+{
+	bool color = !byColor;
+
+	//Check for Bishop or Queen
+	bitBoard bishopMap = Piece::bishopMoveBoard(index, color, *this, false);
+	bishopMap &= facts.pieces[PieceType::Bishop] | facts.pieces[PieceType::Queen];
+	if (bishopMap)
+	{
+		return true;
+	}
+
+	//Check for Rook or Queen
+	bitBoard rookMap = Piece::rookMoveBoard(index, color, *this, false);
+	rookMap &= facts.pieces[PieceType::Rook] | facts.pieces[PieceType::Queen];
+	if (rookMap)
+	{
+		return true;
+	}
+
+	//Check for Knight
+	bitBoard knightMap = Piece::knightMoveBoard(index, color, *this, false);
+	knightMap &= facts.pieces[PieceType::Knight];
+	if (knightMap)
+	{
+		return true;
+	}
+
+	//Check if next to a king
+	bitBoard kingMap = Piece::kingRegularMoveBoard(index, color, *this, false);
+	kingMap &= facts.pieces[PieceType::King];
+	if (kingMap)
+	{
+		return true;
+	}
+
+	bitBoard pawnMap = pawnCaptureMoves[color][index];
+	pawnMap &= facts.pieces[PieceType::Pawn];
+	if (byColor)
+	{
+		pawnMap &= facts.pieces[0];
+	}
+	else 
+	{
+		pawnMap &= ~facts.pieces[0];
+	}
+
+	return pawnMap;
+}
+
+
 
 //Depth:    Expect:
 // 0        1
@@ -941,18 +946,13 @@ double Board::dividePerft(int depth)
     for(int i=0; i < moveGenCount; i++)
     {
 		makeMove(moveList[i]);
-        newBoardMoveCount = perft(depth-1);
+		newBoardMoveCount = perft(depth - 1);
         std::cout << moveList[i].basicAlg() << " ";
-        std::cout << std::fixed << newBoardMoveCount << std::endl;
+        std::cout << std::fixed << (unsigned long)newBoardMoveCount << std::endl;
         moveCounter += newBoardMoveCount;
 		unmakeMove(moveList[i]);
     }
     return moveCounter;
-}
-
-Piece Board::findKing(bool getColor) const
-{
-    return(getSquare(getKingX(getColor), getKingY(getColor)));
 }
 
 bool Board::getCastlingRights(bool color, bool side) const
@@ -974,70 +974,14 @@ char Board::getCastlingRights() const
     return facts.castlingRights;
 }
 
-void Board::setEP(Piece loadEP)
+void Board::setEP(int index)
 {
-    if(loadEP.type != PieceType::Pawn)
-    {
-        facts.EPdata = -1;
-        return;
-    }
-    if(loadEP.color)
-    {
-        facts.EPdata = 1;
-    }
-    else
-    {
-        facts.EPdata = 0;
-    }
-    facts.EPdata <<= 3;
-    facts.EPdata |= loadEP.getY();
-    facts.EPdata <<= 3;
-    facts.EPdata |= loadEP.getX();
-}
-
-void Board::setEP(int x, int y, bool color)
-{
-    throwIfOutOfBounds(x, y);
-    if (color)
-    {
-        facts.EPdata = 1;
-    }
-    else
-    {
-        facts.EPdata = 0;
-    }
-    facts.EPdata <<= 3;
-    facts.EPdata |= y;
-    facts.EPdata <<= 3;
-    facts.EPdata |= x;
+	facts.EPdata = index;
 }
 
 void Board::clearEP()
 {
 	facts.EPdata = -1;
-}
-
-Piece Board::getEP() const
-{
-    if(facts.EPdata == -1)
-    {
-        return Piece(PieceType::Empty);
-    }
-    int x;
-    int y;
-    bool color;
-    int copyData = facts.EPdata;
-    x = copyData & 7;
-    copyData >>= 3;
-    y = copyData & 7;
-    copyData >>= 3;
-    color = copyData & 1;
-
-    Piece ePiece = Piece(PieceType::Pawn);
-    ePiece.xPos = x;
-    ePiece.yPos = y;
-    ePiece.color = color;
-    return ePiece;
 }
 
 int Board::getEPData() const
@@ -1131,26 +1075,14 @@ int Board::pieceCount(PieceType type, bool color) const
     return bitwise::countBits(facts.pieces[type] & mask);
 }
 
-bool Board::squareIsPopulated(const int& x, const int& y) const
+bool Board::squareIsPopulated(const int& index) const
 {
-    throwIfOutOfBounds(x, y);
-    return (facts.allPieces >> (x + 8 * y)) & 1;
+    return (facts.allPieces >> index) & 1;
 }
 
-bool Board::squareIsType(int x, int y, int type) const
+bool Board::squareIsType(int index, int type) const
 {
-    throwIfOutOfBounds(x, y);
-    return (facts.pieces[type] >> (x + 8 * y)) & 1;
-}
-
-void Board::throwIfOutOfBounds(int x, int y)
-{
-#ifdef SAFETYCHECK
-	if (x < 0 || x > 7 || y < 0 || y > 7)
-	{
-		throw "Trying to get out of bounds coordinates";
-	}
-#endif // SAFETYCHECK
+    return (facts.pieces[type] >> index) & 1;
 }
 
 bool Board::operator==(const Board &other) const

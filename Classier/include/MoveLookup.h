@@ -5,7 +5,7 @@
 struct MoveLookup
 {
 public:
-	bool moveTable[8][8][8][8];
+	bool moveTable[64][64];
 
 	void add(Move);
 	bool contains(Move) const;

@@ -1,5 +1,4 @@
 #include "Move.h"
-#include "Danger.h"
 #include "Board.h"
 #include "Piece.h"
 #include "Engine.h"
@@ -18,14 +17,10 @@ template < typename T > std::string to_string( const T& n )
 }
 }
 
-Move::Move(int x1, int y1, int x2, int y2, PieceType promote, const Board& board)
+Move::Move(int sIndex, int eIndex, PieceType promote, const Board& board)
 {
-	Board::throwIfOutOfBounds(x1, y1);
-	Board::throwIfOutOfBounds(x2, y2);
-	startX = x1;
-	startY = y1;
-	endX = x2;
-	endY = y2;
+	startIndex = sIndex;
+	endIndex = eIndex;
 	promotion = promote;
 	score = 0;
 	null = false;
@@ -36,10 +31,13 @@ Move::Move(int x1, int y1, int x2, int y2, PieceType promote, const Board& board
 
 Move::Move(std::string notation, const Board& board)
 {
-	startX = ((int)notation[0]) - 97;
-	startY = ((int)notation[1]) - 48 - 1; // Subtract the extra one to zero index it
-	endX = ((int)notation[2]) - 97;
-	endY = ((int)notation[3]) - 48 - 1;
+	int startX = ((int)notation[0]) - 97;
+	int startY = ((int)notation[1]) - 48 - 1; // Subtract the extra one to zero index it
+	int endX = ((int)notation[2]) - 97;
+	int endY = ((int)notation[3]) - 48 - 1;
+
+	startIndex = bitwise::coordToIndex(startX, startY);
+	endIndex = bitwise::coordToIndex(endX, endY);
 	promotion = PieceType::Empty;
 	if (notation.length() > 4)
 	{
@@ -55,9 +53,6 @@ Move::Move(std::string notation, const Board& board)
 	pieceCaptured = getPieceCaptured(board);
 	oldEPData = board.getEPData();
 	oldCastlingRights = board.getCastlingData();
-
-	Board::throwIfOutOfBounds(startX, startY);
-	Board::throwIfOutOfBounds(endX, endY);
 }
 
 Move::Move(const Board& board)
@@ -67,10 +62,8 @@ Move::Move(const Board& board)
 	pieceCaptured = getPieceCaptured(board);
 	oldEPData = board.getEPData();
 	oldCastlingRights = board.getCastlingData();
-	startX = -1;
-	startY = -1;
-	endX = -1;
-	endY = -1;
+	startIndex = -1;
+	endIndex = -1;
 }
 
 Move::Move()
@@ -132,115 +125,39 @@ int Move::getMateDistance()
 
 bool Move::isSafe(Board& gameBoard)
 {
+	bool kingColor = gameBoard.facts.turn;
 	gameBoard.makeMove(*this);
-	bool kingColor = !gameBoard.facts.turn;
-	int kingX = gameBoard.getKingX(kingColor);
-	int kingY = gameBoard.getKingY(kingColor);
-	bool safe = gameBoard.getSquare(kingX, kingY).isSafe(gameBoard);
+	int kingIndex = gameBoard.getKingIndex(kingColor);
+	//bool safe = gameBoard.getSquare(kingX, kingY).isSafe(gameBoard);
+	bool safe = !gameBoard.squareAttacked(kingIndex, !kingColor);
 	gameBoard.unmakeMove(*this);
 
+	kingIndex = gameBoard.getKingIndex(kingColor);
 	if (safe)
 	{
-		kingX = gameBoard.getKingX(kingColor);
-		kingY = gameBoard.getKingY(kingColor);
 		// Special check if the in between square is being attacked when you castle
-		if (startX == kingX && startY == kingY)
+		if (startIndex == kingIndex)
 		{
-			if (fabs(startX - endX) == 2)
+			if (fabs(startIndex - endIndex) == 2)
 			{
-				int betweenX = (startX + endX) / 2;
-				return Move(startX, startY, betweenX, endY, PieceType::Empty, gameBoard).isSafe(gameBoard) &&
+				int betweenIndex = (startIndex + endIndex) / 2;
+				return Move(startIndex, betweenIndex, PieceType::Empty, gameBoard).isSafe(gameBoard) &&
 					Move(gameBoard).isSafe(gameBoard);
 			}
 		}
 	}
+
 	
 	return safe;
-}
-
-bool Move::isSafe(Danger safetyData)
-{
-    if(safetyData.movePinned(*this))
-    {
-        return false;
-    }
-
-    // Check for en passant capture, as this needs a manual check
-    if (startY == 3 || startY == 4)
-    {
-        if (fabs(startX - endX) == 1 && fabs(startY - endY) == 1)
-        {
-            if (!safetyData.getBoard().squareIsPopulated(endX, endY))
-            {
-                if (safetyData.getBoard().squareIsType(endX, startY, PieceType::Pawn))
-                {
-					Board gameBoard = safetyData.getBoard();
-					gameBoard.makeMove(*this);
-					bool safe = gameBoard.getSquare(gameBoard.getKingX(!gameBoard.facts.turn), gameBoard.getKingY(!gameBoard.facts.turn)).isSafe(gameBoard);
-					gameBoard.unmakeMove(*this);
-					return safe;
-                }
-            }
-        }
-    }
-
-    //The king is moving, need a manual check
-    if(startX == safetyData.defenderX && startY == safetyData.defenderY)
-    {
-		Board gameBoard = safetyData.getBoard();
-        //Castling Moves
-        if(fabs(startX - endX) == 2)
-        {
-            //Cant castle out of check
-            if(safetyData.getCheck())
-            {
-                return false;
-            }
-            //iterates over the squares next to the king for two squares
-            //The absolute value division thing finds the sign of the direction
-            int direction = -1*fabs(startX-endX)/(startX-endX);
-            for (int i = startX + direction; i <= startX + 2 && i >= startX - 2; i+=direction)
-            {
-				Move checkMove = Move(startX, startY, i, startY, PieceType::Empty, safetyData.getBoard());
-				gameBoard.makeMove(checkMove);
-                if(!gameBoard.getSquare(i, endY).isSafe(gameBoard))
-                {
-					gameBoard.unmakeMove(checkMove);
-                    return false;
-                }
-				gameBoard.unmakeMove(checkMove);
-            }
-            return true;
-        }
-
-        //Normal King moves
-		gameBoard.makeMove(*this);
-		bool safe = gameBoard.getSquare(endX, endY).isSafe(gameBoard);
-		gameBoard.unmakeMove(*this);
-		return safe;
-    }
-    if(safetyData.getDoubleCheck())
-    {
-        //Only the King can move, and we checked if the king was moving earlier
-        return false;
-    }
-    else if(safetyData.getCheck())
-    {
-        if(safetyData.inSafeSquares(endX, endY))
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-    return true;
 }
 
 std::string Move::basicAlg()
 {
     std::string move = "";
+	int startX = startIndex % 8;
+	int startY = startIndex / 8;
+	int endX = endIndex % 8;
+	int endY = endIndex / 8;
     move = Engine::toAlg(startX) + patch::to_string(startY + 1) + Engine::toAlg(endX) + patch::to_string(endY + 1);
 	switch (promotion)
 	{
@@ -262,52 +179,14 @@ std::string Move::basicAlg()
 
 bool Move::operator==(Move other) const
 {
-    if(startX != other.startX)
-    {
-        return false;
-    }
-    if(startY != other.startY)
-    {
-        return false;
-    }
-    if(endX != other.endX)
-    {
-        return false;
-    }
-    if(endY != other.endY)
-    {
-        return false;
-    }
-    if(promotion != other.promotion)
-    {
-        return false;
-    }
-    return true;
+	return startIndex == other.startIndex &&
+		endIndex == other.endIndex &&
+		promotion == other.promotion;
 }
 
 bool Move::operator!=(Move other) const
 {
-    if(startX != other.startX)
-    {
-        return true;
-    }
-    if(startY != other.startY)
-    {
-        return true;
-    }
-    if(endX != other.endX)
-    {
-        return true;
-    }
-    if(endY != other.endY)
-    {
-        return true;
-    }
-    if(promotion != other.promotion)
-    {
-        return true;
-    }
-    return false;
+	return !(this->operator==(other));
 }
 
 bool Move::operator<(Move other) const
@@ -348,5 +227,5 @@ bool Move::bigger(Move left, Move right)
 
 PieceType Move::getPieceCaptured(const Board& gameBoard)
 {
-	return gameBoard.getSquareType(endX, endY);
+	return gameBoard.getSquareType(endIndex);
 }

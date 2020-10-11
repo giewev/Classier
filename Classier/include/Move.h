@@ -9,8 +9,10 @@ class Board;
 struct Move
 {
 public:
-    int startX, startY;
-    int endX, endY;
+    /*int startX, startY;
+    int endX, endY;*/
+	int startIndex;
+	int endIndex;
     PieceType promotion;
     double score;
 	bool null;
@@ -21,7 +23,7 @@ public:
 
 	Move();
     Move(const Board&);
-	Move(int, int, int, int, PieceType, const Board&);
+	Move(int, int, PieceType, const Board&);
 	Move(std::string, const Board&);
 
     void setScore(double);
@@ -38,7 +40,6 @@ public:
     bool operator>(Move) const;
     static bool bigger(Move, Move);
 
-    bool isSafe(Danger);
 	bool isSafe(Board& gameBoard);
     std::string basicAlg();
 private:

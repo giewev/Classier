@@ -29,10 +29,10 @@ private:
     static bool alreadySeeded;
     static void seed();
 
-    static long long whitePieceHashCodes[8][8][6];
-    static long long blackPieceHashCodes[8][8][6];
+    static long long whitePieceHashCodes[64][6];
+    static long long blackPieceHashCodes[64][6];
     static long long castlingHashCodes[4];
-    static long long enPassantHashCodes[8];
+    static long long enPassantHashCodes[64];
     static long long turnHashCode;
 
     void loadPieces(const Board& board);
@@ -43,9 +43,9 @@ private:
     void updateCastling(const Board& prevBoard, Move nextMove);
     void updatePieces(const Board& prevBoard, Move nextMove);
 
-    void togglePiece(int x, int y, PieceType pieceType, bool color);
+    void togglePiece(int index, PieceType pieceType, bool color);
     void toggleTurn();
-    void toggleEnPassant(int file);
+    void toggleEnPassant(int index);
     void toggleCastlingRights(bool color, bool side);
 };
 

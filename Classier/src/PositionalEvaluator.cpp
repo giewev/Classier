@@ -78,15 +78,16 @@ double PositionalEvaluator::evaluate(Board boardState)
     score -= developmentValue * bitwise::countBits(whiteUndeveloped);
     score += developmentValue * bitwise::countBits(blackUndeveloped);*/
 
+	///////////// Temporarily disabled because of index change until we have piece-square tables for the king and endgame piece-square tables
     //Kings far from center during the main game, but near the center when there are few pieces left
-    double kingLocationMultiplier = 1;
+    /*double kingLocationMultiplier = 1;
     if (boardState.pieceCount() < 12)
     {
         kingLocationMultiplier *= -1;
     }
 
     score += kingCornerValue * kingLocationMultiplier * manhattenDistance(boardState.getKingX(true), boardState.getKingY(true), 3.5, 3.5);
-    score -= kingCornerValue * kingLocationMultiplier * manhattenDistance(boardState.getKingX(false), boardState.getKingY(false), 3.5, 3.5);
+    score -= kingCornerValue * kingLocationMultiplier * manhattenDistance(boardState.getKingX(false), boardState.getKingY(false), 3.5, 3.5);*/
 
     return score;
 }

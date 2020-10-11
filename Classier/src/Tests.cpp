@@ -5,7 +5,6 @@
 #include "Engine.h"
 #include "Move.h"
 #include "Bitwise.h"
-#include "Danger.h"
 #include "ZobristHasher.h"
 
 void assertAlmost(double expected, double actual)
@@ -99,7 +98,7 @@ void makeUnmakeEPCapture_test()
 	Board testBoard;
 	testBoard.loadFEN(almostKiwipeteFEN);
 
-	Move epCapture = Move(1, 3, 0, 2, PieceType::Empty, testBoard);
+	Move epCapture = Move(bitwise::coordToIndex(1, 3), bitwise::coordToIndex(0, 2), PieceType::Empty, testBoard);
 	std::string beforeFEN = testBoard.outputFEN();
 	testBoard.makeMove(epCapture);
 	testBoard.unmakeMove(epCapture);
@@ -115,33 +114,33 @@ void loadStartingPosition_test()
     testBoard.loadFEN(startingFEN);
 	assert(testBoard.facts.turn == true);
 
-    assert(testBoard.getSquareType(0, 0) == PieceType::Rook);
-    assert(testBoard.getSquareType(1, 0) == PieceType::Knight);
-    assert(testBoard.getSquareType(2, 0) == PieceType::Bishop);
-    assert(testBoard.getSquareType(3, 0) == PieceType::Queen);
-    assert(testBoard.getSquareType(4, 0) == PieceType::King);
-    assert(testBoard.getSquareType(5, 0) == PieceType::Bishop);
-    assert(testBoard.getSquareType(6, 0) == PieceType::Knight);
-    assert(testBoard.getSquareType(7, 0) == PieceType::Rook);
+    assert(testBoard.getSquareType(0) == PieceType::Rook);
+    assert(testBoard.getSquareType(1) == PieceType::Knight);
+    assert(testBoard.getSquareType(2) == PieceType::Bishop);
+    assert(testBoard.getSquareType(3) == PieceType::Queen);
+    assert(testBoard.getSquareType(4) == PieceType::King);
+    assert(testBoard.getSquareType(5) == PieceType::Bishop);
+    assert(testBoard.getSquareType(6) == PieceType::Knight);
+    assert(testBoard.getSquareType(7) == PieceType::Rook);
 
-    assert(testBoard.getSquareType(0, 7) == PieceType::Rook);
-    assert(testBoard.getSquareType(1, 7) == PieceType::Knight);
-    assert(testBoard.getSquareType(2, 7) == PieceType::Bishop);
-    assert(testBoard.getSquareType(3, 7) == PieceType::Queen);
-    assert(testBoard.getSquareType(4, 7) == PieceType::King);
-    assert(testBoard.getSquareType(5, 7) == PieceType::Bishop);
-    assert(testBoard.getSquareType(6, 7) == PieceType::Knight);
-    assert(testBoard.getSquareType(7, 7) == PieceType::Rook);
+    assert(testBoard.getSquareType(56) == PieceType::Rook);
+    assert(testBoard.getSquareType(57) == PieceType::Knight);
+    assert(testBoard.getSquareType(58) == PieceType::Bishop);
+    assert(testBoard.getSquareType(59) == PieceType::Queen);
+    assert(testBoard.getSquareType(60) == PieceType::King);
+    assert(testBoard.getSquareType(61) == PieceType::Bishop);
+    assert(testBoard.getSquareType(62) == PieceType::Knight);
+    assert(testBoard.getSquareType(63) == PieceType::Rook);
 
     for (int i = 0; i < 8; i++)
     {
-        assert(testBoard.getSquareType(i, 1) == PieceType::Pawn);
-        assert(testBoard.getSquareType(i, 6) == PieceType::Pawn);
+        assert(testBoard.getSquareType(i + 8) == PieceType::Pawn);
+        assert(testBoard.getSquareType(i + 48) == PieceType::Pawn);
 
-        assert(testBoard.getSquareColor(i, 0) == true);
-        assert(testBoard.getSquareColor(i, 1) == true);
-        assert(testBoard.getSquareColor(i, 6) == false);
-        assert(testBoard.getSquareColor(i, 7) == false);
+        assert(testBoard.getSquareColor(i) == true);
+        assert(testBoard.getSquareColor(i + 8) == true);
+        assert(testBoard.getSquareColor(i + 48) == false);
+        assert(testBoard.getSquareColor(i + 56) == false);
     }
 }
 
@@ -153,26 +152,26 @@ void loadingStartingPosAfterE4_test()
 	testBoard.loadFEN(startingFEN);
 	assert(testBoard.facts.turn == false);
 
-	assert(testBoard.getSquareType(0, 0) == PieceType::Rook);
-	assert(testBoard.getSquareType(1, 0) == PieceType::Knight);
-	assert(testBoard.getSquareType(2, 0) == PieceType::Bishop);
-	assert(testBoard.getSquareType(3, 0) == PieceType::Queen);
-	assert(testBoard.getSquareType(4, 0) == PieceType::King);
-	assert(testBoard.getSquareType(5, 0) == PieceType::Bishop);
-	assert(testBoard.getSquareType(6, 0) == PieceType::Knight);
-	assert(testBoard.getSquareType(7, 0) == PieceType::Rook);
+	assert(testBoard.getSquareType(0) == PieceType::Rook);
+	assert(testBoard.getSquareType(1) == PieceType::Knight);
+	assert(testBoard.getSquareType(2) == PieceType::Bishop);
+	assert(testBoard.getSquareType(3) == PieceType::Queen);
+	assert(testBoard.getSquareType(4) == PieceType::King);
+	assert(testBoard.getSquareType(5) == PieceType::Bishop);
+	assert(testBoard.getSquareType(6) == PieceType::Knight);
+	assert(testBoard.getSquareType(7) == PieceType::Rook);
 
-	assert(testBoard.getSquareType(0, 7) == PieceType::Rook);
-	assert(testBoard.getSquareType(1, 7) == PieceType::Knight);
-	assert(testBoard.getSquareType(2, 7) == PieceType::Bishop);
-	assert(testBoard.getSquareType(3, 7) == PieceType::Queen);
-	assert(testBoard.getSquareType(4, 7) == PieceType::King);
-	assert(testBoard.getSquareType(5, 7) == PieceType::Bishop);
-	assert(testBoard.getSquareType(6, 7) == PieceType::Knight);
-	assert(testBoard.getSquareType(7, 7) == PieceType::Rook);
+	assert(testBoard.getSquareType(56) == PieceType::Rook);
+	assert(testBoard.getSquareType(57) == PieceType::Knight);
+	assert(testBoard.getSquareType(58) == PieceType::Bishop);
+	assert(testBoard.getSquareType(59) == PieceType::Queen);
+	assert(testBoard.getSquareType(60) == PieceType::King);
+	assert(testBoard.getSquareType(61) == PieceType::Bishop);
+	assert(testBoard.getSquareType(62) == PieceType::Knight);
+	assert(testBoard.getSquareType(63) == PieceType::Rook);
 
-	assert(testBoard.getSquareType(4, 1) == PieceType::Empty);
-	assert(testBoard.getSquareType(4, 3) == PieceType::Pawn);
+	assert(testBoard.getSquareType(bitwise::coordToIndex(4, 1)) == PieceType::Empty);
+	assert(testBoard.getSquareType(bitwise::coordToIndex(4, 3)) == PieceType::Pawn);
 
 
 	for (int i = 0; i < 8; i++)
@@ -181,13 +180,13 @@ void loadingStartingPosAfterE4_test()
 		{
 			continue;
 		}
-		assert(testBoard.getSquareType(i, 1) == PieceType::Pawn);
-		assert(testBoard.getSquareType(i, 6) == PieceType::Pawn);
+		assert(testBoard.getSquareType(i + 8) == PieceType::Pawn);
+		assert(testBoard.getSquareType(i + 48) == PieceType::Pawn);
 
-		assert(testBoard.getSquareColor(i, 0) == true);
-		assert(testBoard.getSquareColor(i, 1) == true);
-		assert(testBoard.getSquareColor(i, 6) == false);
-		assert(testBoard.getSquareColor(i, 7) == false);
+		assert(testBoard.getSquareColor(i) == true);
+		assert(testBoard.getSquareColor(i + 8) == true);
+		assert(testBoard.getSquareColor(i + 48) == false);
+		assert(testBoard.getSquareColor(i + 56) == false);
 	}
 }
 
@@ -215,10 +214,8 @@ void basicMateInOnePuzzle_test_1()
     for (int depth = 2; depth < 5; depth++)
     {
         Move bestMove = engine.searchToDepth(depth);
-        assert(bestMove.startX == 0);
-        assert(bestMove.startY == 6);
-        assert(bestMove.endX == 4);
-        assert(bestMove.endY == 6);
+        assert(bestMove.startIndex == 48);
+        assert(bestMove.endIndex == 52);
     }
 }
 
@@ -233,10 +230,8 @@ void basicMateInOnePuzzle_test_2()
     for (int depth = 2; depth < 5; depth++)
     {
         Move bestMove = engine.searchToDepth(depth);
-        assert(bestMove.startX == 7);
-        assert(bestMove.startY == 0);
-        assert(bestMove.endX == 7);
-        assert(bestMove.endY == 7);
+        assert(bestMove.startIndex == 7);
+        assert(bestMove.endIndex == 63);
     }
 }
 
@@ -252,10 +247,8 @@ void promotionMateInOnePuzzle_test_1()
     {
         Move bestMove = engine.searchToDepth(depth);
 
-        assert(bestMove.startX == 0);
-        assert(bestMove.startY == 6);
-        assert(bestMove.endX == 0);
-        assert(bestMove.endY == 7);
+        assert(bestMove.startIndex == 48);
+        assert(bestMove.endIndex == 56);
         assert(bestMove.promotion == PieceType::Queen || bestMove.promotion == PieceType::Bishop);
     }
 }
@@ -270,10 +263,8 @@ void mateInThreePuzzle_test_1()
 
     // Solution requires 3 white moves (5 ply)
     Move bestMove = engine.searchToDepth(6);
-    assert(bestMove.startX == 0);
-    assert(bestMove.startY == 1);
-    assert(bestMove.endX == 2);
-    assert(bestMove.endY == 0);
+    assert(bestMove.startIndex == 8);
+    assert(bestMove.endIndex == 2);
 }
 
 void avoidMatePuzzle_test_1()
@@ -284,13 +275,11 @@ void avoidMatePuzzle_test_1()
     testBoard.loadFEN(avoidMatePuzzleFEN);
     Engine engine = Engine(testBoard);
 
-    for (int depth = 2; depth < 5; depth++)
+    for (int depth = 3; depth < 5; depth++)
     {
         Move bestMove = engine.searchToDepth(depth);
-        assert(bestMove.startX == 0);
-        assert(bestMove.startY == 5);
-        assert(bestMove.endX == 0);
-        assert(bestMove.endY == 4);
+        assert(bestMove.startIndex == 40);
+        assert(bestMove.endIndex == 32);
     }
 }
 
@@ -322,8 +311,8 @@ void pawnPositionalScore_test_2()
 
 	for (int i = 0; i < 8; i++)
 	{
-		testBoard.makeMove(Move(i, 1, i, 3, PieceType::Empty, testBoard));
-		testBoard.makeMove(Move(i, 6, i, 4, PieceType::Empty, testBoard));
+		testBoard.makeMove(Move(bitwise::coordToIndex(i, 1), bitwise::coordToIndex(i, 3), PieceType::Empty, testBoard));
+		testBoard.makeMove(Move(bitwise::coordToIndex(i, 6), bitwise::coordToIndex(i, 4), PieceType::Empty, testBoard));
 	}
 
 	assertAlmost(testBoard.pawnPositionalValue, 0);
@@ -348,10 +337,10 @@ void zobristConsistancy_test()
 	Board testBoard = Board();
 	testBoard.loadFEN(zobristTestFEN);
 
-    Move promotionMove = Move(1, 6, 2, 7, PieceType::Queen, testBoard);
-    Move enPassantCaptureMove = Move(5, 4, 6, 5, PieceType::Empty, testBoard);
-    Move castingRuinedByKingMove = Move(4, 0, 4, 1, PieceType::Empty, testBoard);
-    Move castingRuinedByRookMove = Move(0, 0, 1, 0, PieceType::Empty, testBoard);
+    Move promotionMove = Move(bitwise::coordToIndex(1, 6), bitwise::coordToIndex(2, 7), PieceType::Queen, testBoard);
+    Move enPassantCaptureMove = Move(bitwise::coordToIndex(5, 4), bitwise::coordToIndex(6, 5), PieceType::Empty, testBoard);
+    Move castingRuinedByKingMove = Move(bitwise::coordToIndex(4, 0), bitwise::coordToIndex(4, 1), PieceType::Empty, testBoard);
+    Move castingRuinedByRookMove = Move(bitwise::coordToIndex(0, 0), bitwise::coordToIndex(1, 0), PieceType::Empty, testBoard);
 
     zobristConsistancy_test_helper(testBoard, promotionMove);
     zobristConsistancy_test_helper(testBoard, enPassantCaptureMove);
@@ -424,7 +413,6 @@ void nullMoveChangesOnlyTurn_test()
 
 void runAllTests()
 {
-	zobristConsistancy_perft_test();
 	notBehindMaps();
 	pawnMoveMaps();
 	knightMoveMaps();
@@ -446,5 +434,6 @@ void runAllTests()
     centerPawnMask_test();
 	firstAndLastRankMask_test();
 	nullMoveChangesOnlyTurn_test();
+	zobristConsistancy_perft_test();
 	//mateInThreePuzzle_test_1();
 }

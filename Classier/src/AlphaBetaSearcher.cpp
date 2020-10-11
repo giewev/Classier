@@ -1,5 +1,4 @@
 #include "AlphaBetaSearcher.h"
-#include "Danger.h"
 #include "Evaluation Constants.h"
 #include <chrono>
 #include <MoveSorter.h>
@@ -41,13 +40,13 @@ Move AlphaBetaSearcher::alphaBeta(Board& boardState, int depth, double alpha, do
 
 	nodesVisited += 1;
 	nodesAtDepths[depth] += 1;
-	Danger safetyinfo = Danger(boardState);
+	bool inCheck = boardState.squareAttacked(boardState.getKingIndex(boardState.facts.turn), !boardState.facts.turn);
 
 	// Null move heuristic
 	// If we are searching a significant depth, we check to see if not making move at all would already cause a cutoff
 	if (null_move_enabled && !nullMode && distanceToHorizon(depth) > 3)
 	{
-		if (!safetyinfo.getCheck())
+		if (!inCheck)
 		{
 			nullMode = true;
 			Move nullMove = Move(boardState);
@@ -75,7 +74,7 @@ Move AlphaBetaSearcher::alphaBeta(Board& boardState, int depth, double alpha, do
     if(moveCount == 0)
     {
         returnedMove = Move();
-		if (Danger(boardState).getCheck())
+		if (inCheck)
 		{
 			if (boardState.facts.turn) returnedMove.setScore(-999);
 			else returnedMove.setScore(999);

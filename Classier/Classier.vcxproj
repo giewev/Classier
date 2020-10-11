@@ -25,7 +25,6 @@
     <ClCompile Include="src\Board.cpp" />
     <ClCompile Include="src\BoardInfo.cpp" />
     <ClCompile Include="src\Classy.cpp" />
-    <ClCompile Include="src\Danger.cpp" />
     <ClCompile Include="src\Engine.cpp" />
     <ClCompile Include="src\Evaluator.cpp" />
     <ClCompile Include="src\FullEvaluator.cpp" />
@@ -47,7 +46,6 @@
     <ClInclude Include="include\Bitwise.h" />
     <ClInclude Include="include\Board.h" />
     <ClInclude Include="include\BoardInfo.h" />
-    <ClInclude Include="include\Danger.h" />
     <ClInclude Include="include\Engine.h" />
     <ClInclude Include="include\Evaluation Constants.h" />
     <ClInclude Include="include\Evaluator.h" />

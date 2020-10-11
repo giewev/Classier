@@ -3,18 +3,18 @@
 #include <bitset>
 #include <intrin.h>
 
-bitBoard knightMoves[8][8];
-bitBoard pawnSingleMoves[2][8][8];
-bitBoard pawnDoubleMoves[2][8][8];
-bitBoard pawnCaptureMoves[2][8][8];
-bitBoard kingMoves[8][8];
+bitBoard knightMoves[64];
+bitBoard pawnSingleMoves[2][64];
+bitBoard pawnDoubleMoves[2][64];
+bitBoard pawnCaptureMoves[2][64];
+bitBoard kingMoves[64];
 bitBoard notBehind[64][64];
-bitBoard rookMoves[8][8];
-bitBoard bishopMoves[8][8];
-bitBoard queenMoves[8][8];
-bitBoard rookBlockerMask[8][8];
-bitBoard bishopBlockerMask[8][8];
-bitBoard queenBlockerMask[8][8];
+bitBoard rookMoves[64];
+bitBoard bishopMoves[64];
+bitBoard queenMoves[64];
+bitBoard rookBlockerMask[64];
+bitBoard bishopBlockerMask[64];
+bitBoard queenBlockerMask[64];
 
 void bitwise::trimBottom(bitBoard& toTrim, int layers)
 {
@@ -101,6 +101,11 @@ int bitwise::coordToIndex(int x, int y)
 bitBoard bitwise::coordToBoard(int x, int y)
 {
 	return 1ull << coordToIndex(x, y);
+}
+
+bitBoard bitwise::indexToBoard(int index)
+{
+	return 1ull << index;
 }
 
 bitBoard bitwise::genKnightMovement(int x, int y)
@@ -331,15 +336,15 @@ bitBoard bitwise::genQueenMovement(int x, int y)
 
 void bitwise::populateBlockerMasks(int x, int y)
 {
-	bishopBlockerMask[x][y] = bishopMoves[x][y] & ~outsideRim;
+	bishopBlockerMask[bitwise::coordToIndex(x, y)] = bishopMoves[bitwise::coordToIndex(x, y)] & ~outsideRim;
 
-	rookBlockerMask[x][y] = rookMoves[x][y];
-	if (x != 0) rookBlockerMask[x][y] &= ~aFile;
-	if (x != 7) rookBlockerMask[x][y] &= ~hFile;
-	if (y != 0) rookBlockerMask[x][y] &= ~rank1;
-	if (y != 7) rookBlockerMask[x][y] &= ~rank8;
+	rookBlockerMask[bitwise::coordToIndex(x, y)] = rookMoves[bitwise::coordToIndex(x, y)];
+	if (x != 0) rookBlockerMask[bitwise::coordToIndex(x, y)] &= ~aFile;
+	if (x != 7) rookBlockerMask[bitwise::coordToIndex(x, y)] &= ~hFile;
+	if (y != 0) rookBlockerMask[bitwise::coordToIndex(x, y)] &= ~rank1;
+	if (y != 7) rookBlockerMask[bitwise::coordToIndex(x, y)] &= ~rank8;
 
-	queenBlockerMask[x][y] = bishopBlockerMask[x][y] | rookBlockerMask[x][y];
+	queenBlockerMask[bitwise::coordToIndex(x, y)] = bishopBlockerMask[bitwise::coordToIndex(x, y)] | rookBlockerMask[bitwise::coordToIndex(x, y)];
 }
 
 void bitwise::initializeBitboards()
@@ -348,17 +353,17 @@ void bitwise::initializeBitboards()
 	{
 		for (int y = 0; y < 8; y++)
 		{
-			knightMoves[x][y] = genKnightMovement(x, y);
-			pawnSingleMoves[0][x][y] = genSinglePawnMovement(false, x, y);
-			pawnSingleMoves[1][x][y] = genSinglePawnMovement(true, x, y);
-			pawnDoubleMoves[0][x][y] = genDoublePawnMovement(false, x, y);
-			pawnDoubleMoves[1][x][y] = genDoublePawnMovement(true, x, y);
-			pawnCaptureMoves[0][x][y] = genPawnCaptureMovement(false, x, y);
-			pawnCaptureMoves[1][x][y] = genPawnCaptureMovement(true, x, y);
-			kingMoves[x][y] = genKingMovement(x, y);
-			rookMoves[x][y] = genRookMovement(x, y);
-			bishopMoves[x][y] = genBishopMovement(x, y);
-			queenMoves[x][y] = genQueenMovement(x, y);
+			knightMoves[bitwise::coordToIndex(x, y)] = genKnightMovement(x, y);
+			pawnSingleMoves[0][bitwise::coordToIndex(x, y)] = genSinglePawnMovement(false, x, y);
+			pawnSingleMoves[1][bitwise::coordToIndex(x, y)] = genSinglePawnMovement(true, x, y);
+			pawnDoubleMoves[0][bitwise::coordToIndex(x, y)] = genDoublePawnMovement(false, x, y);
+			pawnDoubleMoves[1][bitwise::coordToIndex(x, y)] = genDoublePawnMovement(true, x, y);
+			pawnCaptureMoves[0][bitwise::coordToIndex(x, y)] = genPawnCaptureMovement(false, x, y);
+			pawnCaptureMoves[1][bitwise::coordToIndex(x, y)] = genPawnCaptureMovement(true, x, y);
+			kingMoves[bitwise::coordToIndex(x, y)] = genKingMovement(x, y);
+			rookMoves[bitwise::coordToIndex(x, y)] = genRookMovement(x, y);
+			bishopMoves[bitwise::coordToIndex(x, y)] = genBishopMovement(x, y);
+			queenMoves[bitwise::coordToIndex(x, y)] = genQueenMovement(x, y);
 			populateBlockerMasks(x, y);
 		}
 	}

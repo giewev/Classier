@@ -2,27 +2,21 @@
 
 void MoveLookup::add(Move newMove)
 {
-	moveTable[newMove.startX][newMove.startY][newMove.endX][newMove.endY] = true;
+	moveTable[newMove.startIndex][newMove.endIndex] = true;
 }
 
 bool MoveLookup::contains(Move checkMove) const
 {
-	return moveTable[checkMove.startX][checkMove.startY][checkMove.endX][checkMove.endY];
+	return moveTable[checkMove.startIndex][checkMove.endIndex];
 }
 
 void MoveLookup::reset()
 {
-	for (int i = 0; i < 8; i++)
+	for (int i = 0; i < 64; i++)
 	{
-		for (int j = 0; j < 8; j++)
+		for (int j = 0; j < 64; j++)
 		{
-			for (int k = 0; k < 8; k++)
-			{
-				for (int l = 0; l < 8; l++)
-				{
-					moveTable[i][j][k][l] = false;
-				}
-			}
+			moveTable[i][j] = false;
 		}
 	}
 }

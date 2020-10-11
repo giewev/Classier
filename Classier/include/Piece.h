@@ -36,19 +36,19 @@ public:
         return(color);
     }
 
-	static void appendMoveArray(Move*, int&, PieceType, int x, int y, const Board&, bool captureOnly);
-    static void kingMoveArray(Move*, int&, int x, int y, const Board&, bool captureOnly);
-    static void queenMoveArray(Move*, int&, int x, int y, const Board&, bool captureOnly);
-    static void pawnMoveArray(Move*, int&, int x, int y, const Board&, bool captureOnly);
-    static void bishopMoveArray(Move*, int&, int x, int y, const Board&, bool captureOnly);
-    static void knightMoveArray(Move*, int&, int x, int y, const Board&, bool captureOnly);
-    static void rookMoveArray(Move*, int&, int x, int y, const Board&, bool captureOnly);
+	static void appendMoveArray(Move*, int&, PieceType, int index, const Board&, bool captureOnly);
+    static void kingMoveArray(Move*, int&, int index, const Board&, bool captureOnly);
+    static void queenMoveArray(Move*, int&, int index, const Board&, bool captureOnly);
+    static void pawnMoveArray(Move*, int&, int index, const Board&, bool captureOnly);
+    static void bishopMoveArray(Move*, int&, int index, const Board&, bool captureOnly);
+    static void knightMoveArray(Move*, int&, int index, const Board&, bool captureOnly);
+    static void rookMoveArray(Move*, int&, int index, const Board&, bool captureOnly);
 
-	static bitBoard kingRegularMoveBoard(int x, int y, bool color, const Board& gameBoard, bool captureOnly);
-	static bitBoard queenMoveBoard(int x, int y, bool color, const Board& gameBoard, bool captureOnly);
-	static bitBoard bishopMoveBoard(int x, int y, bool color, const Board& gameBoard, bool captureOnly);
-	static bitBoard knightMoveBoard(int x, int y, bool color, const Board& gameBoard, bool captureOnly);
-	static bitBoard rookMoveBoard(int x, int y, bool color, const Board& gameBoard, bool captureOnly);
+	static bitBoard kingRegularMoveBoard(int index, bool color, const Board& gameBoard, bool captureOnly);
+	static bitBoard queenMoveBoard(int index, bool color, const Board& gameBoard, bool captureOnly);
+	static bitBoard bishopMoveBoard(int index, bool color, const Board& gameBoard, bool captureOnly);
+	static bitBoard knightMoveBoard(int index, bool color, const Board& gameBoard, bool captureOnly);
+	static bitBoard rookMoveBoard(int index, bool color, const Board& gameBoard, bool captureOnly);
 
     bool isSafe(const Board&);
     bool operator!=(Piece);
