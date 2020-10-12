@@ -46,14 +46,14 @@ void MoveSorter::assignOrderingScores()
 		}
 		else if (this->moveList[i].endIndex == lastMove.endIndex)
 		{
-			PieceType attackerType = boardState.getSquareType(moveList[i].startIndex);
+			PieceType attackerType = moveList[i].movingPiece;
 			double attackerValue = MaterialEvaluator::pieceValue(attackerType);
 			this->moveList[i].score = 500 - attackerValue;
 		}
 		else {
 			PieceType victimType = moveList[i].pieceCaptured;
 			double victimValue = MaterialEvaluator::pieceValue(victimType);
-			PieceType attackerType = boardState.getSquareType(moveList[i].startIndex);
+			PieceType attackerType = moveList[i].movingPiece;
 			double attackerValue = MaterialEvaluator::pieceValue(attackerType);
 
 			if (victimType != PieceType::Empty)

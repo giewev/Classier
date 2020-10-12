@@ -19,11 +19,13 @@ public:
 
 	int oldEPData;
 	PieceType pieceCaptured;
+	PieceType movingPiece;
 	char oldCastlingRights;
 
 	Move();
     Move(const Board&);
 	Move(int, int, PieceType, const Board&);
+	Move(int f, int t, PieceType movingType, PieceType promotion, const Board& gameBoard);
 	Move(std::string, const Board&);
 
     void setScore(double);

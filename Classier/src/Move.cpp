@@ -27,6 +27,20 @@ Move::Move(int sIndex, int eIndex, PieceType promote, const Board& board)
 	pieceCaptured = getPieceCaptured(board);
 	oldEPData = board.getEPData();
 	oldCastlingRights = board.getCastlingData();
+	movingPiece = board.getSquareType(sIndex);
+}
+
+Move::Move(int sIndex, int eIndex, PieceType mover, PieceType promote, const Board& board)
+{
+	startIndex = sIndex;
+	endIndex = eIndex;
+	promotion = promote;
+	score = 0;
+	null = false;
+	pieceCaptured = getPieceCaptured(board);
+	oldEPData = board.getEPData();
+	oldCastlingRights = board.getCastlingData();
+	movingPiece = mover;
 }
 
 Move::Move(std::string notation, const Board& board)
@@ -53,6 +67,7 @@ Move::Move(std::string notation, const Board& board)
 	pieceCaptured = getPieceCaptured(board);
 	oldEPData = board.getEPData();
 	oldCastlingRights = board.getCastlingData();
+	movingPiece = board.getSquareType(startIndex);
 }
 
 Move::Move(const Board& board)

@@ -136,7 +136,7 @@ void Piece::kingMoveArray(Move* moveList, int& moveCounter, int index, const Boa
 	unsigned long legalIndex;
 	while (_BitScanForward64(&legalIndex, legalMoves))
 	{
-		moveList[moveCounter++] = Move(index, legalIndex, PieceType::Empty, gameBoard);
+		moveList[moveCounter++] = Move(index, legalIndex, PieceType::King, PieceType::Empty, gameBoard);
 		legalMoves &= legalMoves - 1;
 	}
 	
@@ -148,7 +148,7 @@ void Piece::kingMoveArray(Move* moveList, int& moveCounter, int index, const Boa
 			bitBoard castlingObstacles = kingCastlingMoves[ownColor][0] & gameBoard.facts.allPieces;
 			if (!castlingObstacles)
 			{
-				moveList[moveCounter++] = Move(index, index - 2, PieceType::Empty, gameBoard);
+				moveList[moveCounter++] = Move(index, index - 2, PieceType::King, PieceType::Empty, gameBoard);
 			}
 		}
 
@@ -158,7 +158,7 @@ void Piece::kingMoveArray(Move* moveList, int& moveCounter, int index, const Boa
 			bitBoard castlingObstacles = kingCastlingMoves[ownColor][1] & gameBoard.facts.allPieces;
 			if (!castlingObstacles)
 			{
-				moveList[moveCounter++] = Move(index, index + 2, PieceType::Empty, gameBoard);
+				moveList[moveCounter++] = Move(index, index + 2, PieceType::King, PieceType::Empty, gameBoard);
 			}
 		}
 	}
@@ -198,7 +198,7 @@ void Piece::queenMoveArray(Move* moveList, int& moveCounter, int index, const Bo
 	unsigned long scanIndex;
 	while (_BitScanForward64(&scanIndex, moves))
 	{
-		moveList[moveCounter++] = Move(index, scanIndex, PieceType::Empty, gameBoard);
+		moveList[moveCounter++] = Move(index, scanIndex, PieceType::Queen, PieceType::Empty, gameBoard);
 		moves &= moves - 1;
 	}
 }
@@ -237,7 +237,7 @@ void Piece::bishopMoveArray(Move* moveList, int& moveCounter, int index, const B
 	unsigned long scanIndex;
 	while (_BitScanForward64(&scanIndex, moves))
 	{
-		moveList[moveCounter++] = Move(index, scanIndex, PieceType::Empty, gameBoard);
+		moveList[moveCounter++] = Move(index, scanIndex, PieceType::Bishop, PieceType::Empty, gameBoard);
 		moves &= moves - 1;
 	}
 }
@@ -261,7 +261,7 @@ void Piece::knightMoveArray(Move* moveList, int& moveCounter, int index, const B
 	unsigned long legalIndex;
 	while (_BitScanForward64(&legalIndex, legalDestinations))
 	{
-		moveList[moveCounter++] = Move(index, legalIndex, PieceType::Empty, gameBoard);
+		moveList[moveCounter++] = Move(index, legalIndex, PieceType::Knight, PieceType::Empty, gameBoard);
 		legalDestinations &= legalDestinations - 1;
 	}
 }
@@ -300,7 +300,7 @@ void Piece::rookMoveArray(Move* moveList, int& moveCounter, int index, const Boa
 	unsigned long scanIndex;
 	while (_BitScanForward64(&scanIndex, moves))
 	{
-		moveList[moveCounter++] = Move(index, scanIndex, PieceType::Empty, gameBoard);
+		moveList[moveCounter++] = Move(index, scanIndex, PieceType::Rook, PieceType::Empty, gameBoard);
 		moves &= moves - 1;
 	}
 }
@@ -319,7 +319,7 @@ void Piece::pawnMoveArray(Move* moveList, int& moveCounter, int index, const Boa
 			{
 				int x = bitwise::bitBoardX(legalIndex);
 				int y = bitwise::bitBoardY(legalIndex);
-				moveList[moveCounter++] = Move(index, legalIndex, PieceType::Empty, gameBoard);
+				moveList[moveCounter++] = Move(index, legalIndex, PieceType::Pawn, PieceType::Empty, gameBoard);
 				doubleMoves &= doubleMoves - 1;
 			}
 		}
@@ -333,14 +333,14 @@ void Piece::pawnMoveArray(Move* moveList, int& moveCounter, int index, const Boa
 
 				if (promotionSquares & singleMove)
 				{
-					moveList[moveCounter++] = Move(index, legalIndex, PieceType::Queen, gameBoard);
-					moveList[moveCounter++] = Move(index, legalIndex, PieceType::Knight, gameBoard);
-					moveList[moveCounter++] = Move(index, legalIndex, PieceType::Rook, gameBoard);
-					moveList[moveCounter++] = Move(index, legalIndex, PieceType::Bishop, gameBoard);
+					moveList[moveCounter++] = Move(index, legalIndex, PieceType::Pawn, PieceType::Queen, gameBoard);
+					moveList[moveCounter++] = Move(index, legalIndex, PieceType::Pawn, PieceType::Knight, gameBoard);
+					moveList[moveCounter++] = Move(index, legalIndex, PieceType::Pawn, PieceType::Rook, gameBoard);
+					moveList[moveCounter++] = Move(index, legalIndex, PieceType::Pawn, PieceType::Bishop, gameBoard);
 				}
 				else
 				{
-					moveList[moveCounter++] = Move(index, legalIndex, PieceType::Empty, gameBoard);
+					moveList[moveCounter++] = Move(index, legalIndex, PieceType::Pawn, PieceType::Empty, gameBoard);
 				}
 			}
 		}
@@ -369,14 +369,14 @@ void Piece::pawnMoveArray(Move* moveList, int& moveCounter, int index, const Boa
 		int y = bitwise::bitBoardY(legalIndex);
 		if (promotionSquares & captureMoves)
 		{
-			moveList[moveCounter++] = Move(index, legalIndex, PieceType::Queen, gameBoard);
-			moveList[moveCounter++] = Move(index, legalIndex, PieceType::Knight, gameBoard);
-			moveList[moveCounter++] = Move(index, legalIndex, PieceType::Rook, gameBoard);
-			moveList[moveCounter++] = Move(index, legalIndex, PieceType::Bishop, gameBoard);
+			moveList[moveCounter++] = Move(index, legalIndex, PieceType::Pawn, PieceType::Queen, gameBoard);
+			moveList[moveCounter++] = Move(index, legalIndex, PieceType::Pawn, PieceType::Knight, gameBoard);
+			moveList[moveCounter++] = Move(index, legalIndex, PieceType::Pawn, PieceType::Rook, gameBoard);
+			moveList[moveCounter++] = Move(index, legalIndex, PieceType::Pawn, PieceType::Bishop, gameBoard);
 		}
 		else
 		{
-			moveList[moveCounter++] = Move(index, legalIndex, PieceType::Empty, gameBoard);
+			moveList[moveCounter++] = Move(index, legalIndex, PieceType::Pawn, PieceType::Empty, gameBoard);
 		}
 		captureMoves &= captureMoves - 1;
 	}

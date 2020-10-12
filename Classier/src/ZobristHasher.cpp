@@ -178,7 +178,7 @@ void ZobristHasher::updateCastling(const Board& prevBoard, Move nextMove)
             this->toggleCastlingRights(kingColor, false);
         }
     }
-    else if (prevBoard.getSquareType(nextMove.startIndex) == PieceType::Rook)
+    else if (nextMove.movingPiece == PieceType::Rook)
     {
 
 		switch (nextMove.startIndex)
@@ -215,8 +215,8 @@ void ZobristHasher::updateCastling(const Board& prevBoard, Move nextMove)
 
 void ZobristHasher::updatePieces(const Board& prevBoard, Move nextMove)
 {
-    PieceType movingPieceType = prevBoard.getSquareType(nextMove.startIndex);
-    bool movingPieceColor = prevBoard.getSquareColor(nextMove.startIndex);
+	PieceType movingPieceType = nextMove.movingPiece;
+	bool movingPieceColor = prevBoard.facts.turn;
     this->togglePiece(nextMove.startIndex, movingPieceType, movingPieceColor);
     this->togglePiece(nextMove.endIndex, movingPieceType, movingPieceColor);
 

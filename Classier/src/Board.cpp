@@ -662,7 +662,7 @@ void Board::unmakeMove(Move data)
 	}
 
 	// Move the piece back
-	PieceType movedType = getSquareType(data.endIndex);
+	PieceType movedType = data.movingPiece;
 	bool movedColor = !facts.turn;
 	setSquare(movedType, PieceType::Empty, movedColor, data.startIndex);
 	// Replace any captured piece (Except EP capture)
@@ -737,7 +737,7 @@ void Board::makeMove(Move data)
 	}
 
     //Picking up the Piece
-	PieceType movingType = getSquareType(data.startIndex);
+	PieceType movingType = data.movingPiece;
 	PieceType newType = movingType;
 	bool movingColor = facts.turn;
 
