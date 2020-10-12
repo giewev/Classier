@@ -64,29 +64,12 @@ Move AlphaBetaSearcher::alphaBeta(Board& boardState, int depth, double alpha, do
 	}
 
     int moveCount = 0;
-    Move moveList[220];
-    boardState.generateMoveArray(moveList, moveCount);
+    Move moveList[300];
+    boardState.generatePseudoMoveArray(moveList, moveCount, false);
 
     unsigned int bestIndex = 0;
+	int legalMoves = 0;
     Move returnedMove;
-
-    //Checkmate or StaleMate
-    if(moveCount == 0)
-    {
-        returnedMove = Move();
-		if (inCheck)
-		{
-			if (boardState.facts.turn) returnedMove.setScore(-999);
-			else returnedMove.setScore(999);
-			returnedMove.setGameOverDepth(0);
-		}
-		else
-		{
-			returnedMove.setScore(0);
-		}
-		
-        return returnedMove;
-    }
 
 	MoveSorter sorter = MoveSorter(moveList, moveCount, boardState, transposition, killerMoves[depth], lastMoveMade[depth - 1], this->variations[0][depth]);
 	if (distanceToHorizon(depth) > 4 && transposition.bestMove.null)
@@ -114,6 +97,12 @@ Move AlphaBetaSearcher::alphaBeta(Board& boardState, int depth, double alpha, do
 
     for(int i=0; i<moveCount; i++)
     {
+		if (!moveList[i].isSafe(boardState))
+		{
+			continue;
+		}
+
+		legalMoves++;
 		lastMoveMade[depth] = moveList[i];
         boardState.makeMove(moveList[i]);
 		variations[depth][depth] = moveList[i];
@@ -122,7 +111,7 @@ Move AlphaBetaSearcher::alphaBeta(Board& boardState, int depth, double alpha, do
         {
             if (quiescence_enabled && moveList[i].pieceCaptured != PieceType::Empty)
             {
-                moveList[i].score = quiesce(boardState, alpha, beta, moveList[i], 3);
+                moveList[i].score = quiesce(boardState, alpha, beta, moveList[i], 7);
             }
             else
             {
@@ -162,11 +151,29 @@ Move AlphaBetaSearcher::alphaBeta(Board& boardState, int depth, double alpha, do
             return(moveList[i]);
         }
 
-		if ((depth <= 1 && depth < 4) && std::chrono::steady_clock::now() > dieTime)
+		if (depth == 1 && std::chrono::steady_clock::now() > dieTime)
 		{
 			return moveList[bestIndex];
 		}
     }
+
+	//Checkmate or StaleMate
+	if (legalMoves == 0)
+	{
+		returnedMove = Move();
+		if (inCheck)
+		{
+			if (boardState.facts.turn) returnedMove.setScore(-999);
+			else returnedMove.setScore(999);
+			returnedMove.setGameOverDepth(0);
+		}
+		else
+		{
+			returnedMove.setScore(0);
+		}
+
+		return returnedMove;
+	}
 
     engine.updateTranspositionBestIfDeeper(boardState, distanceToHorizon(depth), moveList[bestIndex]);
     return moveList[bestIndex];
@@ -220,8 +227,8 @@ double AlphaBetaSearcher::quiesce(Board& boardState, double alpha, double beta, 
 	double minDelta = deltaToAlphaBeta(staticScore, boardState.facts.turn, alpha, beta) - 2;
 
     int moveCount = 0;
-    Move moveList[220];
-    boardState.generateCaptureMoves(moveList, moveCount); 
+    Move moveList[300];
+    boardState.generatePseudoMoveArray(moveList, moveCount, true);
 	MoveSorter sorter = MoveSorter(moveList, moveCount, boardState, TranspositionCache(), MoveLookup(), lastCap, Move());
 	sorter.sortMoves();
 
@@ -234,6 +241,11 @@ double AlphaBetaSearcher::quiesce(Board& boardState, double alpha, double beta, 
 			(pieceToCapture == PieceType::Knight && knightValue < minDelta) ||
 			(pieceToCapture == PieceType::Rook && rookValue < minDelta) ||
 			(pieceToCapture == PieceType::Queen && queenValue < minDelta))
+		{
+			continue;
+		}
+
+		if (!moveList[i].isSafe(boardState))
 		{
 			continue;
 		}

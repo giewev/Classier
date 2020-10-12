@@ -589,7 +589,7 @@ void Board::setKingLocation(bool setColor, int index)
 	}
 }
 
-void Board::generateMoveArray(Move* finalMoveList, int& moveCounter)
+void Board::generatePseudoMoveArray(Move* moveList, int& moveCounter, bool captureOnly)
 {
 	unsigned long scanIndex;
 	bitBoard ownColorMap;
@@ -600,18 +600,23 @@ void Board::generateMoveArray(Move* finalMoveList, int& moveCounter)
 		bitBoard moveables = facts.pieces[pType] & ownColorMap;
 		while (_BitScanForward64(&scanIndex, moveables))
 		{
-			Piece::appendMoveArray(finalMoveList, moveCounter, (PieceType)pType, scanIndex, *this, false);
+			Piece::appendMoveArray(moveList, moveCounter, (PieceType)pType, scanIndex, *this, captureOnly);
 			moveables &= moveables - 1;
 		}
 	}
+}
+
+void Board::generateMoveArray(Move* moveList, int& moveCounter)
+{
+	generatePseudoMoveArray(moveList, moveCounter, false);
 
 	hashingEnabled = false;
 	positionalScoresEnabled = false;
     for(int i = moveCounter - 1; i >= 0; i--)
     {
-		if(!finalMoveList[i].isSafe(*this))
+		if(!moveList[i].isSafe(*this))
 		{
-			finalMoveList[i] = finalMoveList[moveCounter - 1];
+			moveList[i] = moveList[moveCounter - 1];
 			moveCounter--;
 		}
     }
@@ -621,19 +626,7 @@ void Board::generateMoveArray(Move* finalMoveList, int& moveCounter)
 
 void Board::generateCaptureMoves(Move* moveList, int& moveCounter)
 {
-	unsigned long scanIndex;
-	bitBoard ownColorMap;
-	if (facts.turn) ownColorMap = facts.pieces[0];
-	else ownColorMap = ~facts.pieces[0] & facts.allPieces;
-	for (char pType = 1; pType < 7; pType++)
-	{
-		bitBoard moveables = facts.pieces[pType] & ownColorMap;
-		while (_BitScanForward64(&scanIndex, moveables))
-		{
-			Piece::appendMoveArray(moveList, moveCounter, (PieceType)pType, scanIndex, *this, true);
-			moveables &= moveables - 1;
-		}
-	}
+	generatePseudoMoveArray(moveList, moveCounter, true);
 
 	hashingEnabled = false;
 	positionalScoresEnabled = false;

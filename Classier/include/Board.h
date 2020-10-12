@@ -55,6 +55,7 @@ public:
     std::string outputFEN() const;
     double perft(int);
     void generateMoveArray(Move*, int&);
+	void generatePseudoMoveArray(Move*, int&, bool captureOnly);
     void generateCaptureMoves(Move* moveList, int& moveCounter);
 
     void makeMove(Move);
