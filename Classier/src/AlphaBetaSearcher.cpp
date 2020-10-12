@@ -72,7 +72,7 @@ Move AlphaBetaSearcher::alphaBeta(Board& boardState, int depth, double alpha, do
     Move returnedMove;
 
 	MoveSorter sorter = MoveSorter(moveList, moveCount, boardState, transposition, killerMoves[depth], lastMoveMade[depth - 1], this->variations[0][depth]);
-	if (distanceToHorizon(depth) > 4 && transposition.bestMove.null)
+	if (internal_search_ordering && distanceToHorizon(depth) > 4 && transposition.bestMove.null)
 	{
 		for (int i = 0; i < moveCount; i++)
 		{

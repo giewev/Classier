@@ -6,6 +6,7 @@
 #include "Logger.h"
 #include "MoveSorter.h"
 #include "AlphaBetaSearcher.h"
+#include "AlgorithmToggles.h"
 
 #include <iostream>
 #include <math.h>
@@ -153,6 +154,7 @@ std::string Engine::toAlg(int val)
 
 void Engine::updateTranspositionBestIfDeeper(const Board& newBoard, int height, Move newMove)
 {
+	if (height < minimum_trans_height) return;
     if (this->transpositionTable[newBoard.facts].bestHeight < height)
     {
         this->transpositionTable[newBoard.facts].bestHeight = height;
@@ -162,6 +164,7 @@ void Engine::updateTranspositionBestIfDeeper(const Board& newBoard, int height, 
 
 void Engine::updateTranspositionCutoffIfDeeper(const Board& newBoard, int height, Move newMove)
 {
+	if (height < minimum_trans_height) return;
     if (this->transpositionTable[newBoard.facts].cutoffHeight < height)
     {
         this->transpositionTable[newBoard.facts].cutoffHeight = height;
