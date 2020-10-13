@@ -15,6 +15,7 @@ public:
     MoveSorter(Move* moveList, int moveCount, Board boardState, TranspositionCache transposition, const MoveLookup& killers, const Move& lastMove, const Move& pvMove);
     void sortMoves();
 	void assignOrderingScores();
+	void sortNext();
 protected:
 private:
     Move* moveList;
@@ -24,6 +25,7 @@ private:
 	const MoveLookup& killers;
 	const Move& lastMove;
 	const Move& pvMove;
+	int moveIndex;
 };
 
 #endif // MOVESORTER_H

@@ -17,6 +17,21 @@ MoveSorter::MoveSorter(Move* moveList, int moveCount, Board boardState, Transpos
     this->moveCount = moveCount;
     this->boardState = boardState;
     this->transposition = transposition;
+	moveIndex = 0;
+}
+
+void MoveSorter::sortNext()
+{
+	int bestIndex = moveIndex;
+	for (int i = moveIndex + 1; i < moveCount; i++)
+	{
+		if (moveList[i].score > moveList[bestIndex].score) {
+			bestIndex = i;
+		}
+	}
+
+	std::swap(moveList[bestIndex], moveList[moveIndex]);
+	moveIndex++;
 }
 
 void MoveSorter::sortMoves()

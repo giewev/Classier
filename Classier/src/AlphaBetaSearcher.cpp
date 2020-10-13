@@ -92,10 +92,10 @@ Move AlphaBetaSearcher::alphaBeta(Board& boardState, int depth, double alpha, do
 	{
 		sorter.assignOrderingScores();
 	}
-	sorter.sortMoves();
 
     for(int i=0; i<moveCount; i++)
     {
+		sorter.sortNext();
 		if (!moveLists[depth][i].isSafe(boardState))
 		{
 			continue;
@@ -229,11 +229,11 @@ double AlphaBetaSearcher::quiesce(Board& boardState, double alpha, double beta, 
     Move moveList[300];
     boardState.generatePseudoMoveArray(moveList, moveCount, true);
 	MoveSorter sorter = MoveSorter(moveList, moveCount, boardState, TranspositionCache(), MoveLookup(), lastCap, Move());
-	sorter.sortMoves();
-
+	
     int bestIndex = -1;
     for (int i = 0; i < moveCount; i++)
     {
+		sorter.sortNext();
 		PieceType pieceToCapture = moveList[i].pieceCaptured;
 		if ((pieceToCapture == PieceType::Pawn && pawnValue < minDelta) ||
 			(pieceToCapture == PieceType::Bishop && bishopValue < minDelta) ||
