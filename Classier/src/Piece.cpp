@@ -317,8 +317,6 @@ void Piece::pawnMoveArray(Move* moveList, int& moveCounter, int index, const Boa
 		{
 			while (_BitScanForward64(&legalIndex, doubleMoves))
 			{
-				int x = bitwise::bitBoardX(legalIndex);
-				int y = bitwise::bitBoardY(legalIndex);
 				moveList[moveCounter++] = Move(index, legalIndex, PieceType::Pawn, PieceType::Empty, gameBoard);
 				doubleMoves &= doubleMoves - 1;
 			}
@@ -328,9 +326,6 @@ void Piece::pawnMoveArray(Move* moveList, int& moveCounter, int index, const Boa
 			bitBoard singleMove = pawnSingleMoves[ownColor][index] & ~gameBoard.facts.allPieces;
 			if (_BitScanForward64(&legalIndex, singleMove))
 			{
-				int x = bitwise::bitBoardX(legalIndex);
-				int y = bitwise::bitBoardY(legalIndex);
-
 				if (promotionSquares & singleMove)
 				{
 					moveList[moveCounter++] = Move(index, legalIndex, PieceType::Pawn, PieceType::Queen, gameBoard);
@@ -365,8 +360,6 @@ void Piece::pawnMoveArray(Move* moveList, int& moveCounter, int index, const Boa
 	bitBoard captureMoves = pawnCaptureMoves[ownColor][index] & ((gameBoard.facts.allPieces & enemies) | epTargets);
 	while (_BitScanForward64(&legalIndex, captureMoves))
 	{
-		int x = bitwise::bitBoardX(legalIndex);
-		int y = bitwise::bitBoardY(legalIndex);
 		if (promotionSquares & captureMoves)
 		{
 			moveList[moveCounter++] = Move(index, legalIndex, PieceType::Pawn, PieceType::Queen, gameBoard);
