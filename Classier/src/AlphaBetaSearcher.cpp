@@ -52,7 +52,7 @@ Move AlphaBetaSearcher::alphaBeta(Board& boardState, int depth, double alpha, do
 			Move nullMove = Move(boardState);
 			boardState.makeMove(nullMove);
 			lastMoveMade[depth] = nullMove;
-			Move nullResponse = alphaBeta(boardState, depth + 2, alpha, beta);
+			Move nullResponse = alphaBeta(boardState, depth + 3, alpha, beta);
 			boardState.unmakeMove(nullMove);
 			nullMode = false;
 			nullMove.score = nullResponse.score;
@@ -64,29 +64,28 @@ Move AlphaBetaSearcher::alphaBeta(Board& boardState, int depth, double alpha, do
 	}
 
     int moveCount = 0;
-    Move moveList[300];
-    boardState.generatePseudoMoveArray(moveList, moveCount, false);
+    boardState.generatePseudoMoveArray(moveLists[depth], moveCount, false);
 
     unsigned int bestIndex = -1;
 	int legalMoves = 0;
     Move returnedMove;
 
-	MoveSorter sorter = MoveSorter(moveList, moveCount, boardState, transposition, killerMoves[depth], lastMoveMade[depth - 1], this->variations[0][depth]);
+	MoveSorter sorter = MoveSorter(moveLists[depth], moveCount, boardState, transposition, killerMoves[depth], lastMoveMade[depth - 1], this->variations[0][depth]);
 	if (internal_search_ordering && distanceToHorizon(depth) > 4 && transposition.bestMove.null)
 	{
 		for (int i = 0; i < moveCount; i++)
 		{
-			lastMoveMade[depth] = moveList[i];
-			boardState.makeMove(moveList[i]);
+			lastMoveMade[depth] = moveLists[depth][i];
+			boardState.makeMove(moveLists[depth][i]);
 			returnedMove = alphaBeta(boardState, depth + 2, alpha, beta);
 
-			moveList[i].setScore(returnedMove.score);
+			moveLists[depth][i].setScore(returnedMove.score);
 			if (returnedMove.getGameOverDepth() != -1)
 			{
-				moveList[i].setGameOverDepth(returnedMove.getGameOverDepth() + 1);
+				moveLists[depth][i].setGameOverDepth(returnedMove.getGameOverDepth() + 1);
 			}
 
-			boardState.unmakeMove(moveList[i]);
+			boardState.unmakeMove(moveLists[depth][i]);
 		}
 	}
 	else
@@ -97,41 +96,41 @@ Move AlphaBetaSearcher::alphaBeta(Board& boardState, int depth, double alpha, do
 
     for(int i=0; i<moveCount; i++)
     {
-		if (!moveList[i].isSafe(boardState))
+		if (!moveLists[depth][i].isSafe(boardState))
 		{
 			continue;
 		}
 
 		legalMoves++;
-		lastMoveMade[depth] = moveList[i];
-        boardState.makeMove(moveList[i]);
-		variations[depth][depth] = moveList[i];
+		lastMoveMade[depth] = moveLists[depth][i];
+        boardState.makeMove(moveLists[depth][i]);
+		variations[depth][depth] = moveLists[depth][i];
 
         if(distanceToHorizon(depth) == 0)
         {
-            if (quiescence_enabled && moveList[i].pieceCaptured != PieceType::Empty)
+            if (quiescence_enabled && moveLists[depth][i].pieceCaptured != PieceType::Empty)
             {
-                moveList[i].score = quiesce(boardState, alpha, beta, moveList[i], 7);
+				moveLists[depth][i].score = quiesce(boardState, alpha, beta, moveLists[depth][i], 7);
             }
             else
             {
-                engine.evaluateMove(boardState, moveList, i);
+                engine.evaluateMove(boardState, moveLists[depth], i);
             }
         }
         else
         {
             returnedMove = alphaBeta(boardState, depth + 1, alpha, beta);
 
-            moveList[i].setScore(returnedMove.score);
+			moveLists[depth][i].setScore(returnedMove.score);
             if(returnedMove.getGameOverDepth() != -1)
             {
-                moveList[i].setGameOverDepth(returnedMove.getGameOverDepth() + 1);
+				moveLists[depth][i].setGameOverDepth(returnedMove.getGameOverDepth() + 1);
             }
         }
 
-		boardState.unmakeMove(moveList[i]);
-        bestIndex = bestMove(moveList, bestIndex, i, boardState.facts.turn);
-        updateAlphaBeta(moveList[bestIndex].score, boardState.facts.turn, alpha, beta);
+		boardState.unmakeMove(moveLists[depth][i]);
+        bestIndex = bestMove(moveLists[depth], bestIndex, i, boardState.facts.turn);
+        updateAlphaBeta(moveLists[depth][bestIndex].score, boardState.facts.turn, alpha, beta);
 		if (bestIndex == i)
 		{
 			for (int j = horizonDepth; j >= depth; j--)
@@ -140,20 +139,20 @@ Move AlphaBetaSearcher::alphaBeta(Board& boardState, int depth, double alpha, do
 			}
 		}
 
-        if (causesAlphaBetaBreak(moveList[i].score, alpha, beta, boardState.facts.turn))
+        if (causesAlphaBetaBreak(moveLists[depth][i].score, alpha, beta, boardState.facts.turn))
         {
-            engine.updateTranspositionCutoffIfDeeper(boardState, distanceToHorizon(depth), moveList[i]);
-			if (moveList[i].pieceCaptured == PieceType::Empty)
+            engine.updateTranspositionCutoffIfDeeper(boardState, distanceToHorizon(depth), moveLists[depth][i]);
+			if (moveLists[depth][i].pieceCaptured == PieceType::Empty)
 			{
-				killerMoves[depth].add(moveList[i]);
+				killerMoves[depth].add(moveLists[depth][i]);
 			}
 
-            return(moveList[i]);
+            return(moveLists[depth][i]);
         }
 
 		if (depth == 1 && std::chrono::steady_clock::now() > dieTime)
 		{
-			return moveList[bestIndex];
+			return moveLists[depth][bestIndex];
 		}
     }
 
@@ -175,8 +174,8 @@ Move AlphaBetaSearcher::alphaBeta(Board& boardState, int depth, double alpha, do
 		return returnedMove;
 	}
 
-    engine.updateTranspositionBestIfDeeper(boardState, distanceToHorizon(depth), moveList[bestIndex]);
-    return moveList[bestIndex];
+    engine.updateTranspositionBestIfDeeper(boardState, distanceToHorizon(depth), moveLists[depth][bestIndex]);
+    return moveLists[depth][bestIndex];
 }
 
 bool AlphaBetaSearcher::causesAlphaBetaBreak(double score, double alpha, double beta, bool turn)

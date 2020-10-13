@@ -4,8 +4,8 @@
 #include <chrono>
 #include <set>
 #include "MoveLookup.h"
-
-class Move;
+#include "Move.h";
+#include "AlgorithmToggles.h"
 
 class AlphaBetaSearcher
 {
@@ -18,7 +18,8 @@ class AlphaBetaSearcher
 		long nodesVisited;
 		std::vector<long> nodesAtDepths;
 		std::vector<Move> lastMoveMade;
-		Move variations[50][50];
+		Move variations[maxDepth][maxDepth];
+		Move moveLists[maxDepth][300];
     protected:
     private:
         Engine& engine;
