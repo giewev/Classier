@@ -143,7 +143,6 @@ bool Move::isSafe(Board& gameBoard)
 	bool kingColor = gameBoard.facts.turn;
 	gameBoard.makeMove(*this);
 	int kingIndex = gameBoard.getKingIndex(kingColor);
-	//bool safe = gameBoard.getSquare(kingX, kingY).isSafe(gameBoard);
 	bool safe = !gameBoard.squareAttacked(kingIndex, !kingColor);
 	gameBoard.unmakeMove(*this);
 
@@ -162,7 +161,39 @@ bool Move::isSafe(Board& gameBoard)
 		}
 	}
 
-	
+	return safe;
+}
+
+bool Move::makeIfSafe(Board& gameBoard)
+{
+	bool kingColor = gameBoard.facts.turn;
+
+	bool safe = true;
+	int kingIndex = gameBoard.getKingIndex(kingColor);
+	// Special check if the in between square is being attacked when you castle
+	if (startIndex == kingIndex)
+	{
+		if (fabs(startIndex - endIndex) == 2)
+		{
+			int betweenIndex = (startIndex + endIndex) / 2;
+			safe = Move(startIndex, betweenIndex, PieceType::Empty, gameBoard).isSafe(gameBoard) &&
+				Move(gameBoard).isSafe(gameBoard);
+		}
+	}
+
+	if (safe)
+	{
+		gameBoard.makeMove(*this);
+		kingIndex = gameBoard.getKingIndex(kingColor);
+		safe = !gameBoard.squareAttacked(kingIndex, !kingColor);
+
+		if (!safe)
+		{
+			gameBoard.unmakeMove(*this);
+		}
+	}
+
+
 	return safe;
 }
 

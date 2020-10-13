@@ -96,14 +96,14 @@ Move AlphaBetaSearcher::alphaBeta(Board& boardState, int depth, double alpha, do
     for(int i=0; i<moveCount; i++)
     {
 		sorter.sortNext();
-		if (!moveLists[depth][i].isSafe(boardState))
+		if (!moveLists[depth][i].makeIfSafe(boardState))
 		{
 			continue;
 		}
 
 		legalMoves++;
 		lastMoveMade[depth] = moveLists[depth][i];
-        boardState.makeMove(moveLists[depth][i]);
+        //boardState.makeMove(moveLists[depth][i]);
 		variations[depth][depth] = moveLists[depth][i];
 
         if(distanceToHorizon(depth) == 0)
@@ -244,12 +244,12 @@ double AlphaBetaSearcher::quiesce(Board& boardState, double alpha, double beta, 
 			continue;
 		}
 
-		if (!moveList[i].isSafe(boardState))
+		if (!moveList[i].makeIfSafe(boardState))
 		{
 			continue;
 		}
 
-		boardState.makeMove(moveList[i]);
+		//boardState.makeMove(moveList[i]);
         double score = quiesce(boardState, alpha, beta, moveList[i], depth - 1);
 		boardState.unmakeMove(moveList[i]);
 

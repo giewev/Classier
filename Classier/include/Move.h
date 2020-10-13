@@ -43,6 +43,7 @@ public:
     static bool bigger(Move, Move);
 
 	bool isSafe(Board& gameBoard);
+	bool makeIfSafe(Board& gameBoard);
     std::string basicAlg();
 private:
 	PieceType getPieceCaptured(const Board&);
