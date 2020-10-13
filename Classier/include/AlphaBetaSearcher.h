@@ -20,6 +20,7 @@ class AlphaBetaSearcher
 		std::vector<Move> lastMoveMade;
 		Move variations[maxDepth][maxDepth];
 		Move moveLists[maxDepth][300];
+		Move qMoveLists[20][200];
     protected:
     private:
         Engine& engine;

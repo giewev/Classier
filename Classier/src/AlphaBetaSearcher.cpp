@@ -226,15 +226,14 @@ double AlphaBetaSearcher::quiesce(Board& boardState, double alpha, double beta, 
 	double minDelta = deltaToAlphaBeta(staticScore, boardState.facts.turn, alpha, beta) - 2;
 
     int moveCount = 0;
-    Move moveList[300];
-    boardState.generatePseudoMoveArray(moveList, moveCount, true);
-	MoveSorter sorter = MoveSorter(moveList, moveCount, boardState, TranspositionCache(), MoveLookup(), lastCap, Move());
+    boardState.generatePseudoMoveArray(qMoveLists[depth], moveCount, true);
+	MoveSorter sorter = MoveSorter(qMoveLists[depth], moveCount, boardState, TranspositionCache(), MoveLookup(), lastCap, Move());
 	
     int bestIndex = -1;
     for (int i = 0; i < moveCount; i++)
     {
 		sorter.sortNext();
-		PieceType pieceToCapture = moveList[i].pieceCaptured;
+		PieceType pieceToCapture = qMoveLists[depth][i].pieceCaptured;
 		if ((pieceToCapture == PieceType::Pawn && pawnValue < minDelta) ||
 			(pieceToCapture == PieceType::Bishop && bishopValue < minDelta) ||
 			(pieceToCapture == PieceType::Knight && knightValue < minDelta) ||
@@ -244,37 +243,37 @@ double AlphaBetaSearcher::quiesce(Board& boardState, double alpha, double beta, 
 			continue;
 		}
 
-		if (!moveList[i].makeIfSafe(boardState))
+		if (!qMoveLists[depth][i].makeIfSafe(boardState))
 		{
 			continue;
 		}
 
 		//boardState.makeMove(moveList[i]);
-        double score = quiesce(boardState, alpha, beta, moveList[i], depth - 1);
-		boardState.unmakeMove(moveList[i]);
+        double score = quiesce(boardState, alpha, beta, qMoveLists[depth][i], depth - 1);
+		boardState.unmakeMove(qMoveLists[depth][i]);
 
         if (causesAlphaBetaBreak(score, alpha, beta, boardState.facts.turn))
         {
             return score;
         }
 
-		moveList[i].setScore(score);
+		qMoveLists[depth][i].setScore(score);
         updateAlphaBeta(score, boardState.facts.turn, alpha, beta);
-        bestIndex = bestMove(moveList, bestIndex, i, boardState.facts.turn);
+        bestIndex = bestMove(qMoveLists[depth], bestIndex, i, boardState.facts.turn);
     }
 
     if (bestIndex == -1)
     {
         return staticScore;
     }
-    else if ((boardState.facts.turn && staticScore > moveList[bestIndex].score) ||
-        (!boardState.facts.turn && staticScore < moveList[bestIndex].score))
+    else if ((boardState.facts.turn && staticScore > qMoveLists[depth][bestIndex].score) ||
+        (!boardState.facts.turn && staticScore < qMoveLists[depth][bestIndex].score))
     {
         return staticScore;
     }
     else
     {
-        return moveList[bestIndex].score;
+        return qMoveLists[depth][bestIndex].score;
     }
 }
 
