@@ -37,6 +37,7 @@
     <ClCompile Include="src\PositionalEvaluator.cpp" />
     <ClCompile Include="src\Tests.cpp" />
     <ClCompile Include="src\TranspositionCache.cpp" />
+    <ClCompile Include="src\UciInterface.cpp" />
     <ClCompile Include="src\ZobristHasher.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -59,6 +60,7 @@
     <ClInclude Include="include\PositionalEvaluator.h" />
     <ClInclude Include="include\StandAlones.h" />
     <ClInclude Include="include\TranspositionCache.h" />
+    <ClInclude Include="include\UciInterface.h" />
     <ClInclude Include="include\ZobristHasher.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

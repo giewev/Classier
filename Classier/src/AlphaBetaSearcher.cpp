@@ -67,7 +67,7 @@ Move AlphaBetaSearcher::alphaBeta(Board& boardState, int depth, double alpha, do
     Move moveList[300];
     boardState.generatePseudoMoveArray(moveList, moveCount, false);
 
-    unsigned int bestIndex = 0;
+    unsigned int bestIndex = -1;
 	int legalMoves = 0;
     Move returnedMove;
 

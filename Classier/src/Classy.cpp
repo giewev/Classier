@@ -8,6 +8,7 @@
 #include "ArgumentParser.h"
 #include "Piece.h"
 #include "Bitwise.h"
+#include <UciInterface.h>
 
 void runAllTests();
 
@@ -52,110 +53,11 @@ int main(int argc, char *argv[])
 		}
     }
 	else {
-		Board board = Board();
-		Engine engine = Engine(board);
-		std::ofstream inFile;
-		std::ofstream outFile;
-		inFile.open("./arena_commands.txt");
-		outFile.open("./engine_responses.txt");
+		UciInterface uci = UciInterface();
 
 		for (std::string line; std::getline(std::cin, line);) {
-			inFile << line << std::endl;
-			std::string response = "";
-			if (line == "uci")
-			{
-				response = "uciok";
-			}
-			else if (line == "isready"){
-				response = "readyok";
-			}
-			else if (line.find("position") != -1) {
-				int count = 0;
-				std::string accum = "";
-				for (int i = 0; i < line.length(); i++)
-				{
-					char c = line[i];
-					accum = accum + c;
-					if (c == ' ' || i == line.length() - 1)
-					{
-						count++;
-						if (count == 2)
-						{
-							if (line.find("startpos") != -1){
-								board.loadFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
-							}
-							else {
-								accum = "";
-								i += 1;
-								for (; i < line.length(); i++)
-								{
-									char c = line[i];
-									accum = accum + c;
-									if (c == ' ' || i == line.length() - 1)
-									{
-										count++;
-										if (count == 8)
-										{
-											board.loadFEN(accum);
-											count = 2;
-											break;
-										}
-									}
-								}
-							}
-						}
-						else if (count > 3)
-						{
-							board.makeMove(Move(accum, board));
-						}
-						accum = "";
-					}
-				}
-
-				engine.setBoard(board);
-			}
-			else if (line.find("go ") != -1)
-			{
-				int i;
-				int timefactor;
-				if (board.facts.turn) i = line.find("wtime");
-				else i = line.find("btime");
-				if (i != -1) // Tournament time
-				{
-					i += 6;
-					timefactor = 30;
-				}
-				else 
-				{
-					i = line.find("movetime");
-					i += 9;
-					timefactor = 1;
-				}
-
-				std::string accum = "";
-				for (; i < line.length(); i++)
-				{
-					if (line[i] == ' ') break;
-					accum += line[i];
-					if (i == line.length() - 1) break;
-				}
-				int remainingTime = std::stoi(accum);
-
-				response = "bestmove " + engine.searchForTime(remainingTime / timefactor).basicAlg();
-			}
-			else if (line.find("quit") != -1)
-			{
-				return 0;
-			}
-
-			inFile << response << std::endl << std::endl;
-			if (response != "")
-			{
-				std::cout << response << std::endl;
-				outFile << response << std::endl;
-			}
+			uci.processCommand(line);
 		}
-		inFile.close();
 	}
 	
     return 0;
