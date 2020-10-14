@@ -69,6 +69,18 @@ const bitBoard files[8] =
 	hFile
 };
 
+const bitBoard adjacentFiles[8] =
+{
+	bFile,
+	aFile | cFile,
+	bFile | dFile,
+	cFile | eFile,
+	dFile | fFile,
+	eFile | gFile,
+	fFile | hFile,
+	gFile
+};
+
 const bitBoard blackSquares = 0xaa55aa55aa55aa55;
 const bitBoard whiteSquares = ~blackSquares;
 
@@ -95,6 +107,8 @@ extern bitBoard rookBlockerMask[64];
 extern bitBoard bishopBlockerMask[64];
 extern bitBoard queenBlockerMask[64];
 extern bitBoard notBehind[64][64];
+extern bitBoard passedPawnBlockers[2][64];
+extern bitBoard adjacentFilesByIndex[64];
 
 const bitBoard kingCastlingMoves[2][2]
 {
@@ -140,6 +154,7 @@ bitBoard genBishopMovement(int x, int y);
 bitBoard genQueenMovement(int x, int y);
 
 void populateBlockerMasks(int x, int y);
+bitBoard genPassedPawnBlockers(int x, int y, bool color);
 
 bitBoard genNotBehind(unsigned long f, unsigned long t);
 void initializeBitboards();

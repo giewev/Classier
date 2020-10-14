@@ -18,10 +18,10 @@ const double developmentValue = 0.25;
 const double kingCornerValue = 0.05;
 
 const double pawnAdvancementValue = 0.02;
-const double passedPawnValue = 0.4;
+const double passedPawnValue = 0.5;
 
 const double mobilityValue = 0.01;
-const double bishopPairValue = 0.5;
+const double bishopPairValue = 0.4;
 
 const double whitePawnPositionValue[64]
 {

@@ -15,6 +15,8 @@ bitBoard queenMoves[64];
 bitBoard rookBlockerMask[64];
 bitBoard bishopBlockerMask[64];
 bitBoard queenBlockerMask[64];
+bitBoard passedPawnBlockers[2][64];
+bitBoard adjacentFilesByIndex[64];
 
 void bitwise::trimBottom(bitBoard& toTrim, int layers)
 {
@@ -347,6 +349,28 @@ void bitwise::populateBlockerMasks(int x, int y)
 	queenBlockerMask[bitwise::coordToIndex(x, y)] = bishopBlockerMask[bitwise::coordToIndex(x, y)] | rookBlockerMask[bitwise::coordToIndex(x, y)];
 }
 
+bitBoard bitwise::genPassedPawnBlockers(int x, int y, bool color)
+{
+	bitBoard blocks = files[x] | adjacentFiles[x];
+
+	if (color)
+	{
+		for (int i = 0; i <= y; i++)
+		{
+			blocks &= ~ranks[i];
+		}
+	}
+	else
+	{
+		for (int i = 7; i >= y; i--)
+		{
+			blocks &= ~ranks[i];
+		}
+	}
+
+	return blocks;
+}
+
 void bitwise::initializeBitboards()
 {
 	for (int x = 0; x < 8; x++)
@@ -365,6 +389,9 @@ void bitwise::initializeBitboards()
 			bishopMoves[bitwise::coordToIndex(x, y)] = genBishopMovement(x, y);
 			queenMoves[bitwise::coordToIndex(x, y)] = genQueenMovement(x, y);
 			populateBlockerMasks(x, y);
+			passedPawnBlockers[true][bitwise::coordToIndex(x, y)] = genPassedPawnBlockers(x, y, true);
+			passedPawnBlockers[false][bitwise::coordToIndex(x, y)] = genPassedPawnBlockers(x, y, false);
+			adjacentFilesByIndex[bitwise::coordToIndex(x, y)] = adjacentFiles[x];
 		}
 	}
 
