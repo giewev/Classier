@@ -4,6 +4,7 @@
 #include <Evaluator.h>
 #include <MaterialEvaluator.h>
 #include <PositionalEvaluator.h>
+#include <MobilityEvaluator.h>
 
 class FullEvaluator : public Evaluator
 {
@@ -16,6 +17,7 @@ protected:
 private:
     MaterialEvaluator materialEvaluator;
     PositionalEvaluator positionalEvaluator;
+	MobilityEvaluator mobilityEvaluator;
 };
 
 #endif // FULLEVALUATOR_H

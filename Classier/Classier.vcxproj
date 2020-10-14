@@ -30,6 +30,7 @@
     <ClCompile Include="src\FullEvaluator.cpp" />
     <ClCompile Include="src\Logger.cpp" />
     <ClCompile Include="src\MaterialEvaluator.cpp" />
+    <ClCompile Include="src\MobilityEvaluator.cpp" />
     <ClCompile Include="src\Move.cpp" />
     <ClCompile Include="src\MoveLookup.cpp" />
     <ClCompile Include="src\MoveSorter.cpp" />
@@ -53,6 +54,7 @@
     <ClInclude Include="include\FullEvaluator.h" />
     <ClInclude Include="include\Logger.h" />
     <ClInclude Include="include\MaterialEvaluator.h" />
+    <ClInclude Include="include\MobilityEvaluator.h" />
     <ClInclude Include="include\Move.h" />
     <ClInclude Include="include\MoveLookup.h" />
     <ClInclude Include="include\MoveSorter.h" />

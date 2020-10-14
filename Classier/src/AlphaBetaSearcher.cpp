@@ -216,7 +216,7 @@ void AlphaBetaSearcher::updateAlphaBeta(double score, bool turn, double& alpha, 
 
 double AlphaBetaSearcher::quiesce(Board& boardState, double alpha, double beta, Move lastCap, int depth)
 {
-    double staticScore = engine.lazyEvaluatePosition(boardState);
+    double staticScore = engine.evaluatePosition(boardState);
     if (depth == 0 || causesAlphaBetaBreak(staticScore, alpha, beta, boardState.facts.turn))
     {
         return staticScore;

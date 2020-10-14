@@ -826,7 +826,6 @@ void Board::makeMove(Move data)
     facts.turn = !facts.turn;
 }
 
-
 //Returns false if the Piece is in check, true otherwise
 bool Board::squareAttacked(int index, bool byColor)
 {
