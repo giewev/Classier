@@ -69,6 +69,9 @@ const bitBoard files[8] =
 	hFile
 };
 
+const bitBoard blackSquares = 0xaa55aa55aa55aa55;
+const bitBoard whiteSquares = ~blackSquares;
+
 const bitBoard centerBoard = 0x0000001818000000;
 const bitBoard outsideRim  = 0xFF818181818181FF;
 const bitBoard allSquares  = 0xFFFFFFFFFFFFFFFF;

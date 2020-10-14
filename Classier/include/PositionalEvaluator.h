@@ -12,6 +12,7 @@ public:
 protected:
 private:
     static double manhattenDistance(const int x1, const int y1, const double x2, const double y2);
+	static bool hasBishopPair(const Board& board, bool color);
 };
 
 #endif // POSITIONALEVALUATOR_H
