@@ -216,11 +216,16 @@ void AlphaBetaSearcher::updateAlphaBeta(double score, bool turn, double& alpha, 
 
 double AlphaBetaSearcher::quiesce(Board& boardState, double alpha, double beta, Move lastCap, int depth)
 {
-    double staticScore = engine.evaluatePosition(boardState);
-    if (depth == 0 || causesAlphaBetaBreak(staticScore, alpha, beta, boardState.facts.turn))
-    {
-        return staticScore;
-    }
+	if (depth == 0)
+	{
+		return engine.evaluatePosition(boardState);
+	}
+
+    double staticScore = engine.lazyEvaluatePosition(boardState);
+	if (causesAlphaBetaBreak(staticScore, alpha, beta, boardState.facts.turn))
+	{
+		return staticScore;
+	}
 
     updateAlphaBeta(staticScore, boardState.facts.turn, alpha, beta);
 	double minDelta = deltaToAlphaBeta(staticScore, boardState.facts.turn, alpha, beta) - 2;
@@ -264,12 +269,12 @@ double AlphaBetaSearcher::quiesce(Board& boardState, double alpha, double beta, 
 
     if (bestIndex == -1)
     {
-        return staticScore;
+        return engine.evaluatePosition(boardState);
     }
     else if ((boardState.facts.turn && staticScore > qMoveLists[depth][bestIndex].score) ||
         (!boardState.facts.turn && staticScore < qMoveLists[depth][bestIndex].score))
     {
-        return staticScore;
+        return engine.evaluatePosition(boardState);
     }
     else
     {

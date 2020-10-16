@@ -55,9 +55,9 @@ void UciInterface::loadPosition(std::string command)
 	{
 		board.loadFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 	}
-	else if (command.find("fen") != -1)
+	else if (command.find("fen ") != -1)
 	{
-		board.loadFEN(after(before(command, "moves"), "fen"));
+		board.loadFEN(after(before(command, "moves"), "fen "));
 	}
 
 	makeMoves(after(command, "moves"));
