@@ -248,6 +248,11 @@ double AlphaBetaSearcher::quiesce(Board& boardState, double alpha, double beta, 
 			continue;
 		}
 
+		if (boardState.captureSEE(qMoveLists[depth][i]) < minDelta)
+		{
+			continue;
+		}
+
 		if (!qMoveLists[depth][i].makeIfSafe(boardState))
 		{
 			continue;

@@ -57,6 +57,9 @@ public:
     void generateMoveArray(Move*, int&);
 	void generatePseudoMoveArray(Move*, int&, bool captureOnly);
     void generateCaptureMoves(Move* moveList, int& moveCounter);
+	bitBoard smallestAttackers(int targetSquare, bool attackerColor);
+	double SEE(const Move& capture);
+	double captureSEE(const Move& capture);
 
     void makeMove(Move);
 	void unmakeMove(Move);

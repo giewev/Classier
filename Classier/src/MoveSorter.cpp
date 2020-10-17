@@ -73,15 +73,15 @@ void MoveSorter::assignOrderingScores()
 
 			if (victimType != PieceType::Empty)
 			{
-				this->moveList[i].score = 10 * victimValue - attackerValue;
+				this->moveList[i].score = boardState.captureSEE(moveList[i]);
 			}
 			else if (killers.contains(moveList[i]))
 			{
-				this->moveList[i].score = 1;
+				this->moveList[i].score = 0;
 			}
 			else 
 			{
-				this->moveList[i].score = -100;
+				this->moveList[i].score = -1;
 			}
 		}
     }

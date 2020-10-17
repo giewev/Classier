@@ -826,7 +826,6 @@ void Board::makeMove(Move data)
     facts.turn = !facts.turn;
 }
 
-//Returns false if the Piece is in check, true otherwise
 bool Board::squareAttacked(int index, bool byColor)
 {
 	bool color = !byColor;
@@ -877,7 +876,86 @@ bool Board::squareAttacked(int index, bool byColor)
 	return pawnMap;
 }
 
+bitBoard Board::smallestAttackers(int targetSquare, bool attackerColor)
+{
+	bool color = !attackerColor;
 
+	bitBoard pawnMap = pawnCaptureMoves[color][targetSquare];
+	pawnMap &= facts.pieces[PieceType::Pawn];
+	if (attackerColor)
+	{
+		pawnMap &= facts.pieces[0];
+	}
+	else
+	{
+		pawnMap &= ~facts.pieces[0];
+	}
+
+	if (pawnMap) return pawnMap;
+
+	//Check for Knight
+	bitBoard knightMap = Piece::knightMoveBoard(targetSquare, color, *this, false);
+	knightMap &= facts.pieces[PieceType::Knight];
+	if (knightMap) return knightMap;
+
+	//Check for Bishop
+	bitBoard bishopMap = Piece::bishopMoveBoard(targetSquare, color, *this, false);
+	bishopMap &= facts.pieces[PieceType::Bishop];
+	if (bishopMap) return bishopMap;
+
+	//Check for Rook
+	bitBoard rookMap = Piece::rookMoveBoard(targetSquare, color, *this, false);
+	rookMap &= facts.pieces[PieceType::Rook];
+	if (rookMap) return rookMap;
+
+	//Check if next to a queen
+	bitBoard queenMap = Piece::queenMoveBoard(targetSquare, color, *this, false);
+	queenMap &= facts.pieces[PieceType::Queen];
+	if (queenMap) return queenMap;
+
+	//Check if next to a king
+	bitBoard kingMap = Piece::kingRegularMoveBoard(targetSquare, color, *this, false);
+	kingMap &= facts.pieces[PieceType::King];
+	if (kingMap) return kingMap;
+
+	return 0;
+}
+
+double Board::SEE(const Move& capture)
+{
+	double value = MaterialEvaluator::pieceValue(capture.pieceCaptured);
+	if (capture.pieceCaptured == PieceType::King) return value;
+
+	makeMove(capture);
+	unsigned long scanIndex;
+	bitBoard capMap = smallestAttackers(capture.endIndex, facts.turn);
+	if (_BitScanForward64(&scanIndex, capMap))
+	{
+		Move nextCap = Move(scanIndex, capture.endIndex, PieceType::Empty, *this);
+		value = std::max(0.0, value - SEE(nextCap));
+	}
+	unmakeMove(capture);
+
+	return value;
+}
+
+double Board::captureSEE(const Move& capture) 
+{
+	double value = MaterialEvaluator::pieceValue(capture.pieceCaptured);
+	if (capture.pieceCaptured == PieceType::King) return value;
+
+	makeMove(capture);
+	unsigned long scanIndex;
+	bitBoard capMap = smallestAttackers(capture.endIndex, facts.turn);
+	if (_BitScanForward64(&scanIndex, capMap))
+	{
+		Move nextCap = Move(scanIndex, capture.endIndex, PieceType::Empty, *this);
+		value -= SEE(nextCap);
+	}
+	unmakeMove(capture);
+
+	return value;
+}
 
 //Depth:    Expect:
 // 0        1
