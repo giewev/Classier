@@ -941,6 +941,11 @@ double Board::SEE(const Move& capture)
 
 double Board::captureSEE(const Move& capture) 
 {
+	bool prevHashing = hashingEnabled;
+	bool prevPositional = positionalScoresEnabled;
+	hashingEnabled = false;
+	positionalScoresEnabled = false;
+
 	double value = MaterialEvaluator::pieceValue(capture.pieceCaptured);
 	if (capture.pieceCaptured == PieceType::King) return value;
 
@@ -954,6 +959,8 @@ double Board::captureSEE(const Move& capture)
 	}
 	unmakeMove(capture);
 
+	hashingEnabled = prevHashing;
+	positionalScoresEnabled = prevPositional;
 	return value;
 }
 

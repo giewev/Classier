@@ -17,6 +17,10 @@ void UciInterface::processCommand(std::string command)
 	{
 		isReady();
 	}
+	else if (command.find("newgame") != -1)
+	{
+		engine.resetTransTable();
+	}
 	else if (command.find("position") != -1)
 	{
 		loadPosition(after(command, "position"));

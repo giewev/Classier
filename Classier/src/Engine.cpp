@@ -93,7 +93,6 @@ Move Engine::searchForTime(int milliseconds)
 {
 	chrono::steady_clock::time_point begin = chrono::steady_clock::now();
 	chrono::steady_clock::time_point end = begin + chrono::milliseconds(milliseconds);
-	resetTransTable();
 	Move lastBest;
     Move bestMove;
     int depth = 1;
@@ -103,7 +102,6 @@ Move Engine::searchForTime(int milliseconds)
         bestMove = searchToDepth(depth++, end);
     }
 
-	//bestMove.setScore(lastBest.score);
     return bestMove;
 }
 
